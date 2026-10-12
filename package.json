@@ -1,0 +1,16 @@
+{
+  "name": "sanguo-village",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "latest",
+    "@netlify/functions": "latest",
+    "@netlify/identity": "latest"
+  },
+  "devDependencies": {
+    "esbuild": "latest"
+  }
+}
