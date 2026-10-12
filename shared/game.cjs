@@ -1,8 +1,8 @@
 // 遊戲規則:同時給瀏覽器(dist/game.js)和 Netlify 函式(server-core.cjs)使用。
 // 沒有任何畫面相關的程式,所有操作都透過 perform() 進行。
 const G=(()=>{
-const SPEED=60,CD=6*3600,CAMP_RESPAWN=12*3600,STASH_MULT=5,TRAIN_QMAX=10,NSLOTS=21,MULTI=['wh','gr','cave']; // 城內 21 塊建地;藏屋敷、米藏、埋藏所在舊的升到滿級後可再蓋新的
-const GOLD_RATE=1000,EXCHANGE_COST=1,PROTECT_DAYS=5; // 1 金幣買 1000 單位資源;平倉每次 1 金幣;新手保護 5 個遊戲日
+const SPEED=60,CD=6*3600,CAMP_RESPAWN=12*3600,STASH_MULT=3,TRAIN_QMAX=10,DEMOLISH_GOV=3,NSLOTS=21,MULTI=['wh','gr','cave']; // 城內 21 塊建地;藏屋敷、米藏、埋藏所在舊的升到滿級後可再蓋新的
+const GOLD_RATE=50,EXCHANGE_COST=1,PROTECT_DAYS=3; // 1 金幣買 50 單位資源;平倉每次 1 金幣;新手保護 3 個遊戲日
 const RN=['木材','泥土','鐵塊','糧食'],FN=['伐木場','泥坑','鐵礦場','農田'];
 const FT=[0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,3,3];
 const FC=[[40,100,50,60],[80,40,80,50],[100,80,30,60],[70,90,70,20]];
@@ -17,6 +17,8 @@ const UN={
  wei:[['足輕長槍兵',40,40,30,7,50,1,115,80,160,35,1040],['旗本武士',70,35,30,6,40,1,150,110,180,65,1200],['赤母衣眾',90,50,50,14,90,2,400,280,360,120,1600],['黑印狀武者',60,80,120,12,80,3,550,400,320,130,2200],['織田精銳騎',180,80,100,10,70,4,550,600,650,200,2800]].map(mk),
  shu:[['鄉士足輕',40,20,10,8,60,1,90,70,50,40,640],['三河武士',15,30,50,7,40,1,150,70,75,40,800],['鐵砲組',70,100,85,5,30,1,400,250,400,60,2000],['竹束安宅車',85,100,75,10,110,2,550,270,290,75,2000],['武田赤備騎',150,60,90,13,80,3,450,515,480,80,2400]].map(mk),
  wu:[['國人眾',20,30,45,7,40,1,100,120,50,50,720],['弓足輕',15,50,35,7,50,1,120,90,120,50,800],['雜賀眾',60,35,40,8,60,1,170,150,160,50,1120],['馬廻眾',90,120,60,10,70,2,360,350,300,120,2000],['水軍武者',130,60,150,12,100,3,500,550,600,200,2400]].map(mk)};
+const UDESC={"足輕長槍兵": "戰國普遍的主力長槍足輕部隊", "旗本武士": "主公身邊近衛精銳武士", "赤母衣眾": "信長麾下勇猛的騎兵傳令與突擊隊", "忍騎": "負責快速搜集情報與敵情偵察的騎馬忍軍", "黑印狀武者": "具備堅實防禦力的重裝武士騎兵隊", "織田精銳騎": "極具破壞力的頂級主力突擊騎兵", "破門槌": "用於撞擊城門的傳統攻城器具", "大筒": "戰國時期使用的大型火炮/大砲", "管領": "幕府與大名麾下的最高行政主管", "開墾代官": "負責領地開發與建立新城池的官員", "鄉士足輕": "地方徵召的基礎快速步兵", "三河武士": "以堅忍、忠誠與強悍著稱的防禦精銳", "鐵砲組": "最具殺傷力的高輸出火繩槍部隊", "伊賀忍者": "潛伏敵後探查敵情的諜報人員", "竹束安宅車": "設有竹束防禦的攻防推進戰車", "武田赤備騎": "以勇猛與強悍衝鋒力著稱的精銳騎兵", "龜甲車": "包覆鐵皮或濕牛皮的衝城器具", "飛石機": "遠程投射巨石的攻城器械", "軍配者": "大名身邊負責戰略與戰術指導的參謀", "普請頭": "負責建築、築城與土地開發的工兵組長", "國人眾": "地方豪族與民間組成的自衛武裝", "弓足輕": "使用和弓進行遠程支援的步兵", "早馬眾": "高速移動、負責訊息傳遞與騷擾的輕騎", "雜賀眾": "熟諳特殊地形與靈活戰術的精銳傭兵", "馬廻眾": "大名身邊直轄的親衛精銳部隊", "水軍武者": "兼具陸戰與水陸優勢的高級重裝騎兵", "攻城槌": "用於破壞敵城防禦設施的衝擊器具", "焙烙火砲車": "攜帶火藥與火攻特性的攻城拋射器具", "水軍頭領": "統轄水陸全軍的最高軍事指揮官", "拓墾奉行": "負責開拓新領地與建城的行政官員", "野盜": "盤踞山林掠奪的流民武裝", "南蠻傭兵": "帶有異國防具與武器的海外傭兵", "一向一揆門徒": "由宗教信仰發動起義的農民信徒武裝", "竹束防護眾": "裝備特殊竹甲、具備防護力的浪人", "野盜頭領": "野外中階賊寇指揮官", "一向一揆坊官": "起義宗教軍的基層組織者與僧兵", "山賊總頭目": "強悍的山林匪幫大頭領", "戰犬眾": "訓練猛獸作戰的特殊野外單位", "一向一揆大將": "規模龐大的宗教起義軍核心大將", "重裝大筒車": "大型巨獸或巨型重裝攻城機具單位"};
+['wei','shu','wu'].forEach(f=>UN[f].forEach(u=>u.desc=UDESC[u.n]||''));
 const N={野盜:[20,20,15],南蠻傭兵:[25,40,35],一向一揆門徒:[50,30,40],竹束防護眾:[70,65,55],野盜頭領:[70,50,65],一向一揆坊官:[100,70,80],山賊總頭目:[250,120,180],戰犬眾:[300,240,360],一向一揆大將:[400,220,200],重裝大筒車:[600,440,520]};
 // 舊存檔裡營寨守軍的名稱對照(三國版 → 戰國版)
 const OLDN={山賊:'野盜',南蠻兵:'南蠻傭兵',黃巾軍:'一向一揆門徒',藤甲兵:'竹束防護眾',山賊頭目:'野盜頭領',黃巾軍頭目:'一向一揆坊官',山賊首領:'山賊總頭目',猛獸兵:'戰犬眾',黃巾軍將領:'一向一揆大將',象兵:'重裝大筒車'};
@@ -130,7 +132,9 @@ function startQ(k,c,dur,o){const l=lane(k);if(S.q[l])return S.fac=='wei'?`${k=='
  if(!canPay(c))return '資源不足';pay(c);S.q[l]={k,start:S.t,dur,end:S.t+dur,cost:c,...o};return ''}
 function settleEvents(opt){
  for(const k of Object.keys(S.camps||{}))if(S.t-S.camps[k].t>=CAMP_RESPAWN)delete S.camps[k];
- for(const l of['f','b']){const q=S.q[l];if(q&&q.end<=S.t){if(q.k=='f')S.fld[q.i]++;else{if(q.slot==='wall')S.bld.wall++;else{const c=S.slots[q.slot];if(c)c.l=q.to;else S.slots[q.slot]={b:q.id,l:q.to};recalc()}}logm(`${q.name} 升到等級 ${q.to}`);S.q[l]=null}}
+ for(const l of['f','b']){const q=S.q[l];if(q&&q.end<=S.t){if(q.k=='f'){S.fld[q.i]++;logm(`${q.name} 升到等級 ${q.to}`)}
+  else if(q.dm){const c=S.slots[q.slot];if(c){if(q.to<1)S.slots[q.slot]=null;else c.l=q.to}recalc();logm(`${q.name}完成,${q.to<1?'這塊地已經清空':'剩餘等級 '+q.to}`)}
+  else{if(q.slot==='wall')S.bld.wall++;else{const c=S.slots[q.slot];if(c)c.l=q.to;else S.slots[q.slot]={b:q.id,l:q.to};recalc()}logm(`${q.name} 升到等級 ${q.to}`)}S.q[l]=null}}
  for(const b of['infb','cavb']){const q=S.tr[b];
   while(q.length&&q[0].next!=null&&q[0].next<=S.t){const o=q[0],t=o.next;S.u[o.u]++;S.stat.trained++;o.n--;
    if(o.n>0)o.next=t+o.per;else{logm(`${us()[o.u].n} 訓練完成`);q.shift();if(q.length)q[0].next=t+q[0].per}}}
@@ -218,6 +222,12 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
   if(L>=b.m)return bad('已達最高等級');if(!reqOk(b))return bad('前置建築未達標');
   const e=startQ('b',costB(b,L),durB(b,L),{slot,id:b.id,name:bn(b),to:L+1});if(e)return bad(e);
   if(isNew)S.slots[slot]={b:b.id,l:0};return ok()}
+ if(t=='demolish'){const slot=int(a.slot,0,NSLOTS-1);if(slot==null)return bad('參數錯誤');const c=S.slots[slot];if(!c||c.l<1)return bad('這塊地沒有可以拆除的建築');
+  if(S.bld.gov<DEMOLISH_GOV)return bad(`${BMAP.gov.n}要 ${DEMOLISH_GOV} 級以上才能拆除建築`);if(c.b==='gov')return bad(`${BMAP.gov.n}不能拆除`);
+  if((c.b==='infb'||c.b==='cavb')&&S.tr[c.b].length)return bad('訓練佇列還有兵,請先取消或等訓練完成');
+  const b=BMAP[c.b],to=c.l-1;
+  if(c.b==='wh'||c.b==='gr'){const keep=c.l;c.l=to;const ci=c.b==='gr'?[3]:[0,1,2],over=ci.some(i=>S.res[i]>cap(i));c.l=keep;if(over)return bad('現有資源超過拆除後的容量,請先用掉一些再拆')}
+  const dur=Math.max(30,Math.round(durB(b,to)*0.5)),e=startQ('b',[0,0,0,0],dur,{slot,id:c.b,name:b.n+'(拆除)',to,dm:1});if(e)return bad(e);return ok()}
  if(t=='rushall'){const ls=['f','b'].filter(l=>S.q[l]);if(!ls.length)return bad('沒有施工中的項目');if(S.gold<2*ls.length)return bad('金幣不足(每項 2 金幣)');
   S.gold-=2*ls.length;ls.forEach(l=>S.q[l].end=S.t);adv(0.01);return ok()}
  if(t=='cancel'){const l=a.l;if(l!=='f'&&l!=='b')return bad('參數錯誤');const q=S.q[l];if(!q)return bad('沒有施工中的項目');
@@ -247,6 +257,6 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
   if(S.gold<EXCHANGE_COST)return bad(`平倉需要 ${EXCHANGE_COST} 金幣`);S.gold-=EXCHANGE_COST;S.res=balanceTargets(r);logm(`平倉完成,比例 ${r.join(':')}`);return {ok:true,msg:'平倉完成'}}
  if(t=='claim'){const q=QS.find(x=>x.id===a.id);if(!q||S.qd.includes(q.id)||!q.ok())return bad('任務尚未完成');S.qd.push(q.id);if(q.g)S.gold+=q.g;if(q.r)q.r.forEach((x,i)=>S.res[i]=Math.min(cap(i),S.res[i]+x));return {ok:true,msg:'任務獎勵已領取'}}
  return bad('未知的操作')}
-return {get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvp,pvpApplyDef,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,CAMP_RESPAWN,STASH_MULT,defOf};
+return {get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvp,pvpApplyDef,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,DEMOLISH_GOV,UDESC,DEMOLISH_GOV,UDESC,CAMP_RESPAWN,STASH_MULT,defOf};
 })();
 if(typeof module!=='undefined')module.exports=G;
