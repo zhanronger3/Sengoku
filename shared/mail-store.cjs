@@ -35,6 +35,13 @@ async function send(mail, world, { uid, nick, pos, tx, ty, subject, body, now })
   return { ok: true, msg: `信已寄給 ${hit.rec.n}` };
 }
 
+// 系統信:不經過收件人查詢(寄件人沒有座標)
+async function systemMail(mail, uid, subject, body, now) {
+  const id = `${now}-${Math.random().toString(36).slice(2, 8)}`;
+  const msg = { id, t: now, from: { n: "系統", x: null, y: null }, to: { n: "", x: null, y: null }, s: clean(subject, LIMITS.subject) || "(系統通知)", b: clean(body, LIMITS.body), r: false, sys: true };
+  await W.casUpdate(mail, "inbox_" + uid, (cur) => ({ m: [msg, ...((cur && cur.m) || [])].slice(0, LIMITS.inbox) }));
+}
+
 async function markRead(mail, uid, id) {
   await W.casUpdate(mail, "inbox_" + uid, (cur) => {
     if (!cur) return undefined;
@@ -53,4 +60,4 @@ async function remove(mail, uid, box, id) {
   });
 }
 
-module.exports = { LIMITS, clean, listMail, unreadCount, send, markRead, remove };
+module.exports = { LIMITS, clean, listMail, unreadCount, send, systemMail, markRead, remove };
