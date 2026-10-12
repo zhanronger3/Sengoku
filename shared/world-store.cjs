@@ -1,10 +1,10 @@
-// 世界資料:村莊座標分配、地圖區塊、排行榜。
+// 世界資料:城池座標分配、地圖區塊、排行榜。
 // 這裡的函式只依賴「Blobs 風格的 store」(get / getWithMetadata / setJSON / delete),
 // 所以可以用假的 store 在本機完整測試。
 const G = require("./game.cjs");
 
 const CH = 10;       // 每個地圖區塊 10×10 格
-const SPACING = 3;   // 玩家村莊落在 (3i, 3j) 的格點上
+const SPACING = 3;   // 玩家城池落在 (3i, 3j) 的格點上
 const RANK_MAX = 200;
 const MAX_SPAN = 40; // 一次最多查詢 40×40 格
 
@@ -42,7 +42,7 @@ async function casUpdate(store, key, fn) {
   throw new Error("contention");
 }
 
-// 取得(或分配)這位玩家的村莊位置。同一位玩家永遠拿到同一個位置
+// 取得(或分配)這位玩家的城池位置。同一位玩家永遠拿到同一個位置
 async function allocate(world, uid) {
   const own = await world.get("owner_" + uid, { type: "json" });
   if (own) return own;
@@ -57,7 +57,7 @@ async function allocate(world, uid) {
   return pos;
 }
 
-// 把村莊資訊公開到地圖區塊與排行榜。rec: { x, y, n, f, p }
+// 把城池資訊公開到地圖區塊與排行榜。rec: { x, y, n, f, p }
 async function publish(world, uid, rec) {
   const [cx, cy] = chunkOf(rec.x, rec.y);
   await casUpdate(world, ckey(cx, cy), (cur) => {
@@ -90,7 +90,7 @@ async function remove(world, uid) {
   });
 }
 
-// 查詢方框內的村莊(不含帳號 id)
+// 查詢方框內的城池(不含帳號 id)
 async function queryWindow(world, x0, y0, x1, y1) {
   [x0, y0, x1, y1] = [x0, y0, x1, y1].map((n) => Math.floor(+n));
   if (![x0, y0, x1, y1].every(Number.isFinite)) return [];
@@ -112,7 +112,7 @@ async function queryWindow(world, x0, y0, x1, y1) {
   return out;
 }
 
-// 這個座標上是不是有玩家的村莊
+// 這個座標上是不是有玩家的城池
 async function findAt(world, x, y) {
   [x, y] = [Math.floor(+x), Math.floor(+y)];
   if (!Number.isFinite(x) || !Number.isFinite(y)) return null;

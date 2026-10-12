@@ -1,7 +1,7 @@
 // 遊戲規則:同時給瀏覽器(dist/game.js)和 Netlify 函式(server-core.cjs)使用。
 // 沒有任何畫面相關的程式,所有操作都透過 perform() 進行。
 const G=(()=>{
-const SPEED=60,CD=6*3600,CAMP_RESPAWN=12*3600,STASH_MULT=3,NSLOTS=21,MULTI=['wh','gr','cave']; // 城內 21 塊建地;藏屋敷、米藏、埋藏所在舊的升到滿級後可再蓋新的
+const SPEED=60,CD=6*3600,CAMP_RESPAWN=12*3600,STASH_MULT=3,TRAIN_QMAX=10,NSLOTS=21,MULTI=['wh','gr','cave']; // 城內 21 塊建地;藏屋敷、米藏、埋藏所在舊的升到滿級後可再蓋新的
 const GOLD_RATE=50,EXCHANGE_COST=1,PROTECT_DAYS=3; // 1 金幣買 50 單位資源;平倉每次 1 金幣;新手保護 3 個遊戲日
 const RN=['木材','泥土','鐵塊','糧食'],FN=['伐木場','泥坑','鐵礦場','農田'];
 const FT=[0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,3,3];
@@ -87,7 +87,7 @@ const recalc=()=>{for(const b of B){if(b.id==='wall')continue;S.bld[b.id]=S.slot
 const slotOf=id=>S.slots.findIndex(x=>x&&x.b===id&&x.l>=1);
 function canBuildNew(b){const ex=S.slots.filter(x=>x&&x.b===b.id);if(!ex.length)return '';
  if(MULTI.includes(b.id))return ex.every(x=>x.l>=b.m)?'':`需要先把現有的${b.n}升到滿級(${b.m} 級),才能再蓋一座`;
- return `${b.n}每個村莊只能蓋一座`}
+ return `${b.n}每個城池只能蓋一座`}
 const prod=L=>Math.round(6*pw(1.36,L));
 const mult=i=>1+.05*S.bld[['lum','kiln','smel','mill'][i]]+(S.buff>S.t?.25:0)+(S.zg>=3?.15:0);
 const rate=i=>S.fld.reduce((a,L,k)=>a+(FT[k]==i?prod(L):0),0)*mult(i);
@@ -112,6 +112,8 @@ const distTo=(x,y)=>Math.hypot(x-home().x,y-home().y);
 const prest=()=>Math.round(S.fld.reduce((a,b)=>a+b,0)*6+B.reduce((a,b)=>a+S.bld[b.id],0)*12+S.u.reduce((a,b)=>a+b,0)*2);
 const rnd=k=>{const x=Math.sin(k*12.9898+78.233)*43758.5453;return x-Math.floor(x)}; // 可重現的亂數,伺服器與瀏覽器結果一致
 const fix=s=>{if(s.rc==null)s.rc=0;if(!s.camps)s.camps={};
+ if(!s.tr)s.tr={infb:[],cavb:[]};for(const b of['infb','cavb']){const v=s.tr[b];s.tr[b]=Array.isArray(v)?v:(v?[v]:[])} // 舊存檔:單一訓練 → 佇列
+ if(!s.born)s.born=(s.saved||Date.now())-(s.t||0)/SPEED*1000; // 舊存檔:依遊戲時間推算開城時間
  for(const k of Object.keys(s.camps)){const g=s.camps[k]&&s.camps[k].g;if(!g)continue;const ng={};for(const [u,c] of Object.entries(g)){const nu=OLDN[u]||u;ng[nu]=(ng[nu]||0)+c}s.camps[k].g=ng}if(!s.bld)s.bld={};
  if(!s.slots){s.slots=Array(NSLOTS).fill(null);
   for(const b of B){if(b.id==='wall')continue;const L=s.bld[b.id]||0;if(L>0){const i=s.slots.indexOf(null);if(i>=0)s.slots[i]={b:b.id,l:L}}}
@@ -122,14 +124,16 @@ if(!s.rep)s.rep=[];if(!s.qd)s.qd=[];if(!s.stat)s.stat={trained:0,raids:0};if(!s.
  if(s.mv.some(m=>m.npc!=null)){s.mv=s.mv.filter(m=>{if(m.npc==null)return true;(m.send||[]).forEach((x,k)=>s.u[k]=(s.u[k]||0)+x);if(m.ret&&m.loot)m.loot.forEach((x,k)=>s.res[k]+=x);return false})}
  return s};
 function init(f,pos){const bld={};B.forEach(b=>bld[b.id]=0);
- S={fac:f,slots:Array(NSLOTS).fill(null),t:0,res:[600,600,600,600],gold:20,fld:Array(18).fill(0),bld,q:{f:null,b:null},tr:{infb:null,cavb:null},u:[0,0,0,0,0],mv:[],log:[],rep:[],qd:[],stat:{trained:0,raids:0},cd:{},buff:0,zg:0,rc:0,camps:{},pos:pos||{x:0,y:0},saved:Date.now()};
- logm(`你選擇了${fa().n},開始經營自己的村莊。城內有 ${NSLOTS} 塊空地,先蓋知行所吧!`);return S}
+ S={fac:f,slots:Array(NSLOTS).fill(null),t:0,res:[600,600,600,600],gold:20,fld:Array(18).fill(0),bld,q:{f:null,b:null},tr:{infb:[],cavb:[]},u:[0,0,0,0,0],mv:[],log:[],rep:[],qd:[],stat:{trained:0,raids:0},cd:{},buff:0,zg:0,rc:0,camps:{},pos:pos||{x:0,y:0},born:Date.now(),saved:Date.now()};
+ logm(`你選擇了${fa().n},開始經營自己的城池。城內有 ${NSLOTS} 塊空地,先蓋知行所吧!`);return S}
 function startQ(k,c,dur,o){const l=lane(k);if(S.q[l])return S.fac=='wei'?`${k=='f'?'外城':'內城'}已有施工中的項目`:'施工佇列已滿(只有織田家能外城內城同時施工)';
  if(!canPay(c))return '資源不足';pay(c);S.q[l]={k,start:S.t,dur,end:S.t+dur,cost:c,...o};return ''}
 function settleEvents(opt){
  for(const k of Object.keys(S.camps||{}))if(S.t-S.camps[k].t>=CAMP_RESPAWN)delete S.camps[k];
  for(const l of['f','b']){const q=S.q[l];if(q&&q.end<=S.t){if(q.k=='f')S.fld[q.i]++;else{if(q.slot==='wall')S.bld.wall++;else{const c=S.slots[q.slot];if(c)c.l=q.to;else S.slots[q.slot]={b:q.id,l:q.to};recalc()}}logm(`${q.name} 升到等級 ${q.to}`);S.q[l]=null}}
- for(const b of['infb','cavb']){let o=S.tr[b];while(o&&o.next<=S.t){S.u[o.u]++;S.stat.trained++;o.n--;o.next+=o.per;if(!o.n){logm(`${us()[o.u].n} 訓練完成`);S.tr[b]=o=null}}}
+ for(const b of['infb','cavb']){const q=S.tr[b];
+  while(q.length&&q[0].next!=null&&q[0].next<=S.t){const o=q[0],t=o.next;S.u[o.u]++;S.stat.trained++;o.n--;
+   if(o.n>0)o.next=t+o.per;else{logm(`${us()[o.u].n} 訓練完成`);q.shift();if(q.length)q[0].next=t+q[0].per}}}
  for(let i=S.mv.length-1;i>=0;i--){const m=S.mv[i];if(m.arr>S.t)continue;const n={n:m.name,def:m.def};
   if(m.ret){m.send.forEach((x,k)=>S.u[k]+=x);m.loot.forEach((x,k)=>S.res[k]=Math.min(cap(k),S.res[k]+x));logm(`部隊自${n.n}返回,帶回 ${m.loot.map(Math.floor).join('/')}`,1);S.mv.splice(i,1)}
   else{const c=campGet(m.tx,m.ty),A=m.send.reduce((a,x,k)=>a+x*us()[k].a*ab(),0);
@@ -148,7 +152,7 @@ function adv(dt,opt){opt=opt||{};if(!(dt>0))return;const end=S.t+dt;settleEvents
   const net=rate(3)-upkeep(),hasU=S.u.some(x=>x>0)||S.mv.some(m=>(m.send||[]).some(x=>x>0)),starving=S.res[3]<=0&&net<0&&hasU;
   let ev=end;
   for(const l of['f','b']){const q=S.q[l];if(q&&q.end>S.t)ev=Math.min(ev,q.end)}
-  for(const b of['infb','cavb']){const o=S.tr[b];if(o&&o.next>S.t)ev=Math.min(ev,o.next)}
+  for(const b of['infb','cavb']){const o=S.tr[b][0];if(o&&o.next!=null&&o.next>S.t)ev=Math.min(ev,o.next)}
   for(const m of S.mv)if(m.arr>S.t)ev=Math.min(ev,m.arr);
   if(S.buff>S.t)ev=Math.min(ev,S.buff);
   if(net<0&&S.res[3]>0)ev=Math.min(ev,S.t+S.res[3]/(-net/3600));
@@ -181,7 +185,7 @@ function pvp(att,def,a,meta){
   if(!Array.isArray(a.send))return bad('請選擇出征兵力');
   const U=us(),send=U.map((_,k)=>Math.min(S.u[k],Math.max(0,Math.floor(+a.send[k]||0))));if(!send.some(x=>x))return bad('請選擇出征兵力');
   if(prot)return bad('對方仍在新手保護期,暫時不能攻擊');
-  const dist=distTo(tx,ty);if(dist<=0)return bad('不能攻擊自己的村莊');
+  const dist=distTo(tx,ty);if(dist<=0)return bad('不能攻擊自己的城池');
   const sp=Math.min(...send.map((x,k)=>x?U[k].s:99)),dur=Math.max(1,Math.round(dist/sp*3600));
   const atk=send.map((x,k)=>x*U[k].a*ab()),A=atk.reduce((p,q)=>p+q,0),cavShare=A>0?send.reduce((p,x,k)=>p+(U[k].b=='cavb'?atk[k]:0),0)/A:0;
   const attFac=S.fac,attPos={...S.pos};
@@ -201,7 +205,7 @@ function pvp(att,def,a,meta){
 function pvpApplyDef(def,e){return withS(def,()=>{
  const taken=[0,1,2,3].map(i=>{const t=Math.min(S.res[i],e.loot[i]);S.res[i]-=t;return Math.floor(t)});
  const b=S.u.reduce((p,q)=>p+q,0);S.u=S.u.map(x=>Math.floor(x*(1-e.lossD)));const a=S.u.reduce((p,q)=>p+q,0);
- logm(`${e.att}(${e.x}|${e.y})襲擊你的村莊,${e.win?'守軍不敵':'守軍擊退'}!被搶 ${taken.join('/')},損兵 ${b-a}`,1);return def})}
+ logm(`${e.att}(${e.x}|${e.y})襲擊你的城池,${e.win?'守軍不敵':'守軍擊退'}!被搶 ${taken.join('/')},損兵 ${b-a}`,1);return def})}
 function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作');const t=a.t;
  if(t=='f'){const i=int(a.i,0,17);if(i==null)return bad('參數錯誤');if(S.fld[i]>=20)return bad('已達最高等級');
   const e=startQ('f',costF(i),durF(i),{i,name:FN[FT[i]],to:S.fld[i]+1});return e?bad(e):ok()}
@@ -219,8 +223,11 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
  if(t=='cancel'){const l=a.l;if(l!=='f'&&l!=='b')return bad('參數錯誤');const q=S.q[l];if(!q)return bad('沒有施工中的項目');
   q.cost.forEach((x,i)=>S.res[i]=Math.min(cap(i),S.res[i]+x));if(q.k==='b'&&q.slot!=='wall'&&q.slot!=null){const c=S.slots[q.slot];if(c&&c.l<1)S.slots[q.slot]=null}S.q[l]=null;return {ok:true,msg:'已取消,資源全額退還'}}
  if(t=='tr'){const k=int(a.k,0,4),n=int(a.n,1,100000);if(k==null||n==null)return bad('請輸入數量');const u=us()[k];
-  if(S.bld[u.b]<1)return bad('需要先建造訓練該兵種的兵營');if(S.tr[u.b])return bad('該兵營正在訓練中');const c=u.r.map(x=>x*n);if(!canPay(c))return bad('資源不足');
-  pay(c);S.tr[u.b]={u:k,n,per:Math.round(u.t*pw(.9,S.bld[u.b]-1)),next:S.t+Math.round(u.t*pw(.9,S.bld[u.b]-1))};return ok()}
+  if(S.bld[u.b]<1)return bad('需要先建造訓練該兵種的兵營');if(S.tr[u.b].length>=TRAIN_QMAX)return bad(`訓練佇列已滿(最多 ${TRAIN_QMAX} 批)`);const c=u.r.map(x=>x*n);if(!canPay(c))return bad('資源不足');
+  pay(c);const per=Math.round(u.t*pw(.9,S.bld[u.b]-1)),q=S.tr[u.b];q.push({u:k,n,per,next:q.length?null:S.t+per});return ok()}
+ if(t=='trcancel'){const b=a.b;if(b!=='infb'&&b!=='cavb')return bad('參數錯誤');const q=S.tr[b],i=int(a.i,0,q.length-1);if(i==null)return bad('找不到這批訓練');
+  const o=q[i],u=us()[o.u];o.n>0&&u.r.forEach((x,j)=>S.res[j]=Math.min(cap(j),S.res[j]+x*o.n)); // 退還尚未完成的兵
+  q.splice(i,1);if(i===0&&q.length)q[0].next=S.t+q[0].per;return {ok:true,msg:'已取消這批訓練,尚未完成的部分全額退還'}}
  if(t=='cmd'){const c=CM.find(x=>x.id===a.id);if(!c)return bad('找不到指令');if(c.wei&&S.fac!='wei')return bad('織田家專屬');if((S.cd[c.id]||0)>S.t)return bad('冷卻中');
   if(c.id=='farm')S.buff=S.t+7200;else if(c.id=='fund')for(let i=0;i<4;i++)S.res[i]=Math.min(cap(i),S.res[i]+rate(i)*2);
   else{for(const l of['f','b'])if(S.q[l])S.q[l].end=S.t+(S.q[l].end-S.t)/2}
@@ -240,6 +247,6 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
   if(S.gold<EXCHANGE_COST)return bad(`平倉需要 ${EXCHANGE_COST} 金幣`);S.gold-=EXCHANGE_COST;S.res=balanceTargets(r);logm(`平倉完成,比例 ${r.join(':')}`);return {ok:true,msg:'平倉完成'}}
  if(t=='claim'){const q=QS.find(x=>x.id===a.id);if(!q||S.qd.includes(q.id)||!q.ok())return bad('任務尚未完成');S.qd.push(q.id);if(q.g)S.gold+=q.g;if(q.r)q.r.forEach((x,i)=>S.res[i]=Math.min(cap(i),S.res[i]+x));return {ok:true,msg:'任務獎勵已領取'}}
  return bad('未知的操作')}
-return {get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvp,pvpApplyDef,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,CAMP_RESPAWN,STASH_MULT,defOf};
+return {get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvp,pvpApplyDef,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,CAMP_RESPAWN,STASH_MULT,defOf};
 })();
 if(typeof module!=='undefined')module.exports=G;

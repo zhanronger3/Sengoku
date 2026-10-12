@@ -41,8 +41,8 @@ async function prepare({ saves, world, uid, nick, body, stored, etag, now }) {
     const tx = Math.floor(+a.tx), ty = Math.floor(+a.ty);
     if (!Number.isFinite(tx) || !Number.isFinite(ty)) return await fail("座標錯誤");
     const hit = await W.findAt(world, tx, ty);
-    if (!hit) return await fail("該座標沒有玩家的村莊");
-    if (hit.uid === uid) return await fail("不能攻擊自己的村莊");
+    if (!hit) return await fail("該座標沒有玩家的城池");
+    if (hit.uid === uid) return await fail("不能攻擊自己的城池");
 
     let done = null;
     for (let i = 0; i < 10 && !done; i++) {

@@ -34,6 +34,7 @@ function act(stored, body, now, ctx) {
     if (!["wei", "shu", "wu"].includes(a.fac)) return { status: 400, body: { ok: false, msg: "勢力錯誤" } };
     const st = G.init(a.fac, ctx && ctx.pos);
     st.saved = now;
+    st.born = now;
     return { status: 200, body: { ok: true, state: st, rev: 1, now }, store: { state: st, rev: 1, updatedAt: now } };
   }
   if (!stored) return { status: 400, body: { ok: false, msg: "尚未開始遊戲" } };
