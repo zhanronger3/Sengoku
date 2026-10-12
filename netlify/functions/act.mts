@@ -28,7 +28,7 @@ export default async (req: Request) => {
   const now = Date.now();
   const nick = world.nickOf(user);
 
-  // 舊存檔沒有村莊座標時,先替他分配
+  // 舊存檔沒有城池座標時,先替他分配
   let got: any = await saves.getWithMetadata(user.id, { type: "json" });
   got = await world.ensureRegistered(saves, wstore, user.id, nick, got, now);
   const stored = got?.data ?? null;

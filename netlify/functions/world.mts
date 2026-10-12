@@ -2,7 +2,7 @@ import { getStore } from "@netlify/blobs";
 import { getUser } from "@netlify/identity";
 import world from "../../shared/world-store.cjs";
 
-// 地圖:查詢方框內有哪些玩家的村莊  /api/world?x0=&y0=&x1=&y1=
+// 地圖:查詢方框內有哪些玩家的城池  /api/world?x0=&y0=&x1=&y1=
 export default async (req: Request) => {
   if (req.method !== "GET") return new Response("Method Not Allowed", { status: 405 });
   const user = await getUser();
