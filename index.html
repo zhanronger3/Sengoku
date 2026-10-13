@@ -173,13 +173,15 @@ function qtab(){const rows=['f','b'].filter(l=>S.q[l]);if(!rows.length)return'';
  return `<table class="tb"><tr><th>刪除</th><th>任務 <a data-a="rushall">立即完成[2金幣]</a></th><th>剩餘時間</th><th>結束於</th></tr>`+rows.map(l=>{const q=S.q[l];return `<tr><td><a data-a="cancel" data-l="${l}" class="x">✖</a></td><td>${q.dm?`${q.name}→等級 ${q.to}`:`${q.name}(等級 ${q.to})`}</td><td><span data-cd="${q.end}">${tm(q.end-S.t)}</span></td><td>${clk(q.end)}</td></tr>`}).join('')+'</table>'}
 const sumA=a=>(a||[]).reduce((p,q)=>p+q,0);
 const unitsStr=a=>us().map((u,k)=>a&&a[k]?`${u.n}×${a[k]}`:'').filter(Boolean).join('、')||'—';
-const mvt=()=>S.mv.length?`<table class="tb"><tr><th>動向</th><th>目標</th><th>兵力</th><th>時間</th></tr>`+S.mv.map(m=>{
+const mvt=()=>S.mv.length?`<table class="tb"><tr><th>動向</th><th>目標</th><th>兵力</th><th>時間</th></tr>`+S.mv.map((m,mi)=>{
  const sent=m.sent||m.send,n0=sumA(sent),n1=sumA(m.send),back=m.ret&&!m.pending;
- const st=m.pending?(S.t>=m.go?'已抵達,戰鬥結算中…':'出征中'):(back?'返回中':'出征中');
+ const st=m.pending?(S.t>=m.go?'已抵達,戰鬥結算中…':'出征中'):(back?(m.recalled?'撤軍返回中':'返回中'):'出征中');
+ const canRecall=m.pending?(S.t<m.go&&m.aid):(!back&&!m.pv&&m.arr>S.t);
+ const rcBtn=canRecall?` <button data-a="recall" data-i="${mi}" data-aid="${m.aid||''}" data-x="${m.tx}" data-y="${m.ty}">撤軍</button>`:'';
  const at=m.pending?m.go:(back?m.arr:(m.go&&S.t<m.go?m.go:m.arr));
- const loot=back&&m.loot&&m.loot.some(x=>x>0)?`<br>戰利品 ${m.loot.map((x,i)=>RI[i]+x).join(' ')}(抵達後入庫)`:'';
+ const loot=back&&!m.recalled&&m.loot&&m.loot.some(x=>x>0)?`<br>戰利品 ${m.loot.map((x,i)=>RI[i]+x).join(' ')}(抵達後入庫)`:'';
  const tcell=m.pending&&S.t>=m.go?'—':`<span data-cd="${at}">${tm(at-S.t)}</span>`;
- return `<tr><td>${st}</td><td>${esc(m.name)}</td><td>${back?`出兵 ${n0} 人 → <b>剩 ${n1} 人返回</b>`:`出兵 <b>${n0}</b> 人`}<br><small class="mut">${unitsStr(back?m.send:sent)}</small>${loot}</td><td>${tcell}</td></tr>`}).join('')+'</table>':'';
+ return `<tr><td>${st}${rcBtn}</td><td>${esc(m.name)}</td><td>${back?(m.recalled?`撤軍,<b>${n1} 人</b>返回`:`出兵 ${n0} 人 → <b>剩 ${n1} 人返回</b>`):`出兵 <b>${n0}</b> 人`}<br><small class="mut">${unitsStr(back?m.send:sent)}</small>${loot}</td><td>${tcell}</td></tr>`}).join('')+'</table>':'';
 function vOut(){
  const sc=FP.map(([x,y],i)=>{const t=FT[i],L=S.fld[i],at=`class="it" style="left:${x}%;top:${y}%" title="${FN[t]} 等級${L}" data-a="fld" data-i="${i}"`;
   return t==3?`<div ${at}><div class="crop"><b class="lv">${L}</b></div></div>`:`<div ${at}><div class="em">${['🌲🌲',CLAYI,'🪨🪨'][t]}</div><b class="lv">${L}</b></div>`}).join('');
@@ -460,6 +462,9 @@ function act(d){
   if(npcAt(tx,ty))doA({t:'raid',tx,ty,send});
   else if(!ME)toast('該座標沒有可攻擊的目標(玩家對戰需要登入)');
   else{queueSend({t:'raidp',tx,ty,send});toast('出兵中…')}}
+ else if(d.a=='recall'){
+  if(d.aid){if(!ME)return;queueSend({t:'recallp',aid:d.aid});toast('撤軍中…')}
+  else doA({t:'recall',i:+d.i,tx:+d.x,ty:+d.y})}
  else if(d.a=='dem'){const sl=+d.slot;if(DM!==sl){DM=sl;toast('再按一次確認:拆除一級,不退還資源');setTimeout(()=>{if(DM===sl){DM=null;dirty=1;render()}},4000);dirty=1}else{DM=null;doA({t:'demolish',slot:sl},()=>{view='in'})}}
  else if(d.a=='gogo'){view=d.v;bv=null;bs=null;dirty=1}
  else if(d.a=='goff'){GOFF=true;try{localStorage.setItem(KEY+'_goff','1')}catch(e){}toast('已略過引導,可以在右側「新手引導」面板重新開啟');dirty=1}
