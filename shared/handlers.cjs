@@ -34,6 +34,12 @@ async function act({ stores, user, body, now }) {
     return attach(res);
   }
 
+  // 撤回玩家對戰的出兵
+  if (body?.action?.t === "recallp" && stored) {
+    const res = await pvp.recall({ saves, world: wstore, battle, mail, uid: user.id, body, stored, etag, now });
+    return attach(res);
+  }
+
   const res = core.act(stored, body, now, { pos });
   if (res.store === "delete") {
     await saves.delete(user.id);

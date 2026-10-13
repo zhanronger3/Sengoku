@@ -66,4 +66,34 @@ async function prepare({ saves, world, battle, mail, uid, nick, body, stored, et
   }
 }
 
-module.exports = { prepare, lock, unlock };
+// 撤回出兵:已走多少時間就再走回去
+async function recall({ saves, world, battle, mail, uid, body, stored, etag, now }) {
+  const rev = stored.rev;
+  if ((body.rev || 0) !== rev) return { status: 409, body: { ...core.view(stored, now), ok: false, msg: "已同步伺服器狀態" } };
+  if (!(await lock(world, uid, now))) return { status: 409, body: { ok: false, msg: "上一個出兵操作還在處理中,請稍候再試" } };
+  const aid = String((body.action && body.action.aid) || "");
+  const att = core.settle(clone(stored.state), now);
+  try {
+    const r0 = G.pvpRecall(clone(att), aid);                       // 先試算,不能撤回就不動任何東西
+    if (!r0.ok) return { status: 422, body: { ok: false, msg: r0.msg, state: att, rev, now } };
+    const rec = await B.cancelAttack({ battle, id: aid, now });     // 搶先把攻擊標成「已撤回」,之後它就不會被結算
+    if (!rec) {
+      // 登記資料已遺失(或剛好抵達):遺失的情況交給原本的折返機制處理
+      const left = await battle.get(B.akey(aid), { type: "json" });
+      return { status: 422, body: { ok: false, msg: left ? "部隊已經抵達,無法撤回" : "找不到這筆出兵紀錄,部隊會自動折返", state: att, rev, now } };
+    }
+    const r = G.pvpRecall(att, aid);
+    att.saved = now;
+    const w = await saves.setJSON(uid, { state: att, rev: rev + 1, updatedAt: now }, { onlyIfMatch: etag });
+    if (w && w.modified === false) {
+      await B.uncancelAttack({ battle, id: aid }).catch(() => {});
+      return { status: 409, body: { ...core.view((await saves.get(uid, { type: "json" })) || stored, now), ok: false, msg: "已同步伺服器狀態,請再按一次撤軍" } };
+    }
+    try { await B.finishCancel({ battle, mail, rec, now }); } catch (e) { /* 收尾失敗不影響撤回:攻擊已標記為取消,不會被結算 */ }
+    return { status: 200, body: { ok: true, msg: `已撤回前往 ${r.name} 的部隊,已走多久就再走多久回來`, state: att, rev: rev + 1, now } };
+  } finally {
+    await unlock(world, uid).catch(() => {});
+  }
+}
+
+module.exports = { prepare, recall, lock, unlock };

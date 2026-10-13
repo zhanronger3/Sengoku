@@ -53,7 +53,7 @@ async function resolveAttack({ saves, battle, mail, id, now }) {
   let rec = null, claimed = false;
   await W.casUpdate(battle, akey(id), (cur) => {
     claimed = false;
-    if (!cur || cur.state === "done") return undefined;
+    if (!cur || cur.state === "done" || cur.state === "cancelled") return undefined;
     if (cur.state === "resolving" && now - (cur.claimAt || 0) < CLAIM_TTL) return undefined;
     rec = cur;
     claimed = true;
@@ -108,6 +108,30 @@ async function resolveAttack({ saves, battle, mail, id, now }) {
   return true;
 }
 
+// 撤回:只有「還沒抵達、也還沒被認領結算」的攻擊才能撤回。成功回傳登記資料;否則回傳 null
+async function cancelAttack({ battle, id, now }) {
+  let rec = null;
+  await W.casUpdate(battle, akey(id), (cur) => {
+    rec = null;
+    if (!cur || cur.state !== "pending" || now >= cur.arrAt) return undefined;
+    rec = cur;
+    return { ...cur, state: "cancelled" };
+  });
+  return rec;
+}
+// 撤回失敗(例如存檔寫入一直衝突)時,把攻擊恢復成可結算
+async function uncancelAttack({ battle, id }) {
+  await W.casUpdate(battle, akey(id), (cur) => (cur && cur.state === "cancelled" ? { ...cur, state: "pending" } : undefined));
+}
+// 撤回成功後的收尾:清掉防守方的來襲通知、攻擊登記,並通知防守方
+async function finishCancel({ battle, mail, rec, now }) {
+  await W.casUpdate(battle, ikey(rec.def.uid), (cur) => (!cur || !cur.a.some((x) => x.id === rec.id) ? undefined : { a: cur.a.filter((x) => x.id !== rec.id) }));
+  await battle.delete(akey(rec.id));
+  await M.systemMail(mail, rec.def.uid, "來襲取消",
+    `${rec.att.n}(${rec.att.x}|${rec.att.y})的軍勢在半路撤退了,不會抵達你的城池。`,
+    now, { id: `atk-${rec.id}-c`, limit: MAIL_LIMIT });
+}
+
 // 在處理某位玩家的請求之前呼叫:把跟他有關、已經到期的攻擊依抵達時間先結算掉
 async function resolveDueFor({ saves, battle, mail, uid, now }) {
   let n = 0;
@@ -135,4 +159,4 @@ async function resolveDueFor({ saves, battle, mail, uid, now }) {
   return n;
 }
 
-module.exports = { registerAttack, incomingFor, resolveAttack, resolveDueFor, fizzle, akey, ikey };
+module.exports = { cancelAttack, uncancelAttack, finishCancel, registerAttack, incomingFor, resolveAttack, resolveDueFor, fizzle, akey, ikey };

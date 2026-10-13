@@ -216,6 +216,14 @@ function pvpApplyDef(def,res,ctx){return withS(def,()=>{
  const dead=res.deadD.reduce((p,q)=>p+q,0);
  S.atkRes=S.atkRes||{};S.atkRes[ctx.id]=res;const ks=Object.keys(S.atkRes);if(ks.length>30)ks.slice(0,ks.length-30).forEach(k=>delete S.atkRes[k]);
  logm(`${ctx.attNick}(${ctx.attPos.x}|${ctx.attPos.y})來襲:${res.win?'守軍不敵':'守軍擊退'}!守軍陣亡 ${dead},被搶 ${taken.join('/')}`,1);return def})}
+// 撤回還沒抵達的出兵:已走多少時間,就再走多少時間回來(玩家對戰)。回傳 {ok,msg} 或 {ok:true,m}
+function pvpRecall(att,aid){return withS(att,()=>{
+ const i=S.mv.findIndex(m=>m.aid===aid&&m.pending);if(i<0)return bad('找不到這支出征部隊');const m=S.mv[i];
+ if(S.t>=m.go)return bad('部隊已經抵達,無法撤回');
+ const el=Math.max(1,Math.round(S.t-(m.go-m.dur)));
+ m.pending=0;m.ret=1;m.recalled=1;m.arr=S.t+el;m.dur=el;m.loot=[0,0,0,0];
+ logm(`撤回前往${m.name}的部隊,已走 ${Math.round(el/60)} 分鐘,同樣時間後返回`,1);
+ return {ok:true,name:m.name}})}
 // 把戰果套用到攻擊方:出征中 → 返回中。回傳 false 代表已經套用過(重複呼叫不會重複計算)
 function pvpApplyAtt(att,aid,res,ctx){return withS(att,()=>{
  const i=S.mv.findIndex(m=>m.aid===aid&&m.pending);if(i<0)return false;const m=S.mv[i];
@@ -266,6 +274,10 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
   if(!Array.isArray(a.send))return bad('請選擇出征兵力');const send=us().map((_,k)=>Math.min(S.u[k],Math.max(0,Math.floor(+a.send[k]||0))));if(!send.some(x=>x))return bad('請選擇出征兵力');
   const sp=Math.min(...send.map((x,k)=>x?us()[k].s:99));send.forEach((x,k)=>S.u[k]-=x);const dur=Math.max(1,Math.round(distTo(tx,ty)/sp*3600));
   S.mv.push({tx,ty,name:n.n,def:n.def,sent:send.slice(),send,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0]});logm(`派兵前往${n.n}(${tx}|${ty}),速度 ${sp} 格/時`);return ok()}
+ if(t=='recall'){const i=int(a.i,0,S.mv.length-1);if(i==null)return bad('找不到這支部隊');const m=S.mv[i];
+  if(!m||m.pv||m.pending||m.ret||m.arr<=S.t||m.tx!==a.tx||m.ty!==a.ty)return bad('這支部隊現在無法撤回');
+  const el=Math.max(1,Math.round(S.t-(m.arr-m.dur)));m.ret=1;m.recalled=1;m.arr=S.t+el;m.dur=el;m.loot=[0,0,0,0];
+  logm(`撤回前往${m.name}的部隊,已走 ${Math.round(el/60)} 分鐘,同樣時間後返回`);return ok()}
  if(t=='buy'){const k=int(a.res,0,3),g=int(a.gold,1,100000);if(k==null||g==null)return bad('請輸入購買的金幣數量');if(S.gold<g)return bad('金幣不足');
   const amt=g*GOLD_RATE;if(S.res[k]+amt>cap(k))return bad(`${RN[k]}藏屋敷放不下(目前最多再買 ${Math.max(0,Math.floor((cap(k)-S.res[k])/GOLD_RATE))} 金幣)`);
   S.gold-=g;S.res[k]+=amt;logm(`用 ${g} 金幣買了 ${amt} ${RN[k]}`);return {ok:true,msg:`花費 ${g} 金幣,獲得 ${amt} ${RN[k]}`}}
@@ -273,6 +285,6 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
   if(S.gold<EXCHANGE_COST)return bad(`平倉需要 ${EXCHANGE_COST} 金幣`);S.gold-=EXCHANGE_COST;S.res=balanceTargets(r);logm(`平倉完成,比例 ${r.join(':')}`);return {ok:true,msg:'平倉完成'}}
  if(t=='claim'){const q=QS.find(x=>x.id===a.id);if(!q||S.qd.includes(q.id)||!q.ok())return bad('任務尚未完成');S.qd.push(q.id);if(q.g)S.gold+=q.g;if(q.r)q.r.forEach((x,i)=>S.res[i]=Math.min(cap(i),S.res[i]+x));return {ok:true,msg:'任務獎勵已領取'}}
  return bad('未知的操作')}
-return {get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,protectedAt,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvpProtected,pvpLaunch,pvpBattle,pvpApplyDef,pvpApplyAtt,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,DEMOLISH_GOV,UDESC,DEMOLISH_GOV,UDESC,CAMP_RESPAWN,STASH_MULT,defOf};
+return {get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,protectedAt,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvpProtected,pvpLaunch,pvpBattle,pvpApplyDef,pvpApplyAtt,pvpRecall,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,DEMOLISH_GOV,UDESC,DEMOLISH_GOV,UDESC,CAMP_RESPAWN,STASH_MULT,defOf};
 })();
 if(typeof module!=='undefined')module.exports=G;
