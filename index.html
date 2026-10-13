@@ -195,7 +195,7 @@ function vOut(){
  const away=G.awayUnits(),ar=(S.u.map((n,k)=>n?`<div>${n} ${us()[k].n}</div>`:'').join('')||'<div class="mut">無</div>')+(away.some(x=>x)?`<div class="mut">出征中:${away.map((n,k)=>n?n+' '+us()[k].n:'').filter(Boolean).join('、')}</div>`:'');
  return `${ttl()}<div class="cols"><div class="fr sc sc-out"><svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%"><path d="M0 46 Q30 52 48 44 T100 40" stroke="#7fd6cf" stroke-width="1.6" fill="none" opacity=".7"/><path d="M52 46 Q54 70 100 80" stroke="#7fd6cf" stroke-width="1.6" fill="none" opacity=".7"/></svg>${sc}<div class="it" style="left:47%;top:30%;font-size:58px" data-a="nav" data-v="in" title="內城(點一下進城)">${fcastle(CASTLE_COL[S.fac])}</div></div><div class="info"><h4 class="sh">生產力</h4>${pr}<h4 class="sh">建築指示燈</h4><div>${lamps}</div><h4 class="sh">軍隊</h4>${ar}</div></div>${qtab()}${ttab()}${mvt()}`}
 const SLP=[[10,11],[26,11],[42,11],[58,11],[74,11],[90,11],[10,26],[26,26],[42,26],[58,26],[74,26],[90,26],[18,41],[34,41],[50,41],[66,41],[82,41],[18,56],[34,56],[50,56],[66,56],[82,56],[18,71],[34,71],[50,71],[66,71],[82,71]];
-const BI={gov:['🏯','知'],wh:['🏠','藏'],gr:['🛖','米'],cave:['🕳️','埋'],war:['⛩️','軍'],infb:['⛺','足'],acad:['🏫','學'],smi:['🗡️','刀'],arm:['🥋','具'],cavb:['🐎','馬'],mill:['⚙️','精'],lum:['🪵','材'],kiln:['🏺','瓦'],smel:['🔥','鍊'],cnl:['📜','評'],wsh:['🛠️','工'],acc:['💰','勘'],pal:['🏯','本'],mkt:['🏪','市'],res:['🏯','二'],trs:['💎','寶'],pub:['🏗️','普'],wall:['🚪','牆']};
+const BI={gov:['🏯','知'],wh:['🏠','藏'],gr:['🛖','米'],cave:['🕳️','埋'],war:['⛩️','軍'],infb:['⛺','足'],acad:['🏫','學'],smi:['🗡️','刀'],arm:['🥋','具'],cavb:['🐎','馬'],mill:['⚙️','精'],lum:['🪵','材'],kiln:['🏺','瓦'],smel:['🔥','鍊'],cnl:['📜','評'],wsh:['🛠️','工'],acc:['💰','勘'],pal:['🏯','本'],mkt:['🏪','市'],emb:['🚩','奏'],res:['🏯','二'],trs:['💎','寶'],pub:['🏗️','普'],wall:['🚪','牆']};
 
 const SV=(b)=>`<svg class="ic" viewBox="0 0 64 64" aria-hidden="true">${b}</svg>`;
 const ICONS={
@@ -263,7 +263,8 @@ const castleSv=c=>`<path d="M5 61L11 45H53L59 61z" fill="#8d949b"/><path d="M8 5
 
 ICONS_EXTRA.mkt=`<path d="M4 26L32 10l28 16-4 3H8z" fill="#2a2d33"/><path d="M4 26L32 10l28 16" fill="none" stroke="#6b717c" stroke-width="1.4"/><rect x="8" y="30" width="48" height="24" fill="#e8e2d4"/><path d="M8 30h48v10H8z" fill="#2f4a8a"/><path d="M8 30v10M16 30v10M24 30v10M32 30v10M40 30v10M48 30v10M56 30v10" stroke="#e8e2d4" stroke-width="1.2"/><rect x="26" y="44" width="12" height="10" fill="#7a4b24"/><circle cx="14" cy="47" r="3.2" fill="#d4a84a" stroke="#8a6a1a"/><circle cx="50" cy="47" r="3.2" fill="#d4a84a" stroke="#8a6a1a"/>`;
 ICONS_EXTRA.res=`<path d="M6 28Q32 10 58 28l-4 4H10z" fill="#2a2d33"/><path d="M6 28Q32 10 58 28" fill="none" stroke="#6b717c" stroke-width="1.5"/><rect x="12" y="32" width="40" height="22" fill="#e8e2d4"/><rect x="26" y="40" width="12" height="14" fill="#7a4b24"/><rect x="15" y="36" width="8" height="8" fill="#9aa7b8"/><rect x="41" y="36" width="8" height="8" fill="#9aa7b8"/><path d="M32 10v-6" stroke="#6b717c" stroke-width="1.5"/><path d="M32 4l8 3-8 3z" fill="#c8412b"/>`;
-for(const k of['gr','cave','war','smi','cavb','gov','cnl','wsh','acc','pal','trs','pub','mkt','res'])ICONS[k]=SV(ICONS_EXTRA[k]);
+ICONS_EXTRA.emb=`<path d="M5 28L32 10l27 18-4 3H9z" fill="#2a2d33"/><path d="M5 28L32 10l27 18" fill="none" stroke="#6b717c" stroke-width="1.4"/><rect x="10" y="32" width="44" height="22" fill="#e8e2d4"/><rect x="28" y="40" width="8" height="14" fill="#7a4b24"/><path d="M14 34v18M20 34v18M44 34v18M50 34v18" stroke="#7a4b24" stroke-width="1.6"/><path d="M32 10V3" stroke="#6b717c" stroke-width="1.5"/><path d="M32 3h12v7H32z" fill="#2f4a8a"/><circle cx="38" cy="6.5" r="1.8" fill="#e8e2d4"/>`;
+for(const k of['gr','cave','war','smi','cavb','gov','cnl','wsh','acc','pal','trs','pub','mkt','res','emb'])ICONS[k]=SV(ICONS_EXTRA[k]);
 const CAMPSV={'野盜砦':'camp','一向一揆砦':'ikko','南蠻館':'nanban','山賊山城':'sanzoku','石山本願寺':'hongan','大筒陣地':'otsutsu'};
 const CLAYI=SV(ICONS_EXTRA.clay),CAMPI=SV(ICONS_EXTRA.camp);
 const fcastle=(c,sz)=>`<svg class="ic" viewBox="0 0 64 64" aria-hidden="true">${castleSv(c)}</svg>`;
@@ -321,6 +322,7 @@ function eff(b,L){const n=Math.min(b.m,L+1),id=b.id;
  if(id=='pal')return `守軍防禦 +${L}% → +${n}%`;
  if(id=='pub')return `建築耐久 +${10*L}% → +${10*n}%(敵方攻城器械要多花力氣)`;
  if(id=='acc')return `商人運載量 +${10*L}% → +${10*n}%`;
+ if(id=='emb')return `${L>=3?'可建立聯盟':'3 級才能建立聯盟'};聯盟人數上限 ${Math.max(6,2*L)} → ${Math.max(6,2*n)} 人(以盟主的奏者番等級計算)`;
  if(id=='mkt')return `商人 ${L} → ${n} 名(每名載運 ${Math.round(G.MERC[S.fac]*(1+.1*S.bld.acc))})`;
  if(id=='res')return `擴張名額:${L>=20?2:L>=10?1:0} → ${n>=20?2:n>=10?1:0}個(10 級 1 個、20 級 2 個)`;
  if(id=='war')return n>=20?'可指定 2 處攻城目標':n>=10?'可指定 1 處攻城目標':`${10-n} 級後可指定攻城目標`;
@@ -349,6 +351,22 @@ function vBuildMenu(){const i=bs;let h=`<div class="ttl">選擇要蓋的建築<s
  return h+'</div>'+qtab()+back('in')}
 let MK={offers:null};
 async function loadMarket(){if(!ME)return;try{const r=await api('/api/market');if(r.ok&&r.j){MK.offers=r.j.offers;dirty=1}}catch(e){}}
+let AL=null;
+async function loadAlly(){if(!ME)return;try{const r=await api('/api/ally');if(r.ok&&r.j&&r.j.ok!==false){AL=r.j;dirty=1}}catch(e){}}
+async function allyDo(a){const r=await api('/api/ally',a,'POST');if(r.j){if(r.j.msg)toast(r.j.msg);if(r.j.ok)AL=r.j;dirty=1}else toast('操作失敗,請稍後再試')}
+function embTab(){
+ if(!ME)return '<p class="mut">聯盟需要登入後使用。</p>';
+ if(AL==null){loadAlly();return '<p class="mut">載入中…</p>'}
+ const a=AL.ally;let h='<h4 class="sh">聯盟</h4>';
+ if(!a){
+  h+=`<p class="mut">你還沒有加入聯盟。奏者番 ${AL.need.join} 級可接受邀請,${AL.need.create} 級可建立聯盟(你所有城池中最高 ${AL.lv} 級)。要加入別人的聯盟,可以寄信給盟主請他邀請你。</p>`;
+  h+=AL.invites.length?'<table class="tb"><tr><th>邀請你的聯盟</th><th>邀請人</th><th></th></tr>'+AL.invites.map(i=>`<tr><td>[${esc(i.tag)}] ${esc(i.name)}</td><td>${esc(i.by)}</td><td><button data-a="al" data-t="accept" data-id="${esc(i.id)}">接受</button> <button data-a="al" data-t="decline" data-id="${esc(i.id)}">拒絕</button></td></tr>`).join('')+'</table>':'<p class="mut">目前沒有收到邀請。</p>';
+  h+=AL.lv>=AL.need.create?`<h4 class="sh">建立聯盟</h4><p>標籤 <input id="altag" maxlength="4" size="5" placeholder="2~4字"> 名稱 <input id="alname" maxlength="16" size="14" placeholder="聯盟名稱"> <button data-a="al" data-t="create">建立</button></p>`:`<p class="mut">奏者番升到 ${AL.need.create} 級才能建立聯盟。</p>`}
+ else{
+  h+=`<p><b>[${esc(a.tag)}] ${esc(a.name)}</b>　成員 ${a.m.length}/${a.cap}${a.lead?'　<span class="ok">你是盟主</span>':''}</p><table class="tb"><tr><th>成員</th><th>身分</th><th></th></tr>`+a.m.map(m=>`<tr><td>${esc(m.n)}${m.me?' (你)':''}</td><td>${m.lead?'盟主':'盟友'}</td><td>${a.lead&&!m.me?`<button data-a="al" data-t="kick" data-o="${esc(m.o)}">移出</button>`:''}</td></tr>`).join('')+'</table>';
+  if(a.lead)h+=`<h4 class="sh">邀請</h4><p>對方城池座標 x <input id="alx" type="number"> y <input id="aly" type="number"> <button data-a="al" data-t="invite">邀請</button></p>`+(a.inv.length?'<p class="mut">等待回覆:'+a.inv.map(i=>`${esc(i.n)} <a data-a="al" data-t="uninvite" data-o="${esc(i.o)}">(取消)</a>`).join('、')+'</p>':'');
+  h+=`<h4 class="sh">盟內信件</h4><p>主旨 <input id="alms" maxlength="40" size="20"><br><textarea id="almb" rows="3" style="width:90%" maxlength="800" placeholder="內容會寄給所有盟友"></textarea><br><button data-a="al" data-t="msg">發給全體盟友</button></p><p><button data-a="al" data-t="leave">退出聯盟</button> ${a.lead?'<button data-a="al" data-t="disband">解散聯盟</button>':''}</p>`}
+ return h}
 const RSEL=(id,v)=>`<select id="${id}">${RN.map((n,i)=>`<option value="${i}" ${i==v?'selected':''}>${RI[i]}${n}</option>`).join('')}</select>`;
 function mktTab(){
  if(!ME)return '<p class="mut">市場需要登入後使用。</p>';
@@ -374,6 +392,7 @@ function vB(){if(bs==null)return vIn();
  if(b.id=='acad')h+=acadTab();
  if(b.id=='pal'||b.id=='res')h+=palTab();
  if(b.id=='mkt')h+=mktTab();
+ if(b.id=='emb')h+=embTab();
  if(b.id=='gov')h+=cmds();else if(['infb','cavb','wsh','pal','res'].includes(b.id))h+=trainer(b);else if(b.id=='war')h+=sender();
  return h+qtab()+back('in')}
 function vMap(){const [cx,cy]=mc,W2=36,H2=18,ox=300,oy=165,P=(dx,dy)=>[ox+(dx+dy)*W2,oy+(dx-dy)*H2];
@@ -433,7 +452,7 @@ const FAQ=[["不上線時資源是否依然生產？","是，離線狀況下各�
 const faqHtml=()=>FAQ.map((x,i)=>`<details class="faq" data-d="faq${i}" ${op['faq'+i]?'open':''}><summary>${i+1}. ${esc(x[0])}</summary><div class="fa">${esc(x[1])}</div></details>`).join('')+'<p><a data-a="help">遊戲指南</a></p>';
 function sidebar(){const det=(id,sm,body)=>`<details data-d="${id}" ${op[id]?'open':''}><summary>${sm}</summary><div class="dbody">${body}</div></details>`;
  const cl=QS.filter(q=>!S.qd.includes(q.id)&&q.ok()).length;
- const msgs=ct==0?S.log.slice(0,30).reverse().map(l=>`<div><span class="t">(${dstr(l.t)})</span> <b class="bad">【系統訊息】</b>${l.m}</div>`).join(''):`<div class="mut">${ct==1?'尚未加入聯盟':'沒有密語'}</div>`;
+ const msgs=ct==0?S.log.slice(0,30).reverse().map(l=>`<div><span class="t">(${dstr(l.t)})</span> <b class="bad">【系統訊息】</b>${l.m}</div>`).join(''):`<div class="mut">${ct==1?(AL&&AL.ally?'聯盟:['+esc(AL.ally.tag)+'] '+esc(AL.ally.name):'尚未加入聯盟'):'沒有密語'}</div>`;
  return det('acc','賬號狀態: 正常',`玩家:${esc(NICK)}<br>勢力:${fa().n}<br>已開城 <b>${cityAge()}</b>`)+det('city',`城池清單${CITIES.length>1?' ('+CITIES.length+')':''}`,CITIES.length>1?CITIES.map(c=>`<div>|- <a data-a="city" data-k="${esc(c.k)}" ${c.k==CUR?'style="font-weight:bold"':''}>${esc(c.n)}(${c.x},${c.y})</a> <span class="flag s" style="background:${CASTLE_COL[c.f]}">${F[c.f].s}</span>${c.col?` <small class="mut">忠誠${c.loy}</small>`:''}</div>`).join(''):`|- ${S.col?esc(S.cname||'分城'):esc(NICK)+'的城池'}(${home().x},${home().y}) <span class="flag s" style="background:${CASTLE_COL[S.fac]}">${fa().s}</span>`)+det('goods',S.col?'商品清單 🎁:本丸管理':`商品清單 🎁:${fmt(S.gold)}`,S.col?'金幣、任務與商城由本丸統一管理,請切換回本丸使用。':'金幣用來立即完成施工(2 金幣/次),每遊戲小時 +1。')+det('guide',`新手引導 ${GUIDE.filter(g=>g.ok()).length}/${GUIDE.length}`,guideList())+det('task',`任務清單${cl?` <b class="bad">(${cl})</b>`:''}`,'<a data-a="nav" data-v="quest">前往任務頁面</a>')+det('faq','常見問題',faqHtml())
  +`<div class="ct">${['公頻','盟頻','密頻'].map((n,i)=>`<span data-a="ct" data-i="${i}" class="${ct==i?'on':''}">${n}</span>`).join('')}</div><div id="chat">${msgs}</div>`}
 try{document.getElementById('lgi').innerHTML=ICONS.arm}catch(e){}
@@ -495,6 +514,12 @@ function act(d){
  if(d.a=='soon')return toast(d.m||'尚未開放');
  if(d.a=='city')return goCity(d.k);
  if(d.a=='mkload'){loadMarket();return}
+ if(d.a=='al'){const t=d.t,v=i=>($(i)?$(i).value:'');const body={t,id:d.id,o:d.o};
+  if(t=='create'){body.tag=v('#altag').trim();body.name=v('#alname').trim()}
+  else if(t=='invite'){body.x=+v('#alx');body.y=+v('#aly')}
+  else if(t=='msg'){body.s=v('#alms');body.b=v('#almb')}
+  else if(t=='leave'||t=='disband'||t=='kick'){const ck=t+(d.o||'');if(act.cf!==ck){act.cf=ck;toast('再按一次確認'+(t=='leave'?'退出':t=='kick'?'移出':'解散'));setTimeout(()=>{if(act.cf===ck)act.cf=null},4000);return}act.cf=null}
+  allyDo(body);return}
  if(d.a=='mktgo'){$('#sx').value=d.x;$('#sy').value=d.y;return}
  if(d.a=='help')return modal(HELP);
  if(d.a=='set'){modal(`<h3>遊戲設定</h3>`+(ME?`<p class="mut">線上模式的時間流速由伺服器決定(目前 ×${SPEED})。</p>`:`<p>時間流速 <select id="spd">${[[1,'×1(真實)'],[10,'×10'],[60,'×60'],[300,'×300']].map(([v,n])=>`<option value="${v}" ${v==speed?'selected':''}>${n}</option>`).join('')}</select></p><p class="mut">資源與施工在關閉頁面後仍會繼續,重新開啟時補算(最多 24 小時)。</p>`)+`<p><button data-a="reset">重新開始</button></p>`);return}
