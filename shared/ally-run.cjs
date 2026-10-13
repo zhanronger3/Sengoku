@@ -6,6 +6,7 @@
 const W = require("./world-store.cjs");
 const M = require("./mail-store.cjs");
 const A = require("./acct.cjs");
+const core = require("./server-core.cjs");
 const { cas } = { cas: W.casUpdate };
 
 const CREATE_LV = 3, JOIN_LV = 1, INV_MAX = 20;
@@ -25,8 +26,8 @@ async function embLevel(saves, world, owner) {
   let lv = 0;
   for (const k of await A.list(world, owner)) {
     const g = await saves.get(k, { type: "json" });
-    const st = g && g.state;
-    if (!st || !A.ownedBy(st, k, owner)) continue;
+    if (!g || !g.state || !A.ownedBy(g.state, k, owner)) continue;
+    const st = core.settle(JSON.parse(JSON.stringify(g.state)), Date.now()); // 補算到現在:剛完工的升級也要算
     for (const x of st.slots || []) if (x && x.b === "emb" && x.l >= 1) lv = Math.max(lv, x.l);
   }
   return lv;
