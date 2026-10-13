@@ -21,7 +21,7 @@ export default async (req: Request) => {
     mail: getStore({ name: "mail", consistency: "strong" }),
     battle: getStore({ name: "battle", consistency: "strong" }),
   };
-  const r = await handlers.save({ stores, user, now: Date.now() });
+  const r = await handlers.save({ stores, user, now: Date.now(), c: new URL(req.url).searchParams.get("c") });
   return Response.json(r.body, { status: r.status });
 };
 

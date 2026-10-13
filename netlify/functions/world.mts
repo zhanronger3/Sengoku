@@ -17,7 +17,7 @@ export default async (req: Request) => {
   if (!user) return new Response("Unauthorized", { status: 401 });
   const q = new URL(req.url).searchParams;
   const wstore = getStore({ name: "world", consistency: "strong" });
-  const villages = await world.queryWindow(wstore, q.get("x0"), q.get("y0"), q.get("x1"), q.get("y1"));
+  const villages = await world.queryWindow(wstore, q.get("x0"), q.get("y0"), q.get("x1"), q.get("y1"), user.id);
   return Response.json({ ok: true, villages, now: Date.now() });
 };
 
