@@ -148,7 +148,9 @@ const fix=s=>{if(s.rc==null)s.rc=0;if(s.loy==null)s.loy=100;if(s.hero===undefine
  if(!s.tr)s.tr={};for(const b of TRB){const v=s.tr[b];s.tr[b]=Array.isArray(v)?v:(v?[v]:[])}
  if(!Array.isArray(s.u))s.u=[];while(s.u.length<NU)s.u.push(0); // 舊存檔:兵種補到 10 種
  for(const m of(s.mv||[])){for(const f of['send','sent']){if(Array.isArray(m[f]))while(m[f].length<NU)m[f].push(0)}}
- if(Array.isArray(s.slots))while(s.slots.length<NSLOTS)s.slots.push(null); // 舊存檔:建地補到 27 塊 // 舊存檔:單一訓練 → 佇列
+ if(Array.isArray(s.slots)){ // 舊存檔:建地補到 21 塊;超出的(曾經 27 塊)搬進空位
+  for(let i=NSLOTS;i<s.slots.length;i++){const c=s.slots[i];if(!c)continue;const j=s.slots.indexOf(null);if(j>=0&&j<NSLOTS){s.slots[j]=c;for(const q of Object.values(s.q||{})){if(q&&q.slot===i)q.slot=j}}else{for(const q of Object.values(s.q||{})){if(q&&q.slot===i)q.slot=null}}}
+  s.slots.length=Math.min(s.slots.length,NSLOTS);while(s.slots.length<NSLOTS)s.slots.push(null)} // 舊存檔:單一訓練 → 佇列
  if(!s.born)s.born=(s.saved||Date.now())-(s.t||0)/SPEED*1000; // 舊存檔:依遊戲時間推算開城時間
  for(const k of Object.keys(s.camps)){const g=s.camps[k]&&s.camps[k].g;if(!g)continue;const ng={};for(const [u,c] of Object.entries(g)){const nu=OLDN[u]||u;ng[nu]=(ng[nu]||0)+c}s.camps[k].g=ng}if(!s.bld)s.bld={};
  if(!s.slots){s.slots=Array(NSLOTS).fill(null);
