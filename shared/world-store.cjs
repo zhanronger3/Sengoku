@@ -120,7 +120,7 @@ async function queryWindow(world, x0, y0, x1, y1, viewer) {
   for (const c of chunks) {
     if (!c) continue;
     for (const [id, v] of Object.entries(c.v)) {
-      if (v.x >= x0 && v.x <= x1 && v.y >= y0 && v.y <= y1) out.push({ x: v.x, y: v.y, n: v.n, f: v.f, p: v.p, b: v.b || 0, mine: !!viewer && (v.o || id) === viewer, col: v.m === 0 ? 1 : 0 });
+      if (v.x >= x0 && v.x <= x1 && v.y >= y0 && v.y <= y1) out.push({ x: v.x, y: v.y, n: v.n, f: v.f, p: v.p, b: v.b || 0, a: v.a || "", mine: !!viewer && (v.o || id) === viewer, col: v.m === 0 ? 1 : 0 });
     }
   }
   return out;
@@ -139,7 +139,7 @@ async function findAt(world, x, y) {
 
 async function topRank(world) {
   const r = await world.get("rank", { type: "json" });
-  return ((r && r.a) || []).map(({ x, y, n, f, p }) => ({ x, y, n, f, p }));
+  return ((r && r.a) || []).map(({ x, y, n, f, p, a }) => ({ x, y, n, f, p, a: a || "" }));
 }
 
 // 存檔裡記錄「上次公開的資料」,威望變化夠大才重新公開,避免每個操作都寫世界資料
@@ -151,7 +151,25 @@ function stampPub(state, nick, now) {
   if (need) state.pub = { p, t: now, n: nick, f: state.fac };
   return need;
 }
-const publishState = (world, key, st, owner) => publish(world, key, { x: st.pos.x, y: st.pos.y, n: st.pub.n, f: st.pub.f, p: st.pub.p, b: st.born || 0, o: st.own || owner || key, m: st.col ? 0 : 1 });
+// 這位玩家(帳號)所屬聯盟的標籤,沒有聯盟回傳 ""
+async function tagOf(world, owner) {
+  const m = await world.get("alm_" + owner, { type: "json" });
+  if (!m || !m.a) return "";
+  const a = await world.get("ally_" + m.a, { type: "json" });
+  return (a && a.tag) || "";
+}
+async function publishState(world, key, st, owner) {
+  const o = st.own || owner || key;
+  let a = ""; try { a = await tagOf(world, o); } catch {}
+  return publish(world, key, { x: st.pos.x, y: st.pos.y, n: st.pub.n, f: st.pub.f, p: st.pub.p, b: st.born || 0, o, m: st.col ? 0 : 1, a });
+}
+// 只更新某座城池在地圖與排行榜上的聯盟標籤(加入、退出聯盟時用)
+async function setTag(world, key, pos, tag) {
+  if (!pos) return;
+  const [cx, cy] = chunkOf(pos.x, pos.y);
+  await casUpdate(world, ckey(cx, cy), (cur) => (!cur || !cur.v[key] || (cur.v[key].a || "") === tag ? undefined : (cur.v[key].a = tag, cur)));
+  await casUpdate(world, "rank", (cur) => { const r = cur && cur.a.find((x) => x.id === key); return !r || (r.a || "") === tag ? undefined : (r.a = tag, cur); });
+}
 
 // 舊存檔(沒有座標)第一次被讀取時,替他分配座標並公開
 async function ensureRegistered(saves, world, uid, nick, got, now) {
@@ -165,4 +183,4 @@ async function ensureRegistered(saves, world, uid, nick, got, now) {
   return await saves.getWithMetadata(uid, { type: "json" });
 }
 
-module.exports = { claimTile, CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };
+module.exports = { tagOf, setTag, claimTile, CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };

@@ -13,6 +13,13 @@ const capOf = (leadLv) => 2 * Math.max(3, leadLv);
 const clean = (s, n) => String(s ?? "").replace(/[\u0000-\u001f<>&"'`]/g, "").trim().slice(0, n);
 const okTag = (t) => /^[A-Za-z0-9一-鿿]{2,4}$/.test(t);
 
+// 聯盟變動後,更新這位玩家所有城池在地圖/排行榜上的聯盟標籤
+async function retag(world, owner) {
+  try {
+    const tag = await W.tagOf(world, owner);
+    for (const k of await A.list(world, owner)) await W.setTag(world, k, await world.get("owner_" + k, { type: "json" }), tag);
+  } catch (e) { console.error("retag failed", e); }
+}
 // 這位玩家所有城池裡最高的奏者番等級
 async function embLevel(saves, world, owner) {
   let lv = 0;
@@ -67,6 +74,7 @@ async function act({ saves, world, mail, user, body, now }) {
       const t2 = await world.setJSON("alm_" + owner, { a: id }, { onlyIfNew: true });
       if (t2 && t2.modified === false) { await world.delete(tk); return bad("你已經在聯盟裡了"); }
       await world.setJSON("ally_" + id, { id, tag, name, lead: owner, m: [{ o: owner, n: nick, t: now }], inv: [], t: now }, { onlyIfNew: true });
+      await retag(world, owner);
       return done(`聯盟「${name}」[${tag}] 成立了`);
     }
     case "invite": {
@@ -124,6 +132,7 @@ async function act({ saves, world, mail, user, body, now }) {
       if (!joined) { await world.delete("alm_" + owner); return bad(full ? "聯盟人數已滿" : "加入失敗"); }
       await cas(world, "ainv_" + owner, (c) => ({ a: ((c && c.a) || []).filter((z) => z.id !== id) }));
       await M.systemMail(mail, target.lead, "【聯盟】新成員加入", `${nick} 加入了聯盟「${target.name}」。`, now);
+      await retag(world, owner);
       return done(`已加入聯盟「${target.name}」`);
     }
     case "leave": {
@@ -138,6 +147,7 @@ async function act({ saves, world, mail, user, body, now }) {
         await cas(world, "ally_" + ally.id, (c) => (c ? { ...c, m: c.m.filter((z) => z.o !== owner) } : undefined));
       }
       await world.delete("alm_" + owner);
+      await retag(world, owner);
       return done("已退出聯盟");
     }
     case "kick": {
@@ -147,6 +157,7 @@ async function act({ saves, world, mail, user, body, now }) {
       if (!ally.m.some((z) => z.o === o)) return bad("他已經不在聯盟裡了");
       await cas(world, "ally_" + ally.id, (c) => (c ? { ...c, m: c.m.filter((z) => z.o !== o) } : undefined));
       await world.delete("alm_" + o);
+      await retag(world, o);
       await M.systemMail(mail, o, "【聯盟】被移出聯盟", `你被盟主移出了聯盟「${ally.name}」。`, now);
       return done("已移出成員");
     }
@@ -179,6 +190,7 @@ async function act({ saves, world, mail, user, body, now }) {
 async function disband(world, ally, mail, now) {
   for (const z of ally.m) {
     await world.delete("alm_" + z.o);
+    await retag(world, z.o);
     if (mail && z.o !== ally.lead) await M.systemMail(mail, z.o, "【聯盟】聯盟解散", `聯盟「${ally.name}」已被盟主解散。`, now);
   }
   for (const z of ally.inv || []) await cas(world, "ainv_" + z.o, (c) => (c ? { a: c.a.filter((q) => q.id !== ally.id) } : undefined));

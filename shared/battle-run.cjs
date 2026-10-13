@@ -140,7 +140,7 @@ async function resolveAttack({ saves, world, battle, mail, id, now }) {
     const ctxA = { id, attNick: rec.att.n, attPos: { x: rec.att.x, y: rec.att.y }, attOwner: ownerOfAtt(rec) };
     let r;
     if (rec.kind === "scout") { r = G.scoutBattle({ fac: rec.att.fac, send: rec.send }, st); G.scoutApplyDef(st, r, ctxA); }
-    else { r = G.pvpBattle({ fac: rec.att.fac, send: rec.send, ab: rec.att.ab, tg: rec.tg || [], seed: seedOf(id) }, st); G.pvpApplyDef(st, r, ctxA); }
+    else { r = G.pvpBattle({ fac: rec.att.fac, send: rec.send, ab: rec.att.ab, tg: rec.tg || [], seed: seedOf(id), hero: rec.att.hero || null }, st); G.pvpApplyDef(st, r, ctxA); }
     const w = await saves.setJSON(rec.def.uid, { state: st, rev: g.data.rev + 1, updatedAt: now }, { onlyIfMatch: g.etag });
     if (!w || w.modified !== false) { res = r; break; }
     await sleep(Math.random() * 6 * (i + 1));

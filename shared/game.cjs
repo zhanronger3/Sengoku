@@ -169,10 +169,11 @@ const slotsFree=()=>expSlots()-(S.kids||0)-S.mv.filter(m=>m.sl).length;
 function startQ(k,c,dur,o){const l=lane(k);if(S.q[l])return S.fac=='wei'?`${k=='f'?'外城':'內城'}已有施工中的項目`:'施工佇列已滿(只有織田家能外城內城同時施工)';
  if(!canPay(c))return '資源不足';pay(c);S.q[l]={k,start:S.t,dur,end:S.t+dur,cost:c,...o};return ''}
 // 英雄打贏營寨:獲得經驗;營寨被清空且在範圍內、還有名額就佔領;有機會帶回名物
-function heroWin(h,m,c,D){
- h.xp+=Math.max(5,Math.round(D/20));let up=0;
+function heroGain(h,xp){h.xp+=xp;let up=0;
  while(h.lv<HERO_MAXLV&&h.xp>=heroNeed(h.lv)){h.xp-=heroNeed(h.lv);h.lv++;h.pts+=5;up++}
- if(up)logm(`英雄${h.n}升到等級 ${h.lv}!獲得 ${up*5} 點屬性點(到評定眾分配)`,1);
+ if(up)logm(`英雄${h.n}升到等級 ${h.lv}!獲得 ${up*5} 點屬性點(到評定眾分配)`,1)}
+function heroWin(h,m,c,D){
+ heroGain(h,Math.max(5,Math.round(D/20)));
  if(defOf(c.g)>0)return; // 守軍還沒被全滅
  const key=c.key,tier=occTier(key);
  if(distTo(m.tx,m.ty)<=OCC_RANGE){
@@ -257,6 +258,7 @@ function launchCheck(a,npc){const U=us(),send=U.map((_,k)=>Math.min(S.u[k]||0,Ma
   if(send.some((x,k)=>x&&U[k].k!=='set')||send.reduce((p,q)=>p+q,0)!==3)return {err:'開分城需要剛好派出 3 名開墾代官(不能帶其他兵種)'};
   if(slotsFree()<1)return {err:`沒有擴張名額:${BMAP.pal.n} 10 級有 1 個名額、15 級 2 個、20 級 3 個(目前 ${BMAP.pal.n} ${S.bld.pal} 級,已使用或預留 ${(S.kids||0)+S.mv.filter(m=>m.sl).length} 個)`};
   return {send,kind,tg:[],sl:1}}
+ let hero=0;if(a.hero){if(kind==='scout')return {err:'偵察任務不能帶英雄'};if(!S.hero)return {err:'你還沒有英雄'};if(S.hero.st==='dead')return {err:'英雄已經陣亡,請先到評定眾復活'};if(S.hero.st!=='home')return {err:'英雄不在城裡'};hero=1}
  if(send.some((x,k)=>x&&U[k].k==='set'))return {err:'開墾代官只能用來開分城'};
  let sl=0;
  if(send.some((x,k)=>x&&U[k].k==='adm')){
@@ -271,20 +273,20 @@ function launchCheck(a,npc){const U=us(),send=U.map((_,k)=>Math.min(S.u[k]||0,Ma
   if(tg.some(id=>!BMAP[id]||id==='wall'))return {err:'目標建築錯誤(城牆由破門槌負責)'};
   if(!send.some((x,k)=>x&&U[k].k==='cat'))tg=[]; // 沒帶大筒類器械就不需要目標
  }
- return {send,kind,tg,sl}}
+ return {send,kind,tg,sl,hero}}
 function pvpLaunch(att,a,meta){
  const tx=int(a.tx,-1000000,1000000),ty=int(a.ty,-1000000,1000000);if(tx==null||ty==null)return bad('座標錯誤');
  return withS(att,()=>{
   if(S.bld.war<1)return bad('需要先建造軍奉行才能出兵');
   if(!Array.isArray(a.send))return bad('請選擇出征兵力');
-  const U=us(),lc=launchCheck(a);if(lc.err)return bad(lc.err);const {send,kind,tg,sl}=lc;
+  const U=us(),lc=launchCheck(a);if(lc.err)return bad(lc.err);const {send,kind,tg,sl,hero}=lc;
   const dist=distTo(tx,ty);if(dist<=0)return bad(kind==='found'?'那裡就是這座城':'不能攻擊自己的城池');
-  const sp=Math.min(...send.map((x,k)=>x?U[k].s:99)),dur=Math.max(1,Math.round(dist/sp*3600));
-  send.forEach((x,k)=>S.u[k]-=x);
+  const sp=Math.min(...send.map((x,k)=>x?U[k].s:99),hero?heroSpd(S.hero):99),dur=Math.max(1,Math.round(dist/sp*3600));
+  send.forEach((x,k)=>S.u[k]-=x);const hi=hero?{n:S.hero.n,atk:heroAtk(S.hero),carry:heroCarry(S.hero)}:null;if(hero)S.hero.st='away';
   const name=kind==='found'?`新城預定地(${tx}|${ty})`:`${meta.defNick}(${tx}|${ty})`;
-  S.mv.push({pv:1,pending:1,aid:meta.aid,tx,ty,name,def:0,sent:send.slice(),send:send.slice(),go:S.t+dur,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0],sentAt:meta.now,kind,tg,sl});
+  S.mv.push({pv:1,pending:1,aid:meta.aid,tx,ty,name,def:0,sent:send.slice(),send:send.slice(),go:S.t+dur,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0],sentAt:meta.now,kind,tg,sl,hero});
   logm(kind==='found'?`派 3 名開墾代官前往${name}建立分城,速度 ${sp} 格/時`:`派${kind?'偵察兵':'兵'}前往${name},出兵 ${send.reduce((p,q)=>p+q,0)} 人,速度 ${sp} 格/時;部隊抵達後才會${kind?'展開偵察':'開戰'}`);
-  return {ok:true,tx,ty,dur,sp,dist,send,go:S.t+dur,fac:S.fac,ab:ab(),pos:{...home()},kind,tg}})}
+  return {ok:true,tx,ty,dur,sp,dist,send,go:S.t+dur,fac:S.fac,ab:ab(),pos:{...home()},kind,tg,hero:hi}})}
 // 攻城:存活的破門槌拆城牆;存活的大筒類器械轟擊建築(軍奉行 10/20 級可指定 1/2 處,否則隨機 1 處)。在防守方的狀態(S)上試算,不改存檔
 function siegeCalc(info,surv){const U=UN[info.fac],cnt=k=>surv.reduce((p,x,i)=>p+(U[i].k===k?x:0),0),rams=cnt('ram'),cats=cnt('cat');
  if(!rams&&!cats)return null;
@@ -302,13 +304,13 @@ function siegeCalc(info,surv){const U=UN[info.fac],cnt=k=>surv.reduce((p,x,i)=>p
  return out}
 // 戰鬥結算(純計算,不改任何存檔):info = { fac, send, ab },def = 防守方「抵達那一刻」的狀態
 function pvpBattle(info,def){
- const U=UN[info.fac],parts=info.send.map((x,k)=>x*U[k].a*info.ab),A=parts.reduce((p,q)=>p+q,0);
+ const U=UN[info.fac],parts=info.send.map((x,k)=>x*U[k].a*info.ab),A=parts.reduce((p,q)=>p+q,0)+(info.hero?info.hero.atk:0);
  const cavShare=A>0?info.send.reduce((p,x,k)=>p+(U[k].b=='cavb'?parts[k]:0),0)/A:0;
  return withS(def,()=>{const Ud=us(),per=u=>u.di*(1-cavShare)+u.dc*cavShare,wallPct=wb();
   const D=(S.u.reduce((p,x,k)=>p+x*per(Ud[k])*db(),0)+60+(S.hero&&S.hero.st==='home'?heroDef(S.hero):0))*(1+wallPct/100)*(1+.01*S.bld.pal),defRes=S.res.slice(),hideAmt=hide()*(info.fac=='shu'?2/3:1); // 德川:敵人的埋藏所只有 2/3 作用
   const win=A>D;let lossA,lossD;
   if(win){const q=pw(D/A,1.5);lossA=q;lossD=(1-q)*.5}else{lossA=1;lossD=.3*pw(A/D,1.5)}
-  const surv=info.send.map(x=>Math.round(x*(1-lossA))),carry=surv.reduce((p,x,k)=>p+x*U[k].c,0);
+  const surv=info.send.map(x=>Math.round(x*(1-lossA))),carry=surv.reduce((p,x,k)=>p+x*U[k].c,0)+(info.hero&&win?info.hero.carry:0);
   const sg=siegeCalc(info,surv);
   let conq=null;
   if(win){const admN=surv.reduce((p,x,k)=>p+(U[k].k==='adm'?x:0),0);
@@ -316,7 +318,7 @@ function pvpBattle(info,def){
     else{const per=20+((info.seed>>>0)%11),from=S.loy==null?100:S.loy,to=Math.max(0,from-per*admN);conq={admN,per,from:Math.floor(from),to:Math.floor(to),taken:to<=0}}}}
   const loot=[0,1,2,3].map(i=>win?Math.floor(Math.min(carry/4,Math.max(0,defRes[i]-hideAmt))):0);
   const defBefore=S.u.slice(),defAfter=S.u.map(x=>Math.floor(x*(1-lossD)));
-  return {win,A:Math.round(A),D:Math.round(D),wallPct,wallLv:S.bld.wall,caveLv:S.bld.cave,defFac:S.fac,attFac:info.fac,lossA,lossD,sent:info.send.slice(),surv,deadA:info.send.map((x,k)=>x-surv[k]),defBefore,deadD:defBefore.map((x,k)=>x-defAfter[k]),loot,defRes:defRes.map(Math.floor),hide:Math.round(hideAmt),sg,conq}})}
+  return {win,A:Math.round(A),D:Math.round(D),wallPct,wallLv:S.bld.wall,caveLv:S.bld.cave,defFac:S.fac,attFac:info.fac,lossA,lossD,sent:info.send.slice(),surv,deadA:info.send.map((x,k)=>x-surv[k]),defBefore,deadD:defBefore.map((x,k)=>x-defAfter[k]),loot,defRes:defRes.map(Math.floor),hide:Math.round(hideAmt),sg,conq,hero:info.hero?{n:info.hero.n,dead:!win,xp:win?Math.max(5,Math.round(D/20)):0}:null}})}
 // 偵察(純計算):防守方的偵察兵越多,攻方偵察兵折損越多;全滅就失敗
 function scoutBattle(info,def){return withS(def,()=>{const U=UN[info.fac],Ud=us();
  const aS=info.send.reduce((p,x,k)=>p+(U[k].k==='scout'?x:0),0),dS=S.u.reduce((p,x,k)=>p+(Ud[k].k==='scout'?x:0),0);
@@ -367,14 +369,16 @@ function pvpApplyAtt(att,aid,res,ctx){return withS(att,()=>{
   else{m.loot=[0,0,0,0];logm(`${m.name}無法建城:${res.why||'失敗'},開墾代官折返`,1)}return true}
  if(res.void||res.fizzled){m.loot=[0,0,0,0];logm(res.void?`${m.name}的城池已經不在了,部隊折返`:`出兵沒有成功送出,部隊折返`,1);return true}
  m.send=m.send.map((x,k)=>Math.min(x,res.surv[k]));m.loot=(res.loot||[0,0,0,0]).slice();
+ if(m.hero&&S.hero&&res.hero){if(res.hero.dead){S.hero.st='dead';logm(`英雄${S.hero.n}在進攻${m.name}時戰死沙場,需要到評定眾復活`,1)}else heroGain(S.hero,res.hero.xp)}
+ const hb=()=>{if(m.hero&&S.hero&&S.hero.st==='away')S.hero.st='home'};
  if(res.conq&&!res.conq.cap){const U=us();m.send=m.send.map((x,k)=>U[k].k==='adm'?0:x);if(res.conq.taken){S.kids=(S.kids||0)+1;logm(`行政官成功說服了${m.name},城池歸順!`,1)}}
  if(res.scout){const sn=res.sent.reduce((p,q)=>p+q,0),ls=res.deadA.reduce((p,q)=>p+q,0);
   logm(`偵察${m.name}${res.ok?'成功':'失敗'}!派出 ${sn} 人,折損 ${ls} 人${res.ok?'(偵察報告已寄到飛鴿傳書)':',偵察兵全滅'}`,1);
-  if(!m.send.some(x=>x))S.mv.splice(i,1);return true}
+  if(!m.send.some(x=>x)){hb();S.mv.splice(i,1)}return true}
  const sent=res.sent.reduce((p,q)=>p+q,0),lost=res.deadA.reduce((p,q)=>p+q,0);
  if(res.win)S.stat.raids++;
  logm(`${res.win?'襲擊':'進攻'}${m.name}${res.win?'成功':'失敗'}!出兵 ${sent} 人,陣亡 ${lost},${res.win?'搶得 '+res.loot.join('/')+'(部隊返回後入庫)':'殘部返回'}`,1);
- if(!m.send.some(x=>x))S.mv.splice(i,1);return true})}
+ if(!m.send.some(x=>x)){hb();S.mv.splice(i,1)}return true})}
 // ====== 樂市樂座:商人、運送、掛單 ======
 const MERC={wei:500,shu:1000,wu:750},MSPEED=16;
 const merCap=()=>Math.round(MERC[S.fac]*(1+.1*S.bld.acc));

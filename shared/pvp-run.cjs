@@ -67,7 +67,7 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
       await B.registerAttack({
         battle, mail, now,
         rec: {
-          id: aid, att: { uid, o: owner, n: nick, x: r.pos.x, y: r.pos.y, fac: r.fac, ab: r.ab },
+          id: aid, att: { uid, o: owner, n: nick, x: r.pos.x, y: r.pos.y, fac: r.fac, ab: r.ab, hero: r.hero || null },
           def: found ? null : { uid: hit.uid, o: hit.rec.o || hit.uid, n: hit.rec.n, x: hit.rec.x, y: hit.rec.y },
           tx, ty, send: r.send, sentAt: now, arrAt, go: r.go, dur: r.dur, dist: r.dist, kind: r.kind || "", tg: r.tg || [],
         },
