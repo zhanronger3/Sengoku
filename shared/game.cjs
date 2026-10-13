@@ -2,7 +2,7 @@
 // 沒有任何畫面相關的程式,所有操作都透過 perform() 進行。
 const G=(()=>{
 const SPEED=60,CD=6*3600,CAMP_RESPAWN=12*3600,STASH_MULT=3,TRAIN_QMAX=10,DEMOLISH_GOV=3,NSLOTS=21,MULTI=['wh','gr','cave']; // 城內 21 塊建地;藏屋敷、米藏、埋藏所在舊的升到滿級後可再蓋新的
-const GOLD_RATE=50,EXCHANGE_COST=1,PROTECT_DAYS=3; // 1 金幣買 50 單位資源;平倉每次 1 金幣;新手保護 3 個遊戲日
+const GOLD_RATE=200,EXCHANGE_COST=1,PROTECT_DAYS=3; // 1 金幣買 200 單位資源;平倉每次 1 金幣;新手保護 3 個遊戲日
 const RN=['木材','泥土','鐵塊','糧食'],FN=['伐木場','泥坑','鐵礦場','農田'];
 const FT=[0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,3,3];
 const FC=[[40,100,50,60],[80,40,80,50],[100,80,30,60],[70,90,70,20]];
