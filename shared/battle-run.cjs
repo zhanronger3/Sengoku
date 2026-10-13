@@ -70,7 +70,7 @@ async function resolveAttack({ saves, battle, mail, id, now }) {
     G.fix(st);
     if (st.atkRes && st.atkRes[id]) { res = st.atkRes[id]; break; } // 已經結算過(前一次中途失敗)
     core.settleTo(st, rec.arrAt);                                      // 先把防守方補算到抵達的那一刻
-    if (G.pvpProtected(st)) { res = { void: true, why: "protected" }; break; }
+    if (G.pvpProtected(st, rec.arrAt)) { res = { void: true, why: "protected" }; break; }
     const r = G.pvpBattle({ fac: rec.att.fac, send: rec.send, ab: rec.att.ab }, st);
     G.pvpApplyDef(st, r, { id, attNick: rec.att.n, attPos: { x: rec.att.x, y: rec.att.y } });
     const w = await saves.setJSON(rec.def.uid, { state: st, rev: g.data.rev + 1, updatedAt: now }, { onlyIfMatch: g.etag });

@@ -57,7 +57,7 @@ async function allocate(world, uid) {
   return pos;
 }
 
-// 把城池資訊公開到地圖區塊與排行榜。rec: { x, y, n, f, p }
+// 把城池資訊公開到地圖區塊與排行榜。rec: { x, y, n, f, p, b(開城時間,毫秒) }
 async function publish(world, uid, rec) {
   const [cx, cy] = chunkOf(rec.x, rec.y);
   await casUpdate(world, ckey(cx, cy), (cur) => {
@@ -106,7 +106,7 @@ async function queryWindow(world, x0, y0, x1, y1) {
   for (const c of chunks) {
     if (!c) continue;
     for (const v of Object.values(c.v)) {
-      if (v.x >= x0 && v.x <= x1 && v.y >= y0 && v.y <= y1) out.push({ x: v.x, y: v.y, n: v.n, f: v.f, p: v.p });
+      if (v.x >= x0 && v.x <= x1 && v.y >= y0 && v.y <= y1) out.push({ x: v.x, y: v.y, n: v.n, f: v.f, p: v.p, b: v.b || 0 });
     }
   }
   return out;
@@ -137,7 +137,7 @@ function stampPub(state, nick, now) {
   if (need) state.pub = { p, t: now, n: nick, f: state.fac };
   return need;
 }
-const publishState = (world, uid, st) => publish(world, uid, { x: st.pos.x, y: st.pos.y, n: st.pub.n, f: st.pub.f, p: st.pub.p });
+const publishState = (world, uid, st) => publish(world, uid, { x: st.pos.x, y: st.pos.y, n: st.pub.n, f: st.pub.f, p: st.pub.p, b: st.born || 0 });
 
 // 舊存檔(沒有座標)第一次被讀取時,替他分配座標並公開
 async function ensureRegistered(saves, world, uid, nick, got, now) {

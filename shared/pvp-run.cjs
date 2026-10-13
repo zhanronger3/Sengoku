@@ -38,7 +38,7 @@ async function prepare({ saves, world, battle, mail, uid, nick, body, stored, et
     const gotD = await saves.getWithMetadata(hit.uid, { type: "json" });
     if (!gotD || !gotD.data || !gotD.data.state) return await fail("對方還沒開始遊戲");
     const def = core.settle(clone(gotD.data.state), now);
-    if (G.pvpProtected(def)) return await fail("對方仍在新手保護期,暫時不能攻擊");
+    if (G.pvpProtected(def, now)) return await fail("對方仍在新手保護期,暫時不能攻擊");
 
     const aid = `${now}-${Math.random().toString(36).slice(2, 8)}`;
     const r = G.pvpLaunch(att, a, { aid, defNick: hit.rec.n, now });
