@@ -29,7 +29,7 @@ async function findTarget(world, q) {
   }
   if (q.x != null && q.y != null && q.x !== "" && q.y !== "") {
     const hit = await W.findAt(world, q.x, q.y);
-    return hit ? { uid: hit.uid, n: hit.rec.n, x: hit.rec.x, y: hit.rec.y } : null;
+    return hit ? { uid: hit.rec.o || hit.uid, n: hit.rec.n, x: hit.rec.x, y: hit.rec.y } : null;
   }
   if (q.nick) {
     const rows = await world.get("rank", { type: "json" });

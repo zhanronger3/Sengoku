@@ -47,17 +47,31 @@ async function allocate(world, uid) {
   const own = await world.get("owner_" + uid, { type: "json" });
   if (own) return own;
   let pos;
-  await casUpdate(world, "alloc", (cur) => {
-    const n = cur ? cur.n : 0;
-    pos = slotPos(n);
-    return { n: n + 1 };
-  });
+  // 一格一格往外找,跳過已經被分城佔掉的格子
+  for (let tries = 0; tries < 200; tries++) {
+    await casUpdate(world, "alloc", (cur) => {
+      const n = cur ? cur.n : 0;
+      pos = slotPos(n);
+      return { n: n + 1 };
+    });
+    if (await findAt(world, pos.x, pos.y)) continue;
+    if (await claimTile(world, pos.x, pos.y, uid)) break;
+  }
   const w = await world.setJSON("owner_" + uid, pos, { onlyIfNew: true });
   if (w && w.modified === false) return await world.get("owner_" + uid, { type: "json" });
   return pos;
 }
 
-// 把城池資訊公開到地圖區塊與排行榜。rec: { x, y, n, f, p, b(開城時間,毫秒) }
+// 佔用一個格子(同一格只有一座城):已被別人佔走回傳 false;同一座城重複呼叫回傳 true
+async function claimTile(world, x, y, ck) {
+  const k = `t_${x}_${y}`;
+  const w = await world.setJSON(k, { k: ck }, { onlyIfNew: true });
+  if (!w || w.modified !== false) return true;
+  const cur = await world.get(k, { type: "json" });
+  return !!cur && cur.k === ck;
+}
+
+// 把城池資訊公開到地圖區塊與排行榜。rec: { x, y, n, f, p, b(開城時間,毫秒), o(擁有者帳號), m(1=本丸) }
 async function publish(world, uid, rec) {
   const [cx, cy] = chunkOf(rec.x, rec.y);
   await casUpdate(world, ckey(cx, cy), (cur) => {
@@ -91,7 +105,7 @@ async function remove(world, uid) {
 }
 
 // 查詢方框內的城池(不含帳號 id)
-async function queryWindow(world, x0, y0, x1, y1) {
+async function queryWindow(world, x0, y0, x1, y1, viewer) {
   [x0, y0, x1, y1] = [x0, y0, x1, y1].map((n) => Math.floor(+n));
   if (![x0, y0, x1, y1].every(Number.isFinite)) return [];
   if (x1 < x0) [x0, x1] = [x1, x0];
@@ -105,8 +119,8 @@ async function queryWindow(world, x0, y0, x1, y1) {
   const out = [];
   for (const c of chunks) {
     if (!c) continue;
-    for (const v of Object.values(c.v)) {
-      if (v.x >= x0 && v.x <= x1 && v.y >= y0 && v.y <= y1) out.push({ x: v.x, y: v.y, n: v.n, f: v.f, p: v.p, b: v.b || 0 });
+    for (const [id, v] of Object.entries(c.v)) {
+      if (v.x >= x0 && v.x <= x1 && v.y >= y0 && v.y <= y1) out.push({ x: v.x, y: v.y, n: v.n, f: v.f, p: v.p, b: v.b || 0, mine: !!viewer && (v.o || id) === viewer, col: v.m === 0 ? 1 : 0 });
     }
   }
   return out;
@@ -137,7 +151,7 @@ function stampPub(state, nick, now) {
   if (need) state.pub = { p, t: now, n: nick, f: state.fac };
   return need;
 }
-const publishState = (world, uid, st) => publish(world, uid, { x: st.pos.x, y: st.pos.y, n: st.pub.n, f: st.pub.f, p: st.pub.p, b: st.born || 0 });
+const publishState = (world, key, st, owner) => publish(world, key, { x: st.pos.x, y: st.pos.y, n: st.pub.n, f: st.pub.f, p: st.pub.p, b: st.born || 0, o: st.own || owner || key, m: st.col ? 0 : 1 });
 
 // 舊存檔(沒有座標)第一次被讀取時,替他分配座標並公開
 async function ensureRegistered(saves, world, uid, nick, got, now) {
@@ -151,4 +165,4 @@ async function ensureRegistered(saves, world, uid, nick, got, now) {
   return await saves.getWithMetadata(uid, { type: "json" });
 }
 
-module.exports = { CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };
+module.exports = { claimTile, CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };

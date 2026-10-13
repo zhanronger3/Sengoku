@@ -24,13 +24,14 @@ async function send(mail, world, { uid, nick, pos, tx, ty, subject, body, now })
   if (!b) return { ok: false, msg: "信件內容不能是空的" };
   const hit = await W.findAt(world, tx, ty);
   if (!hit) return { ok: false, msg: "該座標沒有玩家的城池" };
-  if (hit.uid === uid) return { ok: false, msg: "不能寄給自己" };
+  const toUid = hit.rec.o || hit.uid;
+  if (toUid === uid) return { ok: false, msg: "不能寄給自己" };
   const sentBox = await mail.get("sent_" + uid, { type: "json" });
   const recent = ((sentBox && sentBox.m) || []).filter((m) => now - m.t < LIMITS.windowMs).length;
   if (recent >= LIMITS.rateMax) return { ok: false, msg: `寄信太頻繁了(每 10 分鐘最多 ${LIMITS.rateMax} 封),請稍後再試` };
   const id = `${now}-${Math.random().toString(36).slice(2, 8)}`;
   const msg = { id, t: now, from: { n: nick, x: pos.x, y: pos.y }, to: { n: hit.rec.n, x: tx, y: ty }, s, b, r: false };
-  await W.casUpdate(mail, "inbox_" + hit.uid, (cur) => ({ m: [msg, ...((cur && cur.m) || [])].slice(0, LIMITS.inbox) }));
+  await W.casUpdate(mail, "inbox_" + toUid, (cur) => ({ m: [msg, ...((cur && cur.m) || [])].slice(0, LIMITS.inbox) }));
   await W.casUpdate(mail, "sent_" + uid, (cur) => ({ m: [{ ...msg, r: true }, ...((cur && cur.m) || [])].slice(0, LIMITS.sent) }));
   return { ok: true, msg: `信已寄給 ${hit.rec.n}` };
 }

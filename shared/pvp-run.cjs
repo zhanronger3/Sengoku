@@ -22,55 +22,75 @@ async function lock(world, uid, now) {
 }
 const unlock = (world, uid) => world.delete("lock_" + uid);
 
-async function prepare({ saves, world, battle, mail, uid, nick, body, stored, etag, now }) {
+// uid = 出兵城池的存檔鍵(本丸就是帳號 id);owner = 帳號 id(多座城池共用同一個鎖、同一個收件匣)
+async function prepare({ saves, world, battle, mail, uid, owner, nick, body, stored, etag, now }) {
+  owner = owner || uid;
   const rev = stored.rev;
   if ((body.rev || 0) !== rev) return { status: 409, body: { ...core.view(stored, now), ok: false, msg: "已同步伺服器狀態" } };
-  if (!(await lock(world, uid, now))) return { status: 409, body: { ok: false, msg: "上一個出兵操作還在處理中,請稍候再試" } };
+  if (!(await lock(world, owner, now))) return { status: 409, body: { ok: false, msg: "上一個出兵操作還在處理中,請稍候再試" } };
   const att = core.settle(clone(stored.state), now);
-  const fail = async (msg) => { await unlock(world, uid).catch(() => {}); return { status: 422, body: { ok: false, msg, state: att, rev, now } }; };
+  const fail = async (msg) => { await unlock(world, owner).catch(() => {}); return { status: 422, body: { ok: false, msg, state: att, rev, now } }; };
   try {
     const a = body.action;
+    const found = a.kind === "found";
     const tx = Math.floor(+a.tx), ty = Math.floor(+a.ty);
     if (!Number.isFinite(tx) || !Number.isFinite(ty)) return await fail("座標錯誤");
-    const hit = await W.findAt(world, tx, ty);
-    if (!hit) return await fail("該座標沒有玩家的城池");
-    if (hit.uid === uid) return await fail("不能攻擊自己的城池");
-    const gotD = await saves.getWithMetadata(hit.uid, { type: "json" });
-    if (!gotD || !gotD.data || !gotD.data.state) return await fail("對方還沒開始遊戲");
-    const def = core.settle(clone(gotD.data.state), now);
-    if (G.pvpProtected(def, now)) return await fail("對方仍在新手保護期,暫時不能攻擊");
+    let hit = null;
+    if (found) {
+      if (Math.abs(tx) > 500 || Math.abs(ty) > 500) return await fail("建城的座標太遠了(範圍 -500 ~ 500)");
+      if (G.npcAt(tx, ty)) return await fail("這裡是營寨或山城,不能建城");
+      if (await W.findAt(world, tx, ty)) return await fail("這個位置已經有城池了");
+      const tk = await world.get(`t_${tx}_${ty}`, { type: "json" });
+      if (tk) return await fail("這個位置已經被佔用了");
+    } else {
+      hit = await W.findAt(world, tx, ty);
+      if (!hit) return await fail("該座標沒有玩家的城池");
+      if ((hit.rec.o || hit.uid) === owner) return await fail("不能攻擊自己的城池");
+      const gotD = await saves.getWithMetadata(hit.uid, { type: "json" });
+      if (!gotD || !gotD.data || !gotD.data.state) return await fail("對方還沒開始遊戲");
+      const def = core.settle(clone(gotD.data.state), now);
+      if (G.pvpProtected(def, now)) return await fail("對方仍在新手保護期,暫時不能攻擊");
+    }
 
     const aid = `${now}-${Math.random().toString(36).slice(2, 8)}`;
-    const r = G.pvpLaunch(att, a, { aid, defNick: hit.rec.n, now });
+    const r = G.pvpLaunch(att, a, { aid, defNick: hit && hit.rec.n, now });
     if (!r.ok) return await fail(r.msg);
     att.saved = now;
     const next = rev + 1;
     const w = await saves.setJSON(uid, { state: att, rev: next, updatedAt: now }, { onlyIfMatch: etag });
     if (w && w.modified === false) {
-      await unlock(world, uid).catch(() => {});
+      await unlock(world, owner).catch(() => {});
       return { status: 409, body: { ...core.view((await saves.get(uid, { type: "json" })) || stored, now), ok: false, msg: "已同步伺服器狀態" } };
     }
     const arrAt = now + Math.round((r.dur / G.SPEED) * 1000);
     try {
       await B.registerAttack({
         battle, mail, now,
-        rec: { id: aid, att: { uid, n: nick, x: r.pos.x, y: r.pos.y, fac: r.fac, ab: r.ab }, def: { uid: hit.uid, n: hit.rec.n, x: hit.rec.x, y: hit.rec.y }, send: r.send, sentAt: now, arrAt, go: r.go, dur: r.dur, dist: r.dist, kind: r.kind || "", tg: r.tg || [] },
+        rec: {
+          id: aid, att: { uid, o: owner, n: nick, x: r.pos.x, y: r.pos.y, fac: r.fac, ab: r.ab },
+          def: found ? null : { uid: hit.uid, o: hit.rec.o || hit.uid, n: hit.rec.n, x: hit.rec.x, y: hit.rec.y },
+          tx, ty, send: r.send, sentAt: now, arrAt, go: r.go, dur: r.dur, dist: r.dist, kind: r.kind || "", tg: r.tg || [],
+        },
       });
     } catch (e) { /* 登記失敗:攻擊方的「出征中」紀錄在抵達時間過後會自動取消,部隊折返 */ }
-    await unlock(world, uid).catch(() => {});
+    await unlock(world, owner).catch(() => {});
     const total = r.send.reduce((p, q) => p + q, 0), mins = Math.max(1, Math.round((arrAt - now) / 60000));
-    return { status: 200, body: { ok: true, msg: `已派${r.kind ? "偵察兵" : "兵"} ${total} 人前往 ${hit.rec.n}(${tx}|${ty}),約 ${mins} 分鐘後抵達;抵達時才會開戰,戰況會用飛鴿傳書通知你`, state: att, rev: next, now } };
+    const msg = found
+      ? `已派 3 名開墾代官前往(${tx}|${ty}),約 ${mins} 分鐘後抵達並建立分城`
+      : `已派${r.kind ? "偵察兵" : "兵"} ${total} 人前往 ${hit.rec.n}(${tx}|${ty}),約 ${mins} 分鐘後抵達;抵達時才會開戰,戰況會用飛鴿傳書通知你`;
+    return { status: 200, body: { ok: true, msg, state: att, rev: next, now } };
   } catch (e) {
-    await unlock(world, uid).catch(() => {});
+    await unlock(world, owner).catch(() => {});
     throw e;
   }
 }
 
 // 撤回出兵:已走多少時間就再走回去
-async function recall({ saves, world, battle, mail, uid, body, stored, etag, now }) {
+async function recall({ saves, world, battle, mail, uid, owner, body, stored, etag, now }) {
+  owner = owner || uid;
   const rev = stored.rev;
   if ((body.rev || 0) !== rev) return { status: 409, body: { ...core.view(stored, now), ok: false, msg: "已同步伺服器狀態" } };
-  if (!(await lock(world, uid, now))) return { status: 409, body: { ok: false, msg: "上一個出兵操作還在處理中,請稍候再試" } };
+  if (!(await lock(world, owner, now))) return { status: 409, body: { ok: false, msg: "上一個出兵操作還在處理中,請稍候再試" } };
   const aid = String((body.action && body.action.aid) || "");
   const att = core.settle(clone(stored.state), now);
   try {
@@ -92,7 +112,7 @@ async function recall({ saves, world, battle, mail, uid, body, stored, etag, now
     try { await B.finishCancel({ battle, mail, rec, now }); } catch (e) { /* 收尾失敗不影響撤回:攻擊已標記為取消,不會被結算 */ }
     return { status: 200, body: { ok: true, msg: `已撤回前往 ${r.name} 的部隊,已走多久就再走多久回來`, state: att, rev: rev + 1, now } };
   } finally {
-    await unlock(world, uid).catch(() => {});
+    await unlock(world, owner).catch(() => {});
   }
 }
 

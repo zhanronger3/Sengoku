@@ -8,6 +8,7 @@ const core = require("./server-core.cjs");
 const W = require("./world-store.cjs");
 const M = require("./mail-store.cjs");
 const R = require("./battle-report.cjs");
+const A = require("./acct.cjs");
 
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -18,14 +19,19 @@ const akey = (id) => "atk_" + id;
 const seedOf = (id) => { let h = 2166136261; for (const c of String(id)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
 const ikey = (uid) => "inc_" + uid;
 
+// 帳號 id:存檔鍵可能是分城(c_ 開頭),信件與來襲通知都歸帳號
+const ownerOfAtt = (rec) => rec.att.o || rec.att.uid;
+const ownerOfDef = (rec) => (rec.def ? rec.def.o || rec.def.uid : null);
+
 async function registerAttack({ battle, mail, rec, now }) {
   await battle.setJSON(akey(rec.id), { ...rec, state: "pending" }, { onlyIfNew: true });
-  await W.casUpdate(battle, ikey(rec.def.uid), (cur) => ({
-    a: [...((cur && cur.a) || []), { id: rec.id, arrAt: rec.arrAt, n: rec.att.n, x: rec.att.x, y: rec.att.y }].sort((p, q) => p.arrAt - q.arrAt),
+  if (!rec.def) return; // 開分城:沒有防守方,不需要來襲警報
+  await W.casUpdate(battle, ikey(ownerOfDef(rec)), (cur) => ({
+    a: [...((cur && cur.a) || []), { id: rec.id, arrAt: rec.arrAt, n: rec.att.n, x: rec.att.x, y: rec.att.y, tx: rec.def.x, ty: rec.def.y }].sort((p, q) => p.arrAt - q.arrAt),
   }));
   const mins = Math.max(1, Math.round((rec.arrAt - now) / 60000));
-  await M.systemMail(mail, rec.def.uid, "來襲警報",
-    `${rec.att.n}(${rec.att.x}|${rec.att.y})的軍勢正向你的城池進軍!\n預計 ${R.fmtTime(rec.arrAt)} 抵達(約 ${mins} 分鐘後)。\n部隊抵達時才會開戰,戰況會用飛鴿傳書通知你。趁現在整備軍隊、升級城牆吧。`,
+  await M.systemMail(mail, ownerOfDef(rec), "來襲警報",
+    `${rec.att.n}(${rec.att.x}|${rec.att.y})的軍勢正向你的城池(${rec.def.x}|${rec.def.y})進軍!\n預計 ${R.fmtTime(rec.arrAt)} 抵達(約 ${mins} 分鐘後)。\n部隊抵達時才會開戰,戰況會用飛鴿傳書通知你。趁現在整備軍隊、升級城牆吧。`,
     now, { id: `atk-${rec.id}-w`, limit: MAIL_LIMIT });
 }
 
@@ -48,8 +54,66 @@ async function fizzle({ saves, uid, aid, now }) {
   }
 }
 
+// 把戰果套用到攻擊方的存檔(出征中 → 返回中,或開分城完成);已經套用過就什麼都不做
+async function applyToAttacker({ saves, rec, id, res, now }) {
+  for (let i = 0; i < 10; i++) {
+    const ga = await saves.getWithMetadata(rec.att.uid, { type: "json" });
+    if (!ga || !ga.data || !ga.data.state) break;
+    const st = clone(ga.data.state);
+    G.fix(st);
+    if (!G.pvpApplyAtt(st, id, res, {})) break; // 已經套用過
+    const w = await saves.setJSON(rec.att.uid, { state: st, rev: ga.data.rev + 1, updatedAt: now }, { onlyIfMatch: ga.etag });
+    if (!w || w.modified !== false) break;
+    await sleep(Math.random() * 6 * (i + 1));
+  }
+}
+
+// 開分城:部隊抵達時才檢查地點、建立新城。每一步都可以重複執行(新城的存檔鍵由攻擊編號決定)
+async function resolveFound({ saves, world, battle, mail, rec, now }) {
+  const id = rec.id, ck = "c_" + id, x = rec.tx, y = rec.ty, owner = ownerOfAtt(rec);
+  let res;
+  if (G.npcAt(x, y)) res = { found: 1, ok: false, why: "這裡是營寨或山城,不能建城。" };
+  else {
+    const ex = await W.findAt(world, x, y);
+    if (ex && ex.uid !== ck) res = { found: 1, ok: false, why: "有別人搶先在這裡建了城。" };
+    else if (!(await W.claimTile(world, x, y, ck))) res = { found: 1, ok: false, why: "這塊地已經被別人佔用了。" };
+    else {
+      let st = null;
+      const g = await saves.getWithMetadata(ck, { type: "json" });
+      if (g && g.data && g.data.state) st = g.data.state;
+      else {
+        st = G.initCity(rec.att.fac, { x, y }, { own: owner, cname: `${rec.att.n}的分城`, now: rec.arrAt });
+        const w = await saves.setJSON(ck, { state: st, rev: 1, updatedAt: now }, { onlyIfNew: true });
+        if (w && w.modified === false) st = (await saves.get(ck, { type: "json" })).state;
+      }
+      await world.setJSON("owner_" + ck, { x, y }, { onlyIfNew: true });
+      await A.add(world, owner, ck);
+      W.stampPub(st, rec.att.n, now);
+      await W.publishState(world, ck, st, owner);
+      res = { found: 1, ok: true };
+    }
+  }
+  await applyToAttacker({ saves, rec, id, res, now });
+  const rp = R.buildFound(res, { attNick: rec.att.n, attPos: { x: rec.att.x, y: rec.att.y }, defPos: { x, y }, arrAt: rec.arrAt });
+  await M.systemMail(mail, owner, rp.att.s, rp.att.b, now, { id: `atk-${id}-a`, limit: MAIL_LIMIT });
+  await battle.delete(akey(id));
+  return true;
+}
+
+// 城池易主後的收尾(可重複執行):帳號的城池清單、地圖上的擁有者
+async function transferCity({ saves, world, rec, now }) {
+  const key = rec.def.uid, oldO = ownerOfDef(rec), newO = ownerOfAtt(rec);
+  if (oldO !== newO) { await A.drop(world, oldO, key); await A.add(world, newO, key); }
+  const g = await saves.getWithMetadata(key, { type: "json" });
+  if (g && g.data && g.data.state) {
+    const st = clone(g.data.state);
+    G.fix(st);
+    if ((st.own || key) === newO) { W.stampPub(st, rec.att.n, now); await W.publishState(world, key, st, newO); }
+  }
+}
+
 // 結算一筆攻擊。回傳 true 代表這次呼叫完成了結算。
-async function resolveAttack({ saves, battle, mail, id, now }) {
+async function resolveAttack({ saves, world, battle, mail, id, now }) {
   // 1 認領:同一時間只會有一個請求在算這場戰鬥
   let rec = null, claimed = false;
   await W.casUpdate(battle, akey(id), (cur) => {
@@ -61,6 +125,7 @@ async function resolveAttack({ saves, battle, mail, id, now }) {
     return { ...cur, state: "resolving", claimAt: now };
   });
   if (!claimed || !rec) return false;
+  if (rec.kind === "found") return resolveFound({ saves, world, battle, mail, rec, now });
 
   // 2 對「抵達那一刻」的防守方狀態算出戰果並寫回防守方存檔(寫入成功才算結算完成)
   let res = null;
@@ -72,7 +137,7 @@ async function resolveAttack({ saves, battle, mail, id, now }) {
     if (st.atkRes && st.atkRes[id]) { res = st.atkRes[id]; break; } // 已經結算過(前一次中途失敗)
     core.settleTo(st, rec.arrAt);                                      // 先把防守方補算到抵達的那一刻
     if (G.pvpProtected(st, rec.arrAt)) { res = { void: true, why: "protected" }; break; }
-    const ctxA = { id, attNick: rec.att.n, attPos: { x: rec.att.x, y: rec.att.y } };
+    const ctxA = { id, attNick: rec.att.n, attPos: { x: rec.att.x, y: rec.att.y }, attOwner: ownerOfAtt(rec) };
     let r;
     if (rec.kind === "scout") { r = G.scoutBattle({ fac: rec.att.fac, send: rec.send }, st); G.scoutApplyDef(st, r, ctxA); }
     else { r = G.pvpBattle({ fac: rec.att.fac, send: rec.send, ab: rec.att.ab, tg: rec.tg || [], seed: seedOf(id) }, st); G.pvpApplyDef(st, r, ctxA); }
@@ -85,28 +150,25 @@ async function resolveAttack({ saves, battle, mail, id, now }) {
     return false;
   }
 
-  // 3 攻擊方:出征中 → 返回中(帶著戰利品與生還的兵)
-  for (let i = 0; i < 10; i++) {
-    const ga = await saves.getWithMetadata(rec.att.uid, { type: "json" });
-    if (!ga || !ga.data || !ga.data.state) break;
-    const st = clone(ga.data.state);
-    G.fix(st);
-    if (!G.pvpApplyAtt(st, id, res, {})) break; // 已經套用過
-    const w = await saves.setJSON(rec.att.uid, { state: st, rev: ga.data.rev + 1, updatedAt: now }, { onlyIfMatch: ga.etag });
-    if (!w || w.modified !== false) break;
-    await sleep(Math.random() * 6 * (i + 1));
+  // 2.5 城池易主:更新帳號清單與地圖(失敗會讓這場戰鬥維持「結算中」,稍後別的請求接手重做這一步)
+  if (res.conq && res.conq.taken) {
+    try { await transferCity({ saves, world, rec, now }); }
+    catch (e) { console.error("transferCity failed", e); await W.casUpdate(battle, akey(id), (cur) => (cur ? { ...cur, state: "pending" } : undefined)); return false; }
   }
+
+  // 3 攻擊方:出征中 → 返回中(帶著戰利品與生還的兵)
+  await applyToAttacker({ saves, rec, id, res, now });
 
   // 4 戰報(兩邊各一封;信件編號固定,重複寄也只會有一封)
   const rp = (res.scout ? R.buildScout : R.build)(res, {
     id, attNick: rec.att.n, defNick: rec.def.n, attPos: { x: rec.att.x, y: rec.att.y }, defPos: { x: rec.def.x, y: rec.def.y },
     arrAt: rec.arrAt, dist: rec.dist || 0,
   });
-  await M.systemMail(mail, rec.att.uid, rp.att.s, rp.att.b, now, { id: `atk-${id}-a`, limit: MAIL_LIMIT });
-  if (rp.def) await M.systemMail(mail, rec.def.uid, rp.def.s, rp.def.b, now, { id: `atk-${id}-d`, limit: MAIL_LIMIT });
+  await M.systemMail(mail, ownerOfAtt(rec), rp.att.s, rp.att.b, now, { id: `atk-${id}-a`, limit: MAIL_LIMIT });
+  if (rp.def) await M.systemMail(mail, ownerOfDef(rec), rp.def.s, rp.def.b, now, { id: `atk-${id}-d`, limit: MAIL_LIMIT });
 
   // 5 收尾
-  await W.casUpdate(battle, ikey(rec.def.uid), (cur) => (!cur || !cur.a.some((x) => x.id === id) ? undefined : { a: cur.a.filter((x) => x.id !== id) }));
+  await W.casUpdate(battle, ikey(ownerOfDef(rec)), (cur) => (!cur || !cur.a.some((x) => x.id === id) ? undefined : { a: cur.a.filter((x) => x.id !== id) }));
   await battle.delete(akey(id));
   return true;
 }
@@ -128,35 +190,40 @@ async function uncancelAttack({ battle, id }) {
 }
 // 撤回成功後的收尾:清掉防守方的來襲通知、攻擊登記,並通知防守方
 async function finishCancel({ battle, mail, rec, now }) {
-  await W.casUpdate(battle, ikey(rec.def.uid), (cur) => (!cur || !cur.a.some((x) => x.id === rec.id) ? undefined : { a: cur.a.filter((x) => x.id !== rec.id) }));
+  if (rec.def) {
+    await W.casUpdate(battle, ikey(ownerOfDef(rec)), (cur) => (!cur || !cur.a.some((x) => x.id === rec.id) ? undefined : { a: cur.a.filter((x) => x.id !== rec.id) }));
+    await M.systemMail(mail, ownerOfDef(rec), "來襲取消",
+      `${rec.att.n}(${rec.att.x}|${rec.att.y})的軍勢在半路撤退了,不會抵達你的城池。`,
+      now, { id: `atk-${rec.id}-c`, limit: MAIL_LIMIT });
+  }
   await battle.delete(akey(rec.id));
-  await M.systemMail(mail, rec.def.uid, "來襲取消",
-    `${rec.att.n}(${rec.att.x}|${rec.att.y})的軍勢在半路撤退了,不會抵達你的城池。`,
-    now, { id: `atk-${rec.id}-c`, limit: MAIL_LIMIT });
 }
 
-// 在處理某位玩家的請求之前呼叫:把跟他有關、已經到期的攻擊依抵達時間先結算掉
-async function resolveDueFor({ saves, battle, mail, uid, now }) {
+// 在處理某位玩家(帳號)的請求之前呼叫:把跟他有關、已經到期的攻擊依抵達時間先結算掉
+async function resolveDueFor({ saves, world, battle, mail, uid, now }) {
   let n = 0;
   // 他是防守方:依抵達時間排序,一場一場結算
   const inc = (await incomingFor(battle, uid)).filter((e) => e.arrAt <= now).sort((a, b) => a.arrAt - b.arrAt);
   for (const e of inc) {
-    if (await resolveAttack({ saves, battle, mail, id: e.id, now })) n++;
+    if (await resolveAttack({ saves, world, battle, mail, id: e.id, now })) n++;
     else if (!(await battle.get(akey(e.id), { type: "json" }))) {
       // 登記資料已經不存在(例如登記到一半失敗):把這筆殘留的來襲通知清掉
       await W.casUpdate(battle, ikey(uid), (cur) => (!cur || !cur.a.some((x) => x.id === e.id) ? undefined : { a: cur.a.filter((x) => x.id !== e.id) }));
     }
   }
-  // 他是攻擊方:自己出征中的部隊如果已經抵達,也順便結算(防守方可能一直不上線)
-  const mine = await saves.get(uid, { type: "json" });
-  const pend = mine && mine.state ? (mine.state.mv || []).filter((m) => m.pending && m.aid) : [];
-  for (const m of pend) {
-    const rec = await battle.get(akey(m.aid), { type: "json" });
-    if (rec) {
-      if (rec.arrAt <= now && (await resolveAttack({ saves, battle, mail, id: m.aid, now }))) n++;
-    } else if (m.sentAt && now > m.sentAt + (m.dur / G.SPEED) * 1000 + FIZZLE_GRACE) {
-      await fizzle({ saves, uid, aid: m.aid, now });
-      n++;
+  // 他是攻擊方:自己每座城池出征中的部隊如果已經抵達,也順便結算(防守方可能一直不上線)
+  const keys = await A.list(world, uid);
+  for (const key of keys) {
+    const mine = await saves.get(key, { type: "json" });
+    const pend = mine && mine.state ? (mine.state.mv || []).filter((m) => m.pending && m.aid) : [];
+    for (const m of pend) {
+      const rec = await battle.get(akey(m.aid), { type: "json" });
+      if (rec) {
+        if (rec.arrAt <= now && (await resolveAttack({ saves, world, battle, mail, id: m.aid, now }))) n++;
+      } else if (m.sentAt && now > m.sentAt + (m.dur / G.SPEED) * 1000 + FIZZLE_GRACE) {
+        await fizzle({ saves, uid: key, aid: m.aid, now });
+        n++;
+      }
     }
   }
   return n;

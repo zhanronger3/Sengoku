@@ -34,6 +34,19 @@ function siegeText(sg, dFac) {
   }
   return L.length ? "【攻城】\n" + L.join("\n") : "";
 }
+// 行政官說服家臣:降低忠誠度,歸零時城池易主(res.conq 由 G.pvpBattle 算出)
+function conqText(cq, d, side) {
+  if (!cq) return "";
+  if (cq.cap) return side === "att" ? "【策反】行政官抵達了" + d + "的本丸,但本丸的家臣忠心耿耿,說服不了任何人,行政官平安撤回。" : "【策反】敵方的行政官潛入本丸,但家臣們忠心不二,策反失敗。";
+  if (cq.taken) return side === "att" ? `【策反】${cq.admN} 名行政官輪番遊說,${d}的忠誠度從 ${cq.from} 一路降到 0,家臣紛紛歸順——這座城池現在是你的了!(行政官已留在當地輔佐,城內原有守軍全數離散)` : `【策反】敵方 ${cq.admN} 名行政官輪番遊說,忠誠度從 ${cq.from} 降到 0,家臣紛紛倒戈——這座城池失守了!`;
+  return side === "att" ? `【策反】${cq.admN} 名行政官遊說家臣,每人使忠誠度下降約 ${cq.per},${d}的忠誠度 ${cq.from} → ${cq.to}。還沒到 0,需要再派行政官(行政官已留在當地,不會回來)。` : `【策反】敵方 ${cq.admN} 名行政官動搖了民心,忠誠度 ${cq.from} → ${cq.to}。忠誠度會隨時間慢慢回復(本丸御殿越高回復越快)。`;
+}
+// 開分城報告。res: { found:1, ok, why }
+function buildFound(res, ctx) {
+  const { attNick: a, attPos, defPos } = ctx;
+  if (res.ok) return { att: { s: `【開墾】新城建立於(${defPos.x}|${defPos.y})`, b: `${fmtTime(ctx.arrAt)},${a}派出的 3 名開墾代官自(${attPos.x}|${attPos.y})長途跋涉,抵達了(${defPos.x}|${defPos.y})。\n\n他們在此插下旗幟、平整土地、築起第一座知行所的地基——一座新的分城就此誕生!\n\n新城有 ${G.NSLOTS} 塊空地,資源很少,先蓋知行所吧。新城有 2 個遊戲日(真實 2 天)的新手保護。\n用左上角的城池選單可以切換管理。` }, def: null };
+  return { att: { s: `【開墾】(${defPos.x}|${defPos.y})建城失敗`, b: `${fmtTime(ctx.arrAt)},${a}的開墾代官抵達了(${defPos.x}|${defPos.y}),但是——\n${res.why || "無法在此建城"}\n\n開墾代官正在返回中。` }, def: null };
+}
 // 偵察報告。res: G.scoutBattle 的結果
 function buildScout(res, ctx) {
   const { attNick: a, defNick: d, attPos, defPos } = ctx;
@@ -97,7 +110,7 @@ function build(res, ctx) {
   const tDef = `【敵方】守軍 ${defN} 人 → 陣亡 ${deadD} 人\n${table(dFac, res.defBefore, res.deadD, true, ["原有", "陣亡"])}`;
   const closerW = pick(CLOSERS_WIN, id, "cw"), closerL = pick(CLOSERS_LOSE, id, "cl");
   const attBody = [
-    setting, defense, battle, clash, strength, siegeText(res.sg, dFac),
+    setting, defense, battle, clash, strength, siegeText(res.sg, dFac), conqText(res.conq, d, "att"),
     res.win ? `結果:大獲全勝!${a}軍攻破${d}的防線。` : `結果:敗北。${a}軍未能攻下${d}的城池,${survN > 0 ? "殘部正在撤退。" : "全軍覆沒。"}`,
     tAtt, tDef.replace("【敵方】", "【對手】"),
     res.win ? `【戰利品】${lootTxt}(部隊返回後入庫)${cave ? "\n" + cave : ""}\n部隊正在返回中。` : (survN > 0 ? "部隊正在返回中。" : ""),
@@ -105,7 +118,7 @@ function build(res, ctx) {
   ].filter(Boolean).join("\n\n");
   const defBody = [
     `${fmtTime(ctx.arrAt)},${weather}。${a}(${attPos.x}|${attPos.y})的軍勢 ${sentN} 人(${unitsText(aFac, res.sent)})殺到城下。`,
-    defense, battle.replace(attMain, `敵軍的${attMain}`).replace(attCav || "\u0000", `敵軍的${attCav}`), clash.replace(attMain, `敵軍的${attMain}`), strength, siegeText(res.sg, dFac),
+    defense, battle.replace(attMain, `敵軍的${attMain}`).replace(attCav || "\u0000", `敵軍的${attCav}`), clash.replace(attMain, `敵軍的${attMain}`), strength, siegeText(res.sg, dFac), conqText(res.conq, d, "def"),
     res.win ? `結果:城池失守!守軍不敵,${a}軍搶掠而去。` : `結果:守城成功!${d}軍擊退了${a}的進攻。`,
     tDef.replace("【敵方】", "【我方】"), tAtt.replace("【我方】", "【敵方】"),
     res.win ? `【被搶走的資源】${lootTxt}${cave ? "\n" + cave : ""}` : "【被搶走的資源】無",
@@ -118,4 +131,4 @@ function build(res, ctx) {
     verdict,
   };
 }
-module.exports = { build, buildScout, fmtTime };
+module.exports = { build, buildScout, buildFound, fmtTime };
