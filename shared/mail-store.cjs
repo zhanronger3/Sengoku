@@ -35,11 +35,15 @@ async function send(mail, world, { uid, nick, pos, tx, ty, subject, body, now })
   return { ok: true, msg: `信已寄給 ${hit.rec.n}` };
 }
 
-// 系統信:不經過收件人查詢(寄件人沒有座標)
-async function systemMail(mail, uid, subject, body, now) {
-  const id = `${now}-${Math.random().toString(36).slice(2, 8)}`;
-  const msg = { id, t: now, from: { n: "系統", x: null, y: null }, to: { n: "", x: null, y: null }, s: clean(subject, LIMITS.subject) || "(系統通知)", b: clean(body, LIMITS.body), r: false, sys: true };
-  await W.casUpdate(mail, "inbox_" + uid, (cur) => ({ m: [msg, ...((cur && cur.m) || [])].slice(0, LIMITS.inbox) }));
+// 系統信:不經過收件人查詢(寄件人沒有座標)。opts.id 相同的信只會存一次(重複呼叫是安全的);opts.limit 可放寬內文長度(戰報用)
+async function systemMail(mail, uid, subject, body, now, opts = {}) {
+  const id = opts.id || `${now}-${Math.random().toString(36).slice(2, 8)}`;
+  const msg = { id, t: now, from: { n: "系統", x: null, y: null }, to: { n: "", x: null, y: null }, s: clean(subject, LIMITS.subject) || "(系統通知)", b: clean(body, opts.limit || LIMITS.body), r: false, sys: true };
+  await W.casUpdate(mail, "inbox_" + uid, (cur) => {
+    const list = (cur && cur.m) || [];
+    if (opts.id && list.some((x) => x.id === id)) return undefined;
+    return { m: [msg, ...list].slice(0, LIMITS.inbox) };
+  });
 }
 
 async function markRead(mail, uid, id) {

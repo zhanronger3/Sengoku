@@ -14,6 +14,16 @@ function settle(state, now) {
   return state;
 }
 
+// 補算到指定的真實時間點(例如部隊抵達的那一刻);存檔已經比那個時間新就不動
+function settleTo(state, tMs) {
+  G.fix(state);
+  G.S = state;
+  const real = Math.max(0, (tMs - (state.saved || tMs)) / 1000);
+  if (real > 0) G.adv(Math.min(real, MAX_OFFLINE_SEC) * G.SPEED, { quiet: real > 300 });
+  state.saved = Math.max(state.saved || 0, tMs);
+  return state;
+}
+
 function view(stored, now) {
   if (!stored) return { ok: true, state: null, rev: 0, now };
   return { ok: true, state: settle(clone(stored.state), now), rev: stored.rev, now };
@@ -45,4 +55,4 @@ function act(stored, body, now, ctx) {
   return { status: 200, body: { ok: true, msg: r.msg, state: st, rev: next, now }, store: { state: st, rev: next, updatedAt: now } };
 }
 
-module.exports = { settle, view, act };
+module.exports = { settle, settleTo, view, act };

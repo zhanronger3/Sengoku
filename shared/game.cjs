@@ -2,7 +2,7 @@
 // 沒有任何畫面相關的程式,所有操作都透過 perform() 進行。
 const G=(()=>{
 const SPEED=60,CD=6*3600,CAMP_RESPAWN=12*3600,STASH_MULT=3,TRAIN_QMAX=10,DEMOLISH_GOV=3,NSLOTS=21,MULTI=['wh','gr','cave']; // 城內 21 塊建地;藏屋敷、米藏、埋藏所在舊的升到滿級後可再蓋新的
-const GOLD_RATE=200,EXCHANGE_COST=1,PROTECT_DAYS=3; // 1 金幣買 200 單位資源;平倉每次 1 金幣;新手保護 3 個遊戲日
+const GOLD_RATE=50,EXCHANGE_COST=1,PROTECT_DAYS=3; // 1 金幣買 50 單位資源;平倉每次 1 金幣;新手保護 3 個遊戲日
 const RN=['木材','泥土','鐵塊','糧食'],FN=['伐木場','泥坑','鐵礦場','農田'];
 const FT=[0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,3,3];
 const FC=[[40,100,50,60],[80,40,80,50],[100,80,30,60],[70,90,70,20]];
@@ -111,9 +111,9 @@ const ab=()=>1+.015*S.bld.smi,db=()=>1+.015*S.bld.arm;
 const wb=()=>W[S.fac][S.bld.wall];
 const home=()=>(S&&S.pos)||{x:0,y:0};
 const distTo=(x,y)=>Math.hypot(x-home().x,y-home().y);
-const prest=()=>Math.round(S.fld.reduce((a,b)=>a+b,0)*6+B.reduce((a,b)=>a+S.bld[b.id],0)*12+S.u.reduce((a,b)=>a+b,0)*2);
+const prest=()=>Math.round(S.fld.reduce((a,b)=>a+b,0)*6+B.reduce((a,b)=>a+S.bld[b.id],0)*12+(S.u.reduce((a,b)=>a+b,0)+awayUnits().reduce((a,b)=>a+b,0))*2); // 出征中的兵也算在威望裡
 const rnd=k=>{const x=Math.sin(k*12.9898+78.233)*43758.5453;return x-Math.floor(x)}; // 可重現的亂數,伺服器與瀏覽器結果一致
-const fix=s=>{if(s.rc==null)s.rc=0;if(!s.camps)s.camps={};
+const fix=s=>{if(s.rc==null)s.rc=0;if(!s.atkRes)s.atkRes={};for(const m of(s.mv||[]))if(!m.sent)m.sent=(m.send||[]).slice();if(!s.camps)s.camps={};
  if(!s.tr)s.tr={infb:[],cavb:[]};for(const b of['infb','cavb']){const v=s.tr[b];s.tr[b]=Array.isArray(v)?v:(v?[v]:[])} // 舊存檔:單一訓練 → 佇列
  if(!s.born)s.born=(s.saved||Date.now())-(s.t||0)/SPEED*1000; // 舊存檔:依遊戲時間推算開城時間
  for(const k of Object.keys(s.camps)){const g=s.camps[k]&&s.camps[k].g;if(!g)continue;const ng={};for(const [u,c] of Object.entries(g)){const nu=OLDN[u]||u;ng[nu]=(ng[nu]||0)+c}s.camps[k].g=ng}if(!s.bld)s.bld={};
@@ -138,7 +138,7 @@ function settleEvents(opt){
  for(const b of['infb','cavb']){const q=S.tr[b];
   while(q.length&&q[0].next!=null&&q[0].next<=S.t){const o=q[0],t=o.next;S.u[o.u]++;S.stat.trained++;o.n--;
    if(o.n>0)o.next=t+o.per;else{logm(`${us()[o.u].n} 訓練完成`);q.shift();if(q.length)q[0].next=t+q[0].per}}}
- for(let i=S.mv.length-1;i>=0;i--){const m=S.mv[i];if(m.arr>S.t)continue;const n={n:m.name,def:m.def};
+ for(let i=S.mv.length-1;i>=0;i--){const m=S.mv[i];if(m.arr>S.t||m.pending)continue;const n={n:m.name,def:m.def};
   if(m.ret){m.send.forEach((x,k)=>S.u[k]+=x);m.loot.forEach((x,k)=>S.res[k]=Math.min(cap(k),S.res[k]+x));logm(`部隊自${n.n}返回,帶回 ${m.loot.map(Math.floor).join('/')}`,1);S.mv.splice(i,1)}
   else{const c=campGet(m.tx,m.ty),A=m.send.reduce((a,x,k)=>a+x*us()[k].a*ab(),0);
    if(!c){S.u=S.u.map((x,k)=>x+(m.send[k]||0));logm(`${n.n}已經不存在,部隊返回`,1);S.mv.splice(i,1);continue}
@@ -180,36 +180,51 @@ function balanceTargets(r){ // 把目前所有資源加總,依比例重新分配
  for(let i=0;i<4&&rem>1e-6;i++){const add=Math.min(caps[i]-t[i],rem);t[i]+=add;rem-=add}
  return t.map(x=>Math.floor(x))}
 const withS=(st,fn)=>{const prev=S;S=st;try{return fn()}finally{S=prev}};
-// 玩家對戰:att 是出兵一方(會被修改並加入出征紀錄),def 只讀,回傳要套用在防守方的結果 effect
-function pvp(att,def,a,meta){
+// ====== 玩家對戰(抵達時才結算) ======
+// 出兵:只扣兵、記一筆「出征中(等待抵達結算)」。真正的戰鬥在部隊抵達的那一刻,由伺服器依雙方當時的狀態結算。
+const pvpProtected=def=>withS(def,()=>S.t<PROTECT_DAYS*86400);
+function pvpLaunch(att,a,meta){
  const tx=int(a.tx,-1000000,1000000),ty=int(a.ty,-1000000,1000000);if(tx==null||ty==null)return bad('座標錯誤');
- const prot=withS(def,()=>S.t<PROTECT_DAYS*86400);
  return withS(att,()=>{
   if(S.bld.war<1)return bad('需要先建造軍奉行才能出兵');
   if(!Array.isArray(a.send))return bad('請選擇出征兵力');
   const U=us(),send=U.map((_,k)=>Math.min(S.u[k],Math.max(0,Math.floor(+a.send[k]||0))));if(!send.some(x=>x))return bad('請選擇出征兵力');
-  if(prot)return bad('對方仍在新手保護期,暫時不能攻擊');
   const dist=distTo(tx,ty);if(dist<=0)return bad('不能攻擊自己的城池');
   const sp=Math.min(...send.map((x,k)=>x?U[k].s:99)),dur=Math.max(1,Math.round(dist/sp*3600));
-  const atk=send.map((x,k)=>x*U[k].a*ab()),A=atk.reduce((p,q)=>p+q,0),cavShare=A>0?send.reduce((p,x,k)=>p+(U[k].b=='cavb'?atk[k]:0),0)/A:0;
-  const attFac=S.fac,attPos={...S.pos};
-  const dinfo=withS(def,()=>{const Ud=us(),per=u=>u.di*(1-cavShare)+u.dc*cavShare;
-   const D=(S.u.reduce((p,x,k)=>p+x*per(Ud[k])*db(),0)+60)*(1+wb()/100);
-   return {D,res:S.res.slice(),hide:hide()*(attFac=='shu'?2/3:1)}}); // 德川:敵人的埋藏所只有 2/3 作用
-  const win=A>dinfo.D;let lossA,lossD;
-  if(win){const q=pw(dinfo.D/A,1.5);lossA=q;lossD=(1-q)*.5}else{lossA=1;lossD=.3*pw(A/dinfo.D,1.5)}
-  const surv=send.map(x=>Math.round(x*(1-lossA))),carry=surv.reduce((p,x,k)=>p+x*U[k].c,0);
-  const loot=[0,1,2,3].map(i=>win?Math.floor(Math.min(carry/4,Math.max(0,dinfo.res[i]-dinfo.hide))):0);
   send.forEach((x,k)=>S.u[k]-=x);
   const name=`${meta.defNick}(${tx}|${ty})`;
-  if(surv.some(x=>x))S.mv.push({tx,ty,name,def:0,send:surv,go:S.t+dur,arr:S.t+2*dur,dur,ret:1,loot,pv:1});
-  const msg=win?`襲擊${name}成功!折損 ${Math.round(lossA*100)}%,搶得 ${loot.join('/')}(部隊返回後入庫)`:`襲擊${name}失敗,全軍覆沒(攻 ${Math.floor(A)} < 守 ${Math.floor(dinfo.D)})`;
-  logm(msg,1);if(win)S.stat.raids++;
-  return {ok:true,msg,effect:{att:meta.attNick,x:attPos.x,y:attPos.y,win,lossD,loot}}})}
-function pvpApplyDef(def,e){return withS(def,()=>{
- const taken=[0,1,2,3].map(i=>{const t=Math.min(S.res[i],e.loot[i]);S.res[i]-=t;return Math.floor(t)});
- const b=S.u.reduce((p,q)=>p+q,0);S.u=S.u.map(x=>Math.floor(x*(1-e.lossD)));const a=S.u.reduce((p,q)=>p+q,0);
- logm(`${e.att}(${e.x}|${e.y})襲擊你的城池,${e.win?'守軍不敵':'守軍擊退'}!被搶 ${taken.join('/')},損兵 ${b-a}`,1);return def})}
+  S.mv.push({pv:1,pending:1,aid:meta.aid,tx,ty,name,def:0,sent:send.slice(),send:send.slice(),go:S.t+dur,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0],sentAt:meta.now});
+  logm(`派兵前往${name},出兵 ${send.reduce((p,q)=>p+q,0)} 人,速度 ${sp} 格/時;部隊抵達後才會開戰`);
+  return {ok:true,tx,ty,dur,sp,dist,send,go:S.t+dur,fac:S.fac,ab:ab(),pos:{...home()}}})}
+// 戰鬥結算(純計算,不改任何存檔):info = { fac, send, ab },def = 防守方「抵達那一刻」的狀態
+function pvpBattle(info,def){
+ const U=UN[info.fac],parts=info.send.map((x,k)=>x*U[k].a*info.ab),A=parts.reduce((p,q)=>p+q,0);
+ const cavShare=A>0?info.send.reduce((p,x,k)=>p+(U[k].b=='cavb'?parts[k]:0),0)/A:0;
+ return withS(def,()=>{const Ud=us(),per=u=>u.di*(1-cavShare)+u.dc*cavShare,wallPct=wb();
+  const D=(S.u.reduce((p,x,k)=>p+x*per(Ud[k])*db(),0)+60)*(1+wallPct/100),defRes=S.res.slice(),hideAmt=hide()*(info.fac=='shu'?2/3:1); // 德川:敵人的埋藏所只有 2/3 作用
+  const win=A>D;let lossA,lossD;
+  if(win){const q=pw(D/A,1.5);lossA=q;lossD=(1-q)*.5}else{lossA=1;lossD=.3*pw(A/D,1.5)}
+  const surv=info.send.map(x=>Math.round(x*(1-lossA))),carry=surv.reduce((p,x,k)=>p+x*U[k].c,0);
+  const loot=[0,1,2,3].map(i=>win?Math.floor(Math.min(carry/4,Math.max(0,defRes[i]-hideAmt))):0);
+  const defBefore=S.u.slice(),defAfter=S.u.map(x=>Math.floor(x*(1-lossD)));
+  return {win,A:Math.round(A),D:Math.round(D),wallPct,wallLv:S.bld.wall,caveLv:S.bld.cave,defFac:S.fac,attFac:info.fac,lossA,lossD,sent:info.send.slice(),surv,deadA:info.send.map((x,k)=>x-surv[k]),defBefore,deadD:defBefore.map((x,k)=>x-defAfter[k]),loot,defRes:defRes.map(Math.floor),hide:Math.round(hideAmt)}})}
+// 把戰果套用到防守方(res.loot 是依當時資源算出來的,這裡再保險地不讓資源變成負的)
+function pvpApplyDef(def,res,ctx){return withS(def,()=>{
+ const taken=[0,1,2,3].map(i=>{const t=Math.min(S.res[i],res.loot[i]);S.res[i]-=t;return Math.floor(t)});
+ S.u=S.u.map((x,k)=>Math.max(0,x-res.deadD[k]));
+ const dead=res.deadD.reduce((p,q)=>p+q,0);
+ S.atkRes=S.atkRes||{};S.atkRes[ctx.id]=res;const ks=Object.keys(S.atkRes);if(ks.length>30)ks.slice(0,ks.length-30).forEach(k=>delete S.atkRes[k]);
+ logm(`${ctx.attNick}(${ctx.attPos.x}|${ctx.attPos.y})來襲:${res.win?'守軍不敵':'守軍擊退'}!守軍陣亡 ${dead},被搶 ${taken.join('/')}`,1);return def})}
+// 把戰果套用到攻擊方:出征中 → 返回中。回傳 false 代表已經套用過(重複呼叫不會重複計算)
+function pvpApplyAtt(att,aid,res,ctx){return withS(att,()=>{
+ const i=S.mv.findIndex(m=>m.aid===aid&&m.pending);if(i<0)return false;const m=S.mv[i];
+ m.pending=0;m.ret=1;m.arr=m.go+m.dur;
+ if(res.void||res.fizzled){m.loot=[0,0,0,0];logm(res.void?`${m.name}的城池已經不在了,部隊折返`:`出兵沒有成功送出,部隊折返`,1);return true}
+ m.send=m.send.map((x,k)=>Math.min(x,res.surv[k]));m.loot=res.loot.slice();
+ const sent=res.sent.reduce((p,q)=>p+q,0),lost=res.deadA.reduce((p,q)=>p+q,0);
+ if(res.win)S.stat.raids++;
+ logm(`${res.win?'襲擊':'進攻'}${m.name}${res.win?'成功':'失敗'}!出兵 ${sent} 人,陣亡 ${lost},${res.win?'搶得 '+res.loot.join('/')+'(部隊返回後入庫)':'殘部返回'}`,1);
+ if(!m.send.some(x=>x))S.mv.splice(i,1);return true})}
 function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作');const t=a.t;
  if(t=='f'){const i=int(a.i,0,17);if(i==null)return bad('參數錯誤');if(S.fld[i]>=20)return bad('已達最高等級');
   const e=startQ('f',costF(i),durF(i),{i,name:FN[FT[i]],to:S.fld[i]+1});return e?bad(e):ok()}
@@ -249,7 +264,7 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
   const ci=campInfo(tx,ty);if(ci&&ci.empty)return bad(`這座營寨已被清空,約 ${Math.ceil(ci.respawnIn/3600)} 遊戲小時後重新集結`);
   if(!Array.isArray(a.send))return bad('請選擇出征兵力');const send=us().map((_,k)=>Math.min(S.u[k],Math.max(0,Math.floor(+a.send[k]||0))));if(!send.some(x=>x))return bad('請選擇出征兵力');
   const sp=Math.min(...send.map((x,k)=>x?us()[k].s:99));send.forEach((x,k)=>S.u[k]-=x);const dur=Math.max(1,Math.round(distTo(tx,ty)/sp*3600));
-  S.mv.push({tx,ty,name:n.n,def:n.def,send,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0]});logm(`派兵前往${n.n}(${tx}|${ty}),速度 ${sp} 格/時`);return ok()}
+  S.mv.push({tx,ty,name:n.n,def:n.def,sent:send.slice(),send,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0]});logm(`派兵前往${n.n}(${tx}|${ty}),速度 ${sp} 格/時`);return ok()}
  if(t=='buy'){const k=int(a.res,0,3),g=int(a.gold,1,100000);if(k==null||g==null)return bad('請輸入購買的金幣數量');if(S.gold<g)return bad('金幣不足');
   const amt=g*GOLD_RATE;if(S.res[k]+amt>cap(k))return bad(`${RN[k]}藏屋敷放不下(目前最多再買 ${Math.max(0,Math.floor((cap(k)-S.res[k])/GOLD_RATE))} 金幣)`);
   S.gold-=g;S.res[k]+=amt;logm(`用 ${g} 金幣買了 ${amt} ${RN[k]}`);return {ok:true,msg:`花費 ${g} 金幣,獲得 ${amt} ${RN[k]}`}}
@@ -257,6 +272,6 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
   if(S.gold<EXCHANGE_COST)return bad(`平倉需要 ${EXCHANGE_COST} 金幣`);S.gold-=EXCHANGE_COST;S.res=balanceTargets(r);logm(`平倉完成,比例 ${r.join(':')}`);return {ok:true,msg:'平倉完成'}}
  if(t=='claim'){const q=QS.find(x=>x.id===a.id);if(!q||S.qd.includes(q.id)||!q.ok())return bad('任務尚未完成');S.qd.push(q.id);if(q.g)S.gold+=q.g;if(q.r)q.r.forEach((x,i)=>S.res[i]=Math.min(cap(i),S.res[i]+x));return {ok:true,msg:'任務獎勵已領取'}}
  return bad('未知的操作')}
-return {get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvp,pvpApplyDef,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,DEMOLISH_GOV,UDESC,DEMOLISH_GOV,UDESC,CAMP_RESPAWN,STASH_MULT,defOf};
+return {get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvpProtected,pvpLaunch,pvpBattle,pvpApplyDef,pvpApplyAtt,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,DEMOLISH_GOV,UDESC,DEMOLISH_GOV,UDESC,CAMP_RESPAWN,STASH_MULT,defOf};
 })();
 if(typeof module!=='undefined')module.exports=G;
