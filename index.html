@@ -111,6 +111,7 @@ table.tb{border-collapse:collapse;width:100%;max-width:640px;margin:6px 0}
 .map-w{max-width:620px}
 svg text{user-select:none}
 @media(max-width:860px){#body{grid-template-columns:1fr}#nav{flex-direction:row;overflow-x:auto}#nav button{min-width:62px}}
+.ttl select{font-size:13px;font-weight:normal;padding:2px 4px;margin-left:8px;max-width:240px}
 </style>
 </head>
 <body>
@@ -147,7 +148,7 @@ const clk=t=>{const s=Math.floor(8*3600+t)%86400;return pad(s/3600|0)+':'+pad(s/
 const dstr=t=>{const d=new Date(2011,9,23+Math.floor((8*3600+t)/86400));return pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+clk(t)};
 const costH=c=>c.map((x,i)=>`<span class="${S.res[i]>=x?'':'bad'}">${RI[i]}${x}</span>`).join(' ');
 const ter=(x,y)=>['🌲','💧','⛰️','🌾','','',''][(((x*73856093)^(y*19349663))>>>0)%7];
-let view='out',bv=null,bs=null,fv=0,sel=null,mc=[0,0],curPos='',rp=0,mt='in',ct=0,dirty=1,speed=SPEED,last=Date.now(),op={acc:true},TGT=null,sig='',SH={res:0,gold:1,r:[1,1,1,1]},VIL=new Map(),RKD=null,INC=[],CLK=0,lastRes=0,MAIL={inbox:[],sent:[],unread:0,loaded:false},mo=null,UOPEN=null,DM=null,GOFF=false,CMP={x:'',y:'',s:'',b:''};
+let view='out',bv=null,bs=null,fv=0,sel=null,mc=[0,0],curPos='',rp=0,mt='in',ct=0,dirty=1,speed=SPEED,last=Date.now(),op={acc:true},TGT=null,sig='',SH={res:0,gold:1,r:[1,1,1,1]},VIL=new Map(),RKD=null,INC=[],CUR=null,CITIES=[],CLK=0,lastRes=0,MAIL={inbox:[],sent:[],unread:0,loaded:false},mo=null,UOPEN=null,DM=null,GOFF=false,CMP={x:'',y:'',s:'',b:''};
 
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2400)}
 function modal(h){const m=$('#modal');m.innerHTML='<div class="box">'+h+'<p><button data-a="close">關閉</button></p></div>';m.style.display='flex'}
@@ -162,13 +163,16 @@ async function loadRank(){if(!ME)return;try{const r=await api('/api/rank');if(r.
 function save(){try{S.saved=Date.now();S.spd=speed;localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function load(){try{const s=localStorage.getItem(KEY);if(!s)return false;S=G.fix(JSON.parse(s));speed=S.spd||SPEED;const real=Math.min((Date.now()-S.saved)/1000,24*3600);if(real>0)G.adv(real*speed,{quiet:real>300});syncMc();return true}catch(e){return false}}
 
-const HELP='<h3>遊戲指南</h3><p>這是依據原作復刻日本戰國時期的多人遊戲。</p><ul><li>資源田(外城)產出木材、泥土、鐵塊、糧食。內城有 21 塊空地,自己決定要蓋什麼;城牆環繞城內建地,不佔建地。</li><li>知行所每個城池只能一座;藏屋敷、米藏、埋藏所在現有的升到滿級後可以再蓋新的,效果加總。</li><li>知行所等級越高,所有施工越快(最多省 50%)。只有織田家能外城內城同時施工。</li><li>藏屋敷、米藏最高 20 級,容量 10 萬。</li><li>足輕營、馬廻組可以連續排隊訓練(最多 10 批),每批依序完成。</li><li>建築人口與軍隊都要吃糧;右上角資源列最後一項是「耗糧 / 糧食總產量」。</li><li>「埋藏所」可以藏起資源,避免被其他玩家搶走。城牆環繞城內建地,提高守軍防禦(織田家木柵、德川家石垣、豐臣家土壘漆壁)。</li><li>出征中的兵一樣要吃糧;糧食耗盡時,出征中的兵也會逃亡。</li><li>兵營訓練士兵;軍奉行出兵掠奪地圖上的據點。行軍速度取決於隊伍中最慢的兵種。</li><li>刀鍛冶所、具足屋每級加成兵種攻防 1.5%。</li><li>在地圖上的菩提山城行三顧之禮,可以請出竹中半兵衛。</li><li>商城:用金幣買資源,或把現有資源依比例平倉。</li><li>可以出兵掠奪其他玩家的城池(對方在新手保護期內不行)。部隊抵達時才開戰,對方會先收到來襲警報;戰況以戰報用飛鴿傳書寄給雙方。</li></ul><p class="mut">尚未實作:英雄、綠洲、寶物、集市、聯盟、資源運送、增援。</p>';
+const HELP='<h3>遊戲指南</h3><p>這是依據原作復刻日本戰國時期的多人遊戲。</p><ul><li>資源田(外城)產出木材、泥土、鐵塊、糧食。內城有 21 塊空地,自己決定要蓋什麼;城牆環繞城內建地,不佔建地。</li><li>知行所每個城池只能一座;藏屋敷、米藏、埋藏所在現有的升到滿級後可以再蓋新的,效果加總。</li><li>知行所等級越高,所有施工越快(最多省 50%)。只有織田家能外城內城同時施工。</li><li>藏屋敷、米藏最高 20 級,容量 10 萬。</li><li>足輕營、馬廻組可以連續排隊訓練(最多 10 批),每批依序完成。</li><li>建築人口與軍隊都要吃糧;右上角資源列最後一項是「耗糧 / 糧食總產量」。</li><li>「埋藏所」可以藏起資源,避免被其他玩家搶走。城牆環繞城內建地,提高守軍防禦(織田家木柵、德川家石垣、豐臣家土壘漆壁)。</li><li>出征中的兵一樣要吃糧;糧食耗盡時,出征中的兵也會逃亡。</li><li>兵營訓練士兵;軍奉行出兵掠奪地圖上的據點。行軍速度取決於隊伍中最慢的兵種。</li><li>刀鍛冶所、具足屋每級加成兵種攻防 1.5%。</li><li>在地圖上的菩提山城行三顧之禮,可以請出竹中半兵衛。</li><li>商城:用金幣買資源,或把現有資源依比例平倉。</li><li>本丸御殿 10/15/20 級各有 1/2/3 個擴張名額:派 3 名開墾代官到空地可開分城,或用行政官讓別人分城的忠誠度歸零來佔領(本丸無法被佔領)。左側「城池清單」或標題旁的選單可切換城池;分城的金幣與任務由本丸管理。</li><li>可以出兵掠奪其他玩家的城池(對方在新手保護期內不行)。部隊抵達時才開戰,對方會先收到來襲警報;戰況以戰報用飛鴿傳書寄給雙方。</li></ul><p class="mut">尚未實作:英雄、綠洲、寶物、集市、聯盟、資源運送、增援。</p>';
 function drawRes(){const up=upkeep(),pd=rate(3);
  $('#rb').innerHTML=[0,1,2,3].map(i=>`<span class="ri" title="${RN[i]}">${RI[i]}${fmt(S.res[i])}/${cap(i)}</span>`).join('')+`<span class="ri" title="埋藏所可藏匿的量(每種資源)">🏺${hide()}</span><span class="ri ${up>pd?'bad':''}" title="耗糧 / 糧食總產量(每小時)">🍚${fmt(up)}/${fmt(pd)}</span>`}
 function updCd(){document.querySelectorAll('[data-cd]').forEach(e=>e.textContent=tm(+e.dataset.cd-S.t));document.querySelectorAll('[data-rt]').forEach(e=>{const r=(+e.dataset.rt-(Date.now()+CLK))/1000;e.textContent=r>0?tm(r):'結算中…'})}
-const noteSrv=j=>{if(!j)return;if(Array.isArray(j.incoming))INC=j.incoming;if(j.now)CLK=j.now-Date.now()};
-function incBar(){if(!ME||!INC.length)return'';return `<div class="guide" style="border-left-color:#ff5a4a;background:linear-gradient(#5a0d12,#35070c)"><b>⚠ 來襲警報</b><br>`+INC.map(e=>`${esc(e.n)}(${e.x}|${e.y})的軍勢將於 <b data-rt="${e.arrAt}">${tm((e.arrAt-(Date.now()+CLK))/1000)}</b> 後抵達<span class="mut">(兵力不明)</span>`).join('<br>')+`<br><span class="mut">部隊抵達時才會開戰,結果會用飛鴿傳書通知你。趁現在整備軍隊、升級城牆吧。</span></div>`}
-const ttl=()=>`<div class="ttl"><span class="flag" style="background:${CASTLE_COL[S.fac]}">${fa().s}</span>${NICK}的城池<small>(${home().x}|${home().y})</small><small class="mut">主城</small></div>`;
+const noteSrv=j=>{if(!j)return;if(Array.isArray(j.incoming))INC=j.incoming;if(Array.isArray(j.cities)){CITIES=j.cities;dirty=1}if(j.now)CLK=j.now-Date.now()};
+const cityRef=(x,y)=>{const c=CITIES.find(z=>z.x==x&&z.y==y);return c&&CITIES.length>1?`「${esc(c.n)}」(${x}|${y})`:`你的城池(${x}|${y})`};
+function incBar(){if(!ME||!INC.length)return'';return `<div class="guide" style="border-left-color:#ff5a4a;background:linear-gradient(#5a0d12,#35070c)"><b>⚠ 來襲警報</b><br>`+INC.map(e=>`${esc(e.n)}(${e.x}|${e.y})的軍勢將於 <b data-rt="${e.arrAt}">${tm((e.arrAt-(Date.now()+CLK))/1000)}</b> 後抵達${e.tx!=null?cityRef(e.tx,e.ty):'你的城池'}<span class="mut">(兵力不明)</span>`).join('<br>')+`<br><span class="mut">部隊抵達時才會開戰,結果會用飛鴿傳書通知你。趁現在整備軍隊、升級城牆吧。</span></div>`}
+const cityName=()=>S.col?esc(S.cname||'分城'):esc(NICK)+'的城池';
+const ttl=()=>`<div class="ttl"><span class="flag" style="background:${CASTLE_COL[S.fac]}">${fa().s}</span>${cityName()}<small>(${home().x}|${home().y})</small><small class="mut">${S.col?`分城・忠誠度 ${Math.floor(S.loy==null?100:S.loy)}/100`:'本丸'}</small>${citySel()}</div>`;
+const citySel=()=>CITIES.length>1?` <select id="csw" title="切換城池">${CITIES.map(c=>`<option value="${esc(c.k)}" ${c.k==CUR?'selected':''}>${esc(c.n)}(${c.x}|${c.y})${c.col?' 忠誠'+c.loy:''}</option>`).join('')}</select>`:'';
 const back=v=>`<p><a data-a="nav" data-v="${v}">« 返回${v=='in'?'內城':'外城'}</a></p>`;
 function qtab(){const rows=['f','b'].filter(l=>S.q[l]);if(!rows.length)return'';
  return `<table class="tb"><tr><th>刪除</th><th>任務 <a data-a="rushall">立即完成[2金幣]</a></th><th>剩餘時間</th><th>結束於</th></tr>`+rows.map(l=>{const q=S.q[l];return `<tr><td><a data-a="cancel" data-l="${l}" class="x">✖</a></td><td>${q.dm?`${q.name}→等級 ${q.to}`:`${q.name}(等級 ${q.to})`}</td><td><span data-cd="${q.end}">${tm(q.end-S.t)}</span></td><td>${clk(q.end)}</td></tr>`}).join('')+'</table>'}
@@ -280,8 +284,8 @@ const GUIDE=[
  {t:'出兵掠奪一座營寨',d:'到「地圖」,點營寨,按「前往軍奉行出兵」。贏了可以搶到資源,但部隊要走回來才入庫。',ok:()=>S.stat.raids>=1,go:'map'},
  {t:'蓋城牆',d:'點內城上方的城牆標籤,蓋出環繞城內的城牆,提高守軍防禦。',ok:()=>S.bld.wall>=1,go:'in'},
  {t:'到「任務」領取獎勵',d:'完成的任務可以領取資源或金幣。',ok:()=>S.qd.length>0&&QS.every(q=>S.qd.includes(q.id)||!q.ok()),go:'quest'}];
-const gi=()=>GUIDE.findIndex(g=>!g.ok()),gneed=()=>{if(GOFF||!S)return null;const i=gi();return i<0?null:(GUIDE[i].need?GUIDE[i].need():null)};
-function guideBar(){if(GOFF||!S)return'';const i=gi();if(i<0)return'';const g=GUIDE[i];
+const gi=()=>GUIDE.findIndex(g=>!g.ok()),gneed=()=>{if(GOFF||!S||S.col)return null;const i=gi();return i<0?null:(GUIDE[i].need?GUIDE[i].need():null)};
+function guideBar(){if(GOFF||!S||S.col)return'';const i=gi();if(i<0)return'';const g=GUIDE[i];
  return `<div class="guide"><b>📜 新手引導 ${i+1}/${GUIDE.length}</b>:${g.t}<br><span>${g.d}</span><br><button data-a="gogo" data-v="${g.go}">前往</button> <a data-a="goff">略過引導</a></div>`}
 function guideList(){const i=gi();return GUIDE.map((g,k)=>`<div>${g.ok()?'✔':(k===i?'▶':'○')} ${g.t}</div>`).join('')+(GOFF?'<p><a data-a="gon">重新開啟引導提示</a></p>':'')}
 const WELCOME='<h3>歡迎來到戰國!</h3><p>你有一座小城池,城內有 21 塊空地。</p><ul><li>畫面上方會有「新手引導」,一步一步告訴你下一步做什麼。</li><li>先蓋「知行所」,再升級資源田、蓋藏屋敷與米藏。</li><li>右側的「新手引導」面板可以看全部步驟,也可以關掉提示。</li></ul>';
@@ -327,17 +331,19 @@ function ttab(only){const rows=[];for(const b of TRB){if(only&&b!==only)continue
 const udetail=k=>{const u=us()[k];return `<tr><td colspan="4" style="text-align:left;background:var(--tb)"><b>${u.n}</b>(${fa().n})<br>${u.desc||'(沒有說明)'}<br><span class="mut">攻擊 ${u.a}・步防 ${u.di}・騎防 ${u.dc}・速度 ${u.s} 格/時・攜帶 ${u.c}・耗糧 ${u.up}/時・基本訓練時間 ${tm(u.t)}</span></td></tr>`};
 function trainer(b){
  const rows=us().map((u,k)=>({u,k})).filter(x=>x.u.b==b.id);
- const lockOf=u=>u.soon?`<span class="bad">尚未開放</span><br><small class="mut">專用功能(開分城/佔領城池)開放前不能訓練</small>`:u.lv>S.bld.acad?`<span class="bad">需要${B.find(z=>z.id=='acad').n} ${u.lv} 級</span><br><small class="mut">目前 ${S.bld.acad} 級</small>`:'';
+ const lockOf=u=>(u.k=='set'||u.k=='adm')&&G.expSlots()<1?`<span class="bad">需要${B.find(z=>z.id=='pal').n} 10 級</span><br><small class="mut">10 級才有擴張名額(目前 ${S.bld.pal} 級)</small>`:u.lv>S.bld.acad?`<span class="bad">需要${B.find(z=>z.id=='acad').n} ${u.lv} 級</span><br><small class="mut">目前 ${S.bld.acad} 級</small>`:'';
  return `<h4 class="sh">訓練</h4><p class="mut">可以連續排隊(最多 ${TRAIN_QMAX} 批),每按一次「訓練」就加到佇列最後,前一批訓練完才會開始下一批。要訓練哪些兵種,由${B.find(z=>z.id=='acad').n}的等級決定。</p>`+ttab(b.id)+`<table class="tb"><tr><th>兵種</th><th>能力</th><th>成本 / 時間</th><th>數量</th></tr>`+rows.map(({u,k})=>{const lk=lockOf(u);return `<tr${lk?' style="opacity:.8"':''}><td><a data-a="udesc" data-k="${k}" title="點一下看詳細說明"><b>${u.n}</b></a><br>現有 ${S.u[k]}</td><td>攻 ${Math.round(u.a*ab())} 步防 ${Math.round(u.di*db())} 騎防 ${Math.round(u.dc*db())}<br>速 ${u.s} 載 ${u.c} 糧 ${u.up}</td><td>${costH(u.r)}<br>⏱ ${tm(u.t*pw(.9,Math.max(0,S.bld[b.id]-1)))}/名</td>`+(lk?`<td>${lk}</td>`:`<td><input id="n${k}" type="number" min="1" value="1"> <a data-a="fill" data-k="${k}">(最多)</a><br><button data-a="tr" data-k="${k}">訓練</button></td>`)+`</tr>${UOPEN===k?udetail(k):''}`}).join('')+'</table>'}
+const expandBox=()=>{const hs=us().some(u=>u.k=='set'&&S.u[us().indexOf(u)]>=3),free=G.slotsFree();return `<h4 class="sh">擴張</h4><p class="mut">擴張名額 ${free}/${G.expSlots()}(${B.find(z=>z.id=='pal').n} 10/15/20 級各有 1/2/3 個;開分城或佔領城池各用 1 個,出征期間先預留)。</p><p><button data-a="raid" data-kind="found" ${hs&&free>0?'':'disabled'} title="需要 3 名開墾代官與 1 個擴張名額">派 3 名開墾代官到上面的座標開分城</button> <small class="mut">目標必須是空地(不是營寨、不是別人的城)。分城資源很少,有 ${PROTECT_DAYS} 天新手保護,金幣與任務仍由本丸管理。</small></p><p class="mut">佔領城池:在上面的座標填別人的分城,派出一般軍隊並加上行政官(用「出兵掠奪」)。打贏後存活的行政官每名使忠誠度下降約 20~30,降到 0 城池就歸你(行政官會消耗掉)。本丸無法被佔領。</p>`};
 function sender(){const t=TGT||nearestCamp(),U=us(),hasCat=U.some((u,k)=>u.k=='cat'&&S.u[k]>0),hasSc=U.some((u,k)=>u.k=='scout'&&S.u[k]>0),wl=S.bld.war,ntg=wl>=20?2:wl>=10?1:0;
  const tgSel=!hasCat?'':`<h4 class="sh">攻城目標</h4>`+(ntg?`<p class="mut">${B.find(z=>z.id=='war').n} ${wl} 級:可以指定 ${ntg} 處目標建築(只對玩家的城池有效;沒有指定就隨機轟擊一處)。破門槌則會自動撞擊城牆。</p><p>`+Array.from({length:ntg},(_,i)=>`目標 ${i+1} <select id="tg${i}"><option value="">(不指定)</option>${B.filter(z=>z.id!='wall').map(z=>`<option value="${z.id}">${B.find(y=>y.id==z.id).n}</option>`).join('')}</select> `).join('')+'</p>':`<p class="mut">${B.find(z=>z.id=='war').n}達到 10 級才能指定目標建築(目前 ${wl} 級),現在大筒類器械會隨機轟擊一處建築。破門槌會自動撞擊城牆。</p>`);
- return `<h4 class="sh">出兵</h4><p>目標座標 x <input id="tx" type="number" value="${t[0]}"> y <input id="ty" type="number" value="${t[1]}"> <small class="mut">(可在地圖上點選目標)</small></p><p class="mut">目標是營寨:攻不破守軍就全軍覆沒;打贏的話守軍會損兵、庫存會減少,營寨被打過約 12 遊戲小時後重新集結(每位玩家各自計算)。目標是玩家的城池:部隊抵達的那一刻才會開戰(對方會先收到來襲警報),依雙方當時的戰力結算,雙方都會損兵;戰況會用飛鴿傳書寫成戰報寄給雙方。勝利後依各兵種攜帶量搬回資源,部隊返回後才入庫。</p><table class="tb"><tr><th>兵種</th><th>現有</th><th>派出</th></tr>`+U.map((u,k)=>u.soon?'':`<tr><td>${u.n}${u.k=='scout'?' <small class="mut">(偵察)</small>':u.k=='ram'?' <small class="mut">(拆城牆)</small>':u.k=='cat'?' <small class="mut">(轟建築)</small>':''}</td><td>${S.u[k]}</td><td><input id="s${k}" type="number" min="0" max="${S.u[k]}" value="${u.k=='scout'||u.k=='ram'||u.k=='cat'?0:S.u[k]}"></td></tr>`).join('')+`</table>${tgSel}<p><button data-a="raid">出兵掠奪</button> <button data-a="raid" data-kind="scout" ${hasSc?'':'disabled title="需要偵察兵"'}>只派偵察兵偵察</button></p><p class="mut">「偵察」只會派出上面填的偵察兵(其他兵種要填 0):成功會用飛鴿傳書寄回對方的資源、守軍與建築;對方如果也有偵察兵,你的偵察兵會折損,對方也會得知。</p>`+mvt()}
+ return `<h4 class="sh">出兵</h4><p>目標座標 x <input id="tx" type="number" value="${t[0]}"> y <input id="ty" type="number" value="${t[1]}"> <small class="mut">(可在地圖上點選目標)</small></p><p class="mut">目標是營寨:攻不破守軍就全軍覆沒;打贏的話守軍會損兵、庫存會減少,營寨被打過約 12 遊戲小時後重新集結(每位玩家各自計算)。目標是玩家的城池:部隊抵達的那一刻才會開戰(對方會先收到來襲警報),依雙方當時的戰力結算,雙方都會損兵;戰況會用飛鴿傳書寫成戰報寄給雙方。勝利後依各兵種攜帶量搬回資源,部隊返回後才入庫。</p><table class="tb"><tr><th>兵種</th><th>現有</th><th>派出</th></tr>`+U.map((u,k)=>u.soon?'':`<tr><td>${u.n}${u.k=='scout'?' <small class="mut">(偵察)</small>':u.k=='ram'?' <small class="mut">(拆城牆)</small>':u.k=='cat'?' <small class="mut">(轟建築)</small>':u.k=='adm'?' <small class="mut">(策反城池)</small>':u.k=='set'?' <small class="mut">(只能開分城)</small>':''}</td><td>${S.u[k]}</td><td><input id="s${k}" type="number" min="0" max="${S.u[k]}" value="${u.k=='scout'||u.k=='ram'||u.k=='cat'||u.k=='adm'||u.k=='set'?0:S.u[k]}"></td></tr>`).join('')+`</table>${tgSel}<p><button data-a="raid">出兵掠奪</button> <button data-a="raid" data-kind="scout" ${hasSc?'':'disabled title="需要偵察兵"'}>只派偵察兵偵察</button></p>${expandBox()}<p class="mut">「偵察」只會派出上面填的偵察兵(其他兵種要填 0):成功會用飛鴿傳書寄回對方的資源、守軍與建築;對方如果也有偵察兵,你的偵察兵會折損,對方也會得知。</p>`+mvt()}
 function demolishBox(){const can=S.bld.gov>=DEMOLISH_GOV;
  return `<h4 class="sh">拆除</h4>`+(can?`<p class="mut">每次拆除一級(不退還資源),需要約建造時間一半的時間,期間會占用施工佇列。拆到 0 級,這塊地就會清空,可以重新蓋別的建築。</p><p><button data-a="dem" data-slot="${bs}">${DM===bs?'再按一次確認:拆除一級':'拆除一級'}</button></p>`:`<p class="mut">${B.find(x=>x.id=='gov').n}達到 ${DEMOLISH_GOV} 級以上才能拆除建築。</p>`)}
 function vBuildMenu(){const i=bs;let h=`<div class="ttl">選擇要蓋的建築<small>(第 ${i+1} 塊空地)</small></div><div class="g">`;
  for(const b of B){if(b.id==='wall')continue;const e=canBuildNew(b),ok=reqOk(b);
   h+=`<div class="cd${gneed()===b.id?' hl':''}"><span class="e">${iconHtml(b.id)}</span><b>${bn(b)}</b><p>${b.d}</p>`+(e?`<p class="bad">${e}</p>`:ok?`<div>${costH(costB(b,0))}</div><p>⏱ ${tm(durB(b,0))}</p><button data-a="b" data-slot="${i}" data-id="${b.id}">建造</button>`:`<p class="bad">需要 ${reqT(b)}</p>`)+'</div>'}
  return h+'</div>'+qtab()+back('in')}
+const palTab=()=>`<h4 class="sh">擴張與城池</h4><p>擴張名額:<b>${G.slotsFree()}</b> 個可用(上限 ${G.expSlots()}:10/15/20 級各 1/2/3 個;已用 ${S.kids||0} 個)。${S.col?`<br>這是分城,忠誠度 <b>${Math.floor(S.loy==null?100:S.loy)}</b>/100(每遊戲小時回復 ${(1+.1*S.bld.pal).toFixed(1)} 點)。忠誠度降到 0,城池會被行政官說服而易主。`:'<br>本丸無法被行政官佔領。'}</p><p class="mut">訓練開墾代官(每個名額 3 名)後,到軍奉行的出兵頁面指定空地開分城;訓練行政官後,配合軍隊攻打別人的分城。</p>`+(CITIES.length>1?'<table class="tb"><tr><th>城池</th><th>座標</th><th>忠誠度</th></tr>'+CITIES.map(c=>`<tr><td><a data-a="city" data-k="${esc(c.k)}">${esc(c.n)}</a></td><td>${c.x}|${c.y}</td><td>${c.col?c.loy:'—'}</td></tr>`).join('')+'</table>':'');
 function vB(){if(bs==null)return vIn();
  if(bs!=='wall'&&!S.slots[bs])return vBuildMenu();
  const cell=bs==='wall'?{b:'wall',l:S.bld.wall}:S.slots[bs],b=B.find(x=>x.id==cell.b),L=cell.l,mx=L>=b.m;
@@ -348,20 +354,22 @@ function vB(){if(bs==null)return vIn();
  h+=mx?'<p>已達最高等級</p>':`<table class="tb"><tr><th>${L?'升級到':'建造'}等級 ${L+1} 的成本</th><th>施工時間</th></tr><tr><td>${costH(costB(b,L))}</td><td>⏱ ${tm(durB(b,L))}</td></tr></table>`+(reqOk(b)?`<p><button data-a="b" data-slot="${bs}">${L?'升級到等級 '+(L+1):'建造'}</button></p>`:`<p class="bad">需要 ${reqT(b)}</p>`);
  if(bs!=='wall'&&b.id!=='gov')h+=demolishBox();
  if(b.id=='acad')h+=acadTab();
+ if(b.id=='pal')h+=palTab();
  if(b.id=='gov')h+=cmds();else if(['infb','cavb','wsh','pal'].includes(b.id))h+=trainer(b);else if(b.id=='war')h+=sender();
  return h+qtab()+back('in')}
 function vMap(){const [cx,cy]=mc,W2=36,H2=18,ox=300,oy=165,P=(dx,dy)=>[ox+(dx+dy)*W2,oy+(dx-dy)*H2];
  const cells=[];for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++)cells.push([dx,dy]);cells.sort((a,b)=>(a[0]-a[1])-(b[0]-b[1]));
  let g=`<polygon points="${ox},${oy-126} ${ox+252},${oy} ${ox},${oy+126} ${ox-252},${oy}" fill="#2a1208" transform="translate(0,10)"/><polygon points="${ox},${oy-126} ${ox+252},${oy} ${ox},${oy+126} ${ox-252},${oy}" fill="#46663a"/>`;
- for(const [dx,dy] of cells){const ax=cx+dx,ay=cy+dy,[X,Y]=P(dx,dy),n=npcAt(ax,ay),vl=VIL.get(ax+','+ay),me=ax==home().x&&ay==home().y,s=sel&&sel[0]==ax&&sel[1]==ay;
-  g+=`<g data-a="tile" data-x="${ax}" data-y="${ay}"><polygon points="${X},${Y-H2} ${X+W2},${Y} ${X},${Y+H2} ${X-W2},${Y}" fill="${me?'#7fae5a':vl?'#a08a52':'#587a41'}" stroke="${s?'#fff':me?'#f0b400':'#3b5a2c'}" stroke-width="${s||me?3:1}"/><text x="${X}" y="${Y+6}" text-anchor="middle" font-size="17">${me||vl?'':n?'':ter(ax,ay)}</text>${me||vl?`<g transform="translate(${X-17},${Y-25}) scale(.53)">${castleSv(CASTLE_COL[me?S.fac:vl.f]||'#888')}</g>`:''}${n&&CAMPSV[n.n]&&!me&&!vl?`<g transform="translate(${X-16},${Y-22}) scale(.5)">${ICONS_EXTRA[CAMPSV[n.n]]}</g>`:''}${n&&n.zg&&!me&&!vl?`<g transform="translate(${X-17},${Y-21}) scale(.53)">${ZGSV}</g>`:''}${vl&&!me?`<text x="${X}" y="${Y+15}" text-anchor="middle" font-size="9" fill="#ffe3b0">${FAC[vl.f]||''}</text>`:''}</g>`}
+ for(const [dx,dy] of cells){const ax=cx+dx,ay=cy+dy,[X,Y]=P(dx,dy),n=npcAt(ax,ay),vl=VIL.get(ax+','+ay),me=ax==home().x&&ay==home().y,mine=!me&&((vl&&vl.mine)||CITIES.some(c=>c.x==ax&&c.y==ay)),s=sel&&sel[0]==ax&&sel[1]==ay;
+  g+=`<g data-a="tile" data-x="${ax}" data-y="${ay}"><polygon points="${X},${Y-H2} ${X+W2},${Y} ${X},${Y+H2} ${X-W2},${Y}" fill="${me?'#7fae5a':vl?'#a08a52':'#587a41'}" stroke="${s?'#fff':me?'#f0b400':mine?'#d9a520':'#3b5a2c'}" stroke-width="${s||me||mine?3:1}"/><text x="${X}" y="${Y+6}" text-anchor="middle" font-size="17">${me||vl?'':n?'':ter(ax,ay)}</text>${me||vl?`<g transform="translate(${X-17},${Y-25}) scale(.53)">${castleSv(CASTLE_COL[me?S.fac:vl.f]||'#888')}</g>`:''}${n&&CAMPSV[n.n]&&!me&&!vl?`<g transform="translate(${X-16},${Y-22}) scale(.5)">${ICONS_EXTRA[CAMPSV[n.n]]}</g>`:''}${n&&n.zg&&!me&&!vl?`<g transform="translate(${X-17},${Y-21}) scale(.53)">${ZGSV}</g>`:''}${vl&&!me?`<text x="${X}" y="${Y+15}" text-anchor="middle" font-size="9" fill="#ffe3b0">${vl.col?'分':''}${FAC[vl.f]||''}</text>`:''}</g>`}
  for(let i=-3;i<=3;i++){g+=`<text x="${ox+(i-4.2)*W2}" y="${oy+(i+4.2)*H2}" text-anchor="end" font-size="11" fill="currentColor">${cx+i}</text><text x="${ox+(-4.2+i)*W2}" y="${oy+(-4.2-i)*H2}" text-anchor="end" font-size="11" fill="currentColor">${cy+i}</text>`}
  g+=[['⬉',60,70,-4,0],['⬈',540,70,0,4],['⬋',60,290,0,-4],['⬊',540,290,4,0]].map(([c,x,y,dx,dy])=>`<text data-a="mp" data-dx="${dx}" data-dy="${dy}" x="${x}" y="${y}" font-size="38" fill="#4caf20" text-anchor="middle" style="cursor:pointer">${c}</text>`).join('');
  let info='';
  if(sel){const p=npcAt(sel[0],sel[1]),vl=VIL.get(sel[0]+','+sel[1]),me=sel[0]==home().x&&sel[1]==home().y;
-  if(me)info=`<p>${fcastle(CASTLE_COL[S.fac])} <b>${esc(NICK)}的城池</b>(${home().x}|${home().y})</p>`;
-  else if(vl)info=`<p>${fcastle(CASTLE_COL[vl.f]||'#888')} <b>${esc(vl.n)}</b>(${sel[0]}|${sel[1]}) · ${FAC[vl.f]||''}家 · 威望 ${vl.p}<br>距離 ${distTo(sel[0],sel[1]).toFixed(1)} 格</p><p class="mut">可以出兵掠奪${vl.b&&protectedAt(vl.b,Date.now()+CLK)?`(新手保護期 ${PROTECT_DAYS} 天內不能被攻擊,對方還剩約 ${Math.ceil((vl.b+PROTECT_DAYS*864e5-Date.now()-CLK)/36e5)} 小時)`:''}。部隊抵達時才會開戰,對方會先收到來襲警報。</p><button data-a="tgo">前往軍奉行出兵</button> <button data-a="mailto" data-x="${sel[0]}" data-y="${sel[1]}">✉ 寄信給他</button>`;
-  else if(!p)info=`<p class="mut">(${sel[0]}|${sel[1]}) 荒地,暫無可做之事。</p>`;
+  if(me)info=`<p>${fcastle(CASTLE_COL[S.fac])} <b>${cityName()}</b>(${home().x}|${home().y})${CITIES.length>1?'(目前管理中)':''}</p>`;
+  else if((vl&&vl.mine)||CITIES.some(c=>c.x==sel[0]&&c.y==sel[1])){const c=CITIES.find(c=>c.x==sel[0]&&c.y==sel[1]);info=`<p>${fcastle(CASTLE_COL[(c||vl).f]||'#888')} <b>你的${c?esc(c.n):'城池'}</b>(${sel[0]}|${sel[1]})${c&&c.col?` · 忠誠度 ${c.loy}`:''}<br>距離 ${distTo(sel[0],sel[1]).toFixed(1)} 格</p>${c?`<button data-a="city" data-k="${esc(c.k)}">切換到這座城</button>`:''}`}
+  else if(vl)info=`<p>${fcastle(CASTLE_COL[vl.f]||'#888')} <b>${esc(vl.n)}</b>${vl.col?'的分城':''}(${sel[0]}|${sel[1]}) · ${FAC[vl.f]||''}家 · 威望 ${vl.p}<br>距離 ${distTo(sel[0],sel[1]).toFixed(1)} 格</p><p class="mut">可以出兵掠奪${vl.b&&protectedAt(vl.b,Date.now()+CLK)?`(新手保護期 ${PROTECT_DAYS} 天內不能被攻擊,對方還剩約 ${Math.ceil((vl.b+PROTECT_DAYS*864e5-Date.now()-CLK)/36e5)} 小時)`:''}。部隊抵達時才會開戰,對方會先收到來襲警報。</p><button data-a="tgo">前往軍奉行出兵</button> <button data-a="mailto" data-x="${sel[0]}" data-y="${sel[1]}">✉ 寄信給他</button>`;
+  else if(!p)info=`<p class="mut">(${sel[0]}|${sel[1]}) 荒地。</p>`+(ME&&G.expSlots()>0?`<p>可以派 3 名開墾代官到這裡開分城(擴張名額 ${G.slotsFree()}/${G.expSlots()},距離 ${distTo(sel[0],sel[1]).toFixed(1)} 格)。</p><button data-a="tgo">前往軍奉行開分城</button>`:'')
   else if(p.zg)info=`<p>${ZGICON} <b>${p.n}</b>(${sel[0]}|${sel[1]}):竹中半兵衛隱居之處。行三顧之禮後可請他出仕(全資源產量 +15%)。已拜訪 ${S.zg}/3 次。</p>${S.zg>=3?'<p class="ok">竹中半兵衛已經出仕。</p>':`<p>禮物 ${costH([300*(S.zg+1),300*(S.zg+1),300*(S.zg+1),300*(S.zg+1)])}</p><button data-a="visit">第 ${S.zg+1} 次拜訪</button>`}`;
   else{const ci=G.campInfo(sel[0],sel[1]),gl=Object.entries(ci.g).filter(([k,v])=>v>0).map(([k,v])=>`${k}×${v}`).join('、');
    info=`<p>${CAMPSV[p.n]?SV(ICONS_EXTRA[CAMPSV[p.n]])+' ':''}<b>${p.n}</b>(${sel[0]}|${sel[1]})<br>守軍:${gl||'無'}<br>防禦合計約 ${fmt(ci.def)} · 戰利品庫存(每種資源)${ci.st.map(v=>Math.max(0,Math.floor(v))).join('/')} · 距離 ${distTo(sel[0],sel[1]).toFixed(1)} 格${ci.respawnIn!=null?`<br>被攻擊過,約 <span data-cd="${S.t+ci.respawnIn}">${tm(ci.respawnIn)}</span> 後重新集結`:''}</p>${ci.empty?'<p class="mut">這座營寨已被清空,等重新集結後才能再打。</p>':'<button data-a="tgo">前往軍奉行出兵</button>'}`}}
@@ -378,7 +386,7 @@ function vShop(){const room=[0,1,2,3].map(i=>Math.max(0,Math.floor((cap(i)-S.res
 <p id="balprev" class="mut">${balPrev()}</p>`}
 function cityAge(){const ms=Math.max(0,Date.now()-(S.born||Date.now())),d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5);return `${d} 天 ${h} 小時`}
 function ranks(){
- if(ME){const h=home();return ((RKD&&RKD.rows)||[]).map((r,i)=>({i:i+1,h:'—',p:esc(r.n)+'('+(FAC[r.f]||'')+')',v:r.p,c:1,l:'—',e:'—',x:r.x,y:r.y,me:r.x==h.x&&r.y==h.y}))}
+ if(ME){const h=home();return ((RKD&&RKD.rows)||[]).map((r,i)=>({i:i+1,h:'—',p:esc(r.n)+'('+(FAC[r.f]||'')+')',v:r.p,c:1,l:'—',e:'—',x:r.x,y:r.y,me:CITIES.some(c=>c.x==r.x&&c.y==r.y)||(r.x==h.x&&r.y==h.y)}))}
  const a=[...RK,{h:'—',p:esc(NICK)+'(你)',v:prest(),c:1,l:1,e:0,me:1}].sort((x,y)=>y.v-x.v);return a.map((r,i)=>({...r,i:i+1}))}
 function vRank(){const a=ranks(),mp=Math.max(0,Math.ceil(a.length/10)-1);rp=Math.max(0,Math.min(rp,mp));
  return `<div class="ttl" style="justify-content:center">英 雄 榜</div><p class="tabs" style="text-align:center"><b>玩家</b> | ${['城池','聯盟','進攻','防禦','武將','寶鼎','總覽'].map(t=>`<a data-a="soon">${t}</a>`).join(' | ')}</p><p style="text-align:right"><a data-a="soon" data-m="威望來自資源田、建築的等級與軍隊規模">威望如何獲得?</a></p><table class="tb"><tr><th>排名</th><th>武將</th><th>玩家</th><th>威望</th><th>城池</th><th>等級</th><th>經驗值</th></tr>`+(ME&&!RKD?'<tr><td colspan="7">載入中…</td></tr>':'')+a.slice(rp*10,rp*10+10).map(r=>`<tr class="${r.me?'me':''}"><td>${r.i}</td><td class="hero">${r.h}</td><td>${r.p}${r.x!=null&&!r.me?` <a data-a="mailto" data-x="${r.x}" data-y="${r.y}" title="寄信">✉</a>`:''}</td><td>${r.v}</td><td>${r.c}</td><td>${r.l}</td><td>${r.e}</td></tr>`).join('')+`</table><p class="pg"><a data-a="rk" data-p="0">首頁</a> <a data-a="rk" data-p="${rp-1}">上一頁</a> <a data-a="rk" data-p="${rp+1}">下一頁</a> <a data-a="rk" data-p="${mp}">尾頁</a><br>排名: <input id="rkn" type="number"> 或是,名字: <input id="rkm" type="text"> <button data-a="rks">查找</button></p>`}
@@ -407,7 +415,7 @@ const faqHtml=()=>FAQ.map((x,i)=>`<details class="faq" data-d="faq${i}" ${op['fa
 function sidebar(){const det=(id,sm,body)=>`<details data-d="${id}" ${op[id]?'open':''}><summary>${sm}</summary><div class="dbody">${body}</div></details>`;
  const cl=QS.filter(q=>!S.qd.includes(q.id)&&q.ok()).length;
  const msgs=ct==0?S.log.slice(0,30).reverse().map(l=>`<div><span class="t">(${dstr(l.t)})</span> <b class="bad">【系統訊息】</b>${l.m}</div>`).join(''):`<div class="mut">${ct==1?'尚未加入聯盟':'沒有密語'}</div>`;
- return det('acc','賬號狀態: 正常',`玩家:${esc(NICK)}<br>勢力:${fa().n}<br>已開城 <b>${cityAge()}</b>`)+det('city','城池清單',`|- ${NICK}的城池(${home().x},${home().y}) <span class="flag s" style="background:${CASTLE_COL[S.fac]}">${fa().s}</span>`)+det('goods',`商品清單 🎁:${fmt(S.gold)}`,'金幣用來立即完成施工(2 金幣/次),每遊戲小時 +1。')+det('guide',`新手引導 ${GUIDE.filter(g=>g.ok()).length}/${GUIDE.length}`,guideList())+det('task',`任務清單${cl?` <b class="bad">(${cl})</b>`:''}`,'<a data-a="nav" data-v="quest">前往任務頁面</a>')+det('faq','常見問題',faqHtml())
+ return det('acc','賬號狀態: 正常',`玩家:${esc(NICK)}<br>勢力:${fa().n}<br>已開城 <b>${cityAge()}</b>`)+det('city',`城池清單${CITIES.length>1?' ('+CITIES.length+')':''}`,CITIES.length>1?CITIES.map(c=>`<div>|- <a data-a="city" data-k="${esc(c.k)}" ${c.k==CUR?'style="font-weight:bold"':''}>${esc(c.n)}(${c.x},${c.y})</a> <span class="flag s" style="background:${CASTLE_COL[c.f]}">${F[c.f].s}</span>${c.col?` <small class="mut">忠誠${c.loy}</small>`:''}</div>`).join(''):`|- ${S.col?esc(S.cname||'分城'):esc(NICK)+'的城池'}(${home().x},${home().y}) <span class="flag s" style="background:${CASTLE_COL[S.fac]}">${fa().s}</span>`)+det('goods',S.col?'商品清單 🎁:本丸管理':`商品清單 🎁:${fmt(S.gold)}`,S.col?'金幣、任務與商城由本丸統一管理,請切換回本丸使用。':'金幣用來立即完成施工(2 金幣/次),每遊戲小時 +1。')+det('guide',`新手引導 ${GUIDE.filter(g=>g.ok()).length}/${GUIDE.length}`,guideList())+det('task',`任務清單${cl?` <b class="bad">(${cl})</b>`:''}`,'<a data-a="nav" data-v="quest">前往任務頁面</a>')+det('faq','常見問題',faqHtml())
  +`<div class="ct">${['公頻','盟頻','密頻'].map((n,i)=>`<span data-a="ct" data-i="${i}" class="${ct==i?'on':''}">${n}</span>`).join('')}</div><div id="chat">${msgs}</div>`}
 try{document.getElementById('lgi').innerHTML=ICONS.arm}catch(e){}
 function render(){
@@ -440,18 +448,21 @@ async function flush(){if(flushing||!ME||AUTHLOST)return;flushing=true;
 async function drain(){for(let i=0;i<40&&(OUT.length||flushing);i++){if(!flushing)flush();await sleep(250)}}
 let again409=0;
 async function send(a){const t0=Date.now();let r;
- try{r=await apiAuth('/api/act',{action:a,rev:REV},'POST',1)}catch(e){setCloud('離線,稍後重試');return'retry'}
+ try{r=await apiAuth('/api/act',{action:a,rev:REV,c:CUR||undefined},'POST',1)}catch(e){setCloud('離線,稍後重試');return'retry'}
  const j=r.j||{};
  if(r.s==401){relogin();return'retry'}
  if(r.s>=500||r.s==0)return'retry';
  noteSrv(j);
- if(r.ok){again409=0;if(j.state&&j.rev!=null){REV=j.rev;if(OUT.length<=1)adopt(j.state,t0)}if(j.msg)toast(j.msg);return'ok'}
+ if(r.s==403&&j.gone){toast(j.msg||'這座城池已不屬於你');CUR=null;REV=0;OUT.length=0;await pull(true);return'drop'}
+ if(r.ok){again409=0;if(j.state&&j.rev!=null){REV=j.rev;if(OUT.length<=1&&(!j.c||!CUR||j.c==CUR))adopt(j.state,t0)}if(j.msg)toast(j.msg);return'ok'}
  if(r.s==409){if(j.rev!=null)REV=j.rev;if(++again409<=3){await sleep(100+Math.random()*300);return'again'}again409=0;await pull(true);return'drop'}
  if(j.state&&j.rev!=null){REV=j.rev;adopt(j.state,t0)}
  if(j.msg)toast(j.msg);return'drop'}
 async function pull(force){if(!ME||AUTHLOST||((OUT.length||flushing)&&!force))return;const t0=Date.now();
- try{const r=await apiAuth('/api/save');if(r.s==401)return relogin();if(r.ok&&r.j){noteSrv(r.j);REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);if(!OUT.length)setCloud('已同步 '+tnow())}}}catch(e){setCloud('離線,稍後重試')}}
+ try{const r=await apiAuth('/api/save'+(CUR?'?c='+encodeURIComponent(CUR):''));if(r.s==401)return relogin();if(r.ok&&r.j){noteSrv(r.j);if(r.j.c)CUR=r.j.c;REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);if(!OUT.length)setCloud('已同步 '+tnow())}}}catch(e){setCloud('離線,稍後重試')}}
 
+async function goCity(k){if(!ME||!S||!k||k===CUR)return;await drain();if(OUT.length||flushing){toast('還有操作正在同步,請稍後再切換');return}
+ CUR=k;view='out';bv=null;bs=null;sel=null;TGT=null;VIL.clear();curPos='';await pull(true);syncMc();drawRes();dirty=1;render();toast('已切換到:'+(S.col?(S.cname||'分城'):'本丸'))}
 function doA(a,after){const r=G.perform(a);if(!r.ok){toast(r.msg||'無法執行');return false}if(r.msg)toast(r.msg);if(after)after();dirty=1;if(ME)queueSend(a);else save();return true}
 function newGame(f){setTimeout(()=>modal(WELCOME),50);S=G.init(f);if(ME)speed=SPEED;view='out';bv=null;curPos='';syncMc();sel=null;TGT=null;VIL.clear();$('#modal').style.display='none';dirty=1;if(ME)queueSend({t:'init',fac:f});else save();render()}
 function act(d){
@@ -463,11 +474,12 @@ function act(d){
  if(d.a=='logout')return doLogout();
  if(d.a=='syncnow'){if(!ME)return;if(AUTHLOST)return relogin();setCloud('同步中…');flush();pull(true);return}
  if(d.a=='soon')return toast(d.m||'尚未開放');
+ if(d.a=='city')return goCity(d.k);
  if(d.a=='help')return modal(HELP);
  if(d.a=='set'){modal(`<h3>遊戲設定</h3>`+(ME?`<p class="mut">線上模式的時間流速由伺服器決定(目前 ×${SPEED})。</p>`:`<p>時間流速 <select id="spd">${[[1,'×1(真實)'],[10,'×10'],[60,'×60'],[300,'×300']].map(([v,n])=>`<option value="${v}" ${v==speed?'selected':''}>${n}</option>`).join('')}</select></p><p class="mut">資源與施工在關閉頁面後仍會繼續,重新開啟時補算(最多 24 小時)。</p>`)+`<p><button data-a="reset">重新開始</button></p>`);return}
  if(d.a=='reset'){if(!act.rc){act.rc=1;toast('再按一次「重新開始」確認清除進度');setTimeout(()=>act.rc=0,4000);return}act.rc=0;
   (async()=>{try{localStorage.removeItem(KEY);localStorage.removeItem(KEY+'_goff')}catch(e){}GOFF=false;
-   if(ME){try{await drain();let r=await api('/api/act',{action:{t:'reset'},rev:REV});if(r.s==409&&r.j&&r.j.rev!=null){REV=r.j.rev;await api('/api/act',{action:{t:'reset'},rev:REV})}}catch(e){}REV=0;setCloud('')}
+   if(ME){try{await drain();if(CUR&&CUR!==ME.id){CUR=ME.id;await pull(true)}let r=await api('/api/act',{action:{t:'reset'},rev:REV,c:CUR||undefined});if(r.s==409&&r.j&&r.j.rev!=null){REV=r.j.rev;await api('/api/act',{action:{t:'reset'},rev:REV,c:CUR||undefined})}}catch(e){}REV=0;CUR=null;CITIES=[];setCloud('')}
    S=null;$('#rb').innerHTML=$('#side').innerHTML=$('#main').innerHTML=$('#nav').innerHTML='';pick()})();return}
  if(!S)return;
  if(d.a=='nav'){view=d.v;bv=null;bs=null;dirty=1;if(view=='mail'){mt=ME?mt:'in';loadMail()}}
@@ -483,8 +495,9 @@ function act(d){
  else if(d.a=='trc')doA({t:'trcancel',b:d.b,i:+d.i});
  else if(d.a=='visit')doA({t:'visit'});
  else if(d.a=='claim')doA({t:'claim',id:d.id});
- else if(d.a=='raid'){const tx=Math.floor(+$('#tx').value),ty=Math.floor(+$('#ty').value),send=us().map((_,k)=>{const e=$('#s'+k);return e?Math.floor(+e.value||0):0}),kind=d.kind=='scout'?'scout':'',tg=[0,1].map(i=>{const e=$('#tg'+i);return e&&e.value?e.value:''}).filter(Boolean);
-  if(npcAt(tx,ty))doA({t:'raid',tx,ty,send,kind});
+ else if(d.a=='raid'){const tx=Math.floor(+$('#tx').value),ty=Math.floor(+$('#ty').value),send=us().map((_,k)=>{const e=$('#s'+k);return e?Math.floor(+e.value||0):0}),kind=d.kind=='scout'?'scout':d.kind=='found'?'found':'',tg=[0,1].map(i=>{const e=$('#tg'+i);return e&&e.value?e.value:''}).filter(Boolean);
+  if(kind=='found'){if(!ME)return toast('開分城需要登入');const fs=us().map(u=>u.k=='set'?3:0);queueSend({t:'raidp',tx,ty,send:fs,kind});toast('開墾代官出發…')}
+  else if(npcAt(tx,ty))doA({t:'raid',tx,ty,send,kind});
   else if(!ME)toast('該座標沒有可攻擊的目標(玩家對戰需要登入)');
   else{queueSend({t:'raidp',tx,ty,send,kind,tg});toast(kind?'偵察兵出發…':'出兵中…')}}
  else if(d.a=='recall'){
@@ -520,7 +533,7 @@ function act(d){
 
 async function start(){KEY='sg_village_v3'+(ME?'_'+ME.id:'');try{GOFF=localStorage.getItem(KEY+'_goff')==='1'}catch(e){}
  if(ME){NICK=ME.nick||'主公';speed=SPEED;const t0=Date.now();
-  try{const r=await api('/api/save');if(r.ok&&r.j){noteSrv(r.j);REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);setCloud('已載入雲端進度')}}else setCloud('同步失敗')}catch(e){setCloud('離線')}
+  try{const r=await api('/api/save');if(r.ok&&r.j){noteSrv(r.j);if(r.j.c)CUR=r.j.c;REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);setCloud('已載入雲端進度')}}else setCloud('同步失敗')}catch(e){setCloud('離線')}
   if(S){drawRes();render();pollMail()}else pick();return}
  if(load()){drawRes();render()}else pick()}
 
@@ -535,7 +548,7 @@ async function boot(){let note='';
  else start()}
 
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b)act(b.dataset)});
-document.addEventListener('change',e=>{if(e.target.id=='spd'){speed=+e.target.value;if(S&&!ME)save()}if(e.target.id=='brs')SH.res=+e.target.value});
+document.addEventListener('change',e=>{if(e.target.id=='csw')goCity(e.target.value);if(e.target.id=='spd'){speed=+e.target.value;if(S&&!ME)save()}if(e.target.id=='brs')SH.res=+e.target.value});
 document.addEventListener('input',e=>{const id=e.target.id;if(id=='bgd')SH.gold=Math.max(1,Math.floor(+e.target.value||1));else if(id=='mlx')CMP.x=e.target.value;else if(id=='mly')CMP.y=e.target.value;else if(id=='mls')CMP.s=e.target.value;else if(id=='mlb')CMP.b=e.target.value;else if(/^r[0-3]$/.test(id)){SH.r[+id[1]]=Math.max(0,Math.floor(+e.target.value||0));updBal()}});
 document.addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.d)op[d.dataset.d]=d.open},true);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'){flush();pull()}});
