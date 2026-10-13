@@ -146,7 +146,7 @@ const clk=t=>{const s=Math.floor(8*3600+t)%86400;return pad(s/3600|0)+':'+pad(s/
 const dstr=t=>{const d=new Date(2011,9,23+Math.floor((8*3600+t)/86400));return pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+clk(t)};
 const costH=c=>c.map((x,i)=>`<span class="${S.res[i]>=x?'':'bad'}">${RI[i]}${x}</span>`).join(' ');
 const ter=(x,y)=>['🌲','💧','⛰️','🌾','','',''][(((x*73856093)^(y*19349663))>>>0)%7];
-let view='out',bv=null,bs=null,fv=0,sel=null,mc=[0,0],curPos='',rp=0,mt='in',ct=0,dirty=1,speed=SPEED,last=Date.now(),op={acc:true},TGT=null,sig='',SH={res:0,gold:1,r:[1,1,1,1]},VIL=new Map(),RKD=null,MAIL={inbox:[],sent:[],unread:0,loaded:false},mo=null,UOPEN=null,DM=null,GOFF=false,CMP={x:'',y:'',s:'',b:''};
+let view='out',bv=null,bs=null,fv=0,sel=null,mc=[0,0],curPos='',rp=0,mt='in',ct=0,dirty=1,speed=SPEED,last=Date.now(),op={acc:true},TGT=null,sig='',SH={res:0,gold:1,r:[1,1,1,1]},VIL=new Map(),RKD=null,INC=[],CLK=0,lastRes=0,MAIL={inbox:[],sent:[],unread:0,loaded:false},mo=null,UOPEN=null,DM=null,GOFF=false,CMP={x:'',y:'',s:'',b:''};
 
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2400)}
 function modal(h){const m=$('#modal');m.innerHTML='<div class="box">'+h+'<p><button data-a="close">關閉</button></p></div>';m.style.display='flex'}
@@ -161,15 +161,25 @@ async function loadRank(){if(!ME)return;try{const r=await api('/api/rank');if(r.
 function save(){try{S.saved=Date.now();S.spd=speed;localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function load(){try{const s=localStorage.getItem(KEY);if(!s)return false;S=G.fix(JSON.parse(s));speed=S.spd||SPEED;const real=Math.min((Date.now()-S.saved)/1000,24*3600);if(real>0)G.adv(real*speed,{quiet:real>300});syncMc();return true}catch(e){return false}}
 
-const HELP='<h3>遊戲指南</h3><p>這是依據原作復刻日本戰國時期的多人遊戲。</p><ul><li>資源田(外城)產出木材、泥土、鐵塊、糧食。內城有 21 塊空地,自己決定要蓋什麼;城牆環繞城內建地,不佔建地。</li><li>知行所每個城池只能一座;藏屋敷、米藏、埋藏所在現有的升到滿級後可以再蓋新的,效果加總。</li><li>知行所等級越高,所有施工越快(最多省 50%)。只有織田家能外城內城同時施工。</li><li>藏屋敷、米藏最高 20 級,容量 10 萬。</li><li>足輕營、馬廻組可以連續排隊訓練(最多 10 批),每批依序完成。</li><li>建築人口與軍隊都要吃糧;右上角資源列最後一項是「耗糧 / 糧食總產量」。</li><li>「埋藏所」可以藏起資源,避免被其他玩家搶走。城牆環繞城內建地,提高守軍防禦(織田家木柵、德川家石垣、豐臣家土壘漆壁)。</li><li>出征中的兵一樣要吃糧;糧食耗盡時,出征中的兵也會逃亡。</li><li>兵營訓練士兵;軍奉行出兵掠奪地圖上的據點。行軍速度取決於隊伍中最慢的兵種。</li><li>刀鍛冶所、具足屋每級加成兵種攻防 1.5%。</li><li>在地圖上的菩提山城行三顧之禮,可以請出竹中半兵衛。</li><li>商城:用金幣買資源,或把現有資源依比例平倉。</li><li>可以出兵掠奪其他玩家的城池(對方在新手保護期內不行)。</li></ul><p class="mut">尚未實作:英雄、綠洲、寶物、集市、聯盟、資源運送、增援。</p>';
+const HELP='<h3>遊戲指南</h3><p>這是依據原作復刻日本戰國時期的多人遊戲。</p><ul><li>資源田(外城)產出木材、泥土、鐵塊、糧食。內城有 21 塊空地,自己決定要蓋什麼;城牆環繞城內建地,不佔建地。</li><li>知行所每個城池只能一座;藏屋敷、米藏、埋藏所在現有的升到滿級後可以再蓋新的,效果加總。</li><li>知行所等級越高,所有施工越快(最多省 50%)。只有織田家能外城內城同時施工。</li><li>藏屋敷、米藏最高 20 級,容量 10 萬。</li><li>足輕營、馬廻組可以連續排隊訓練(最多 10 批),每批依序完成。</li><li>建築人口與軍隊都要吃糧;右上角資源列最後一項是「耗糧 / 糧食總產量」。</li><li>「埋藏所」可以藏起資源,避免被其他玩家搶走。城牆環繞城內建地,提高守軍防禦(織田家木柵、德川家石垣、豐臣家土壘漆壁)。</li><li>出征中的兵一樣要吃糧;糧食耗盡時,出征中的兵也會逃亡。</li><li>兵營訓練士兵;軍奉行出兵掠奪地圖上的據點。行軍速度取決於隊伍中最慢的兵種。</li><li>刀鍛冶所、具足屋每級加成兵種攻防 1.5%。</li><li>在地圖上的菩提山城行三顧之禮,可以請出竹中半兵衛。</li><li>商城:用金幣買資源,或把現有資源依比例平倉。</li><li>可以出兵掠奪其他玩家的城池(對方在新手保護期內不行)。部隊抵達時才開戰,對方會先收到來襲警報;戰況以戰報用飛鴿傳書寄給雙方。</li></ul><p class="mut">尚未實作:英雄、綠洲、寶物、集市、聯盟、資源運送、增援。</p>';
 function drawRes(){const up=upkeep(),pd=rate(3);
  $('#rb').innerHTML=[0,1,2,3].map(i=>`<span class="ri" title="${RN[i]}">${RI[i]}${fmt(S.res[i])}/${cap(i)}</span>`).join('')+`<span class="ri" title="埋藏所可藏匿的量(每種資源)">🏺${hide()}</span><span class="ri ${up>pd?'bad':''}" title="耗糧 / 糧食總產量(每小時)">🍚${fmt(up)}/${fmt(pd)}</span>`}
-function updCd(){document.querySelectorAll('[data-cd]').forEach(e=>e.textContent=tm(+e.dataset.cd-S.t))}
+function updCd(){document.querySelectorAll('[data-cd]').forEach(e=>e.textContent=tm(+e.dataset.cd-S.t));document.querySelectorAll('[data-rt]').forEach(e=>{const r=(+e.dataset.rt-(Date.now()+CLK))/1000;e.textContent=r>0?tm(r):'結算中…'})}
+const noteSrv=j=>{if(!j)return;if(Array.isArray(j.incoming))INC=j.incoming;if(j.now)CLK=j.now-Date.now()};
+function incBar(){if(!ME||!INC.length)return'';return `<div class="guide" style="border-left-color:#ff5a4a;background:linear-gradient(#5a0d12,#35070c)"><b>⚠ 來襲警報</b><br>`+INC.map(e=>`${esc(e.n)}(${e.x}|${e.y})的軍勢將於 <b data-rt="${e.arrAt}">${tm((e.arrAt-(Date.now()+CLK))/1000)}</b> 後抵達<span class="mut">(兵力不明)</span>`).join('<br>')+`<br><span class="mut">部隊抵達時才會開戰,結果會用飛鴿傳書通知你。趁現在整備軍隊、升級城牆吧。</span></div>`}
 const ttl=()=>`<div class="ttl"><span class="flag">${fa().s}</span>${NICK}的城池<small>(${home().x}|${home().y})</small><small class="mut">主城</small></div>`;
 const back=v=>`<p><a data-a="nav" data-v="${v}">« 返回${v=='in'?'內城':'外城'}</a></p>`;
 function qtab(){const rows=['f','b'].filter(l=>S.q[l]);if(!rows.length)return'';
  return `<table class="tb"><tr><th>刪除</th><th>任務 <a data-a="rushall">立即完成[2金幣]</a></th><th>剩餘時間</th><th>結束於</th></tr>`+rows.map(l=>{const q=S.q[l];return `<tr><td><a data-a="cancel" data-l="${l}" class="x">✖</a></td><td>${q.dm?`${q.name}→等級 ${q.to}`:`${q.name}(等級 ${q.to})`}</td><td><span data-cd="${q.end}">${tm(q.end-S.t)}</span></td><td>${clk(q.end)}</td></tr>`}).join('')+'</table>'}
-const mvt=()=>S.mv.length?`<table class="tb"><tr><th>動向</th><th>目標</th><th>抵達</th></tr>`+S.mv.map(m=>{const out=m.go&&S.t<m.go,at=out?m.go:m.arr;return `<tr><td>${out?'出征':m.ret?'返回':'出征'}</td><td>${esc(m.name)}</td><td><span data-cd="${at}">${tm(at-S.t)}</span></td></tr>`}).join('')+'</table>':'';
+const sumA=a=>(a||[]).reduce((p,q)=>p+q,0);
+const unitsStr=a=>us().map((u,k)=>a&&a[k]?`${u.n}×${a[k]}`:'').filter(Boolean).join('、')||'—';
+const mvt=()=>S.mv.length?`<table class="tb"><tr><th>動向</th><th>目標</th><th>兵力</th><th>時間</th></tr>`+S.mv.map(m=>{
+ const sent=m.sent||m.send,n0=sumA(sent),n1=sumA(m.send),back=m.ret&&!m.pending;
+ const st=m.pending?(S.t>=m.go?'已抵達,戰鬥結算中…':'出征中'):(back?'返回中':'出征中');
+ const at=m.pending?m.go:(back?m.arr:(m.go&&S.t<m.go?m.go:m.arr));
+ const loot=back&&m.loot&&m.loot.some(x=>x>0)?`<br>戰利品 ${m.loot.map((x,i)=>RI[i]+x).join(' ')}(抵達後入庫)`:'';
+ const tcell=m.pending&&S.t>=m.go?'—':`<span data-cd="${at}">${tm(at-S.t)}</span>`;
+ return `<tr><td>${st}</td><td>${esc(m.name)}</td><td>${back?`出兵 ${n0} 人 → <b>剩 ${n1} 人返回</b>`:`出兵 <b>${n0}</b> 人`}<br><small class="mut">${unitsStr(back?m.send:sent)}</small>${loot}</td><td>${tcell}</td></tr>`}).join('')+'</table>':'';
 function vOut(){
  const sc=FP.map(([x,y],i)=>{const t=FT[i],L=S.fld[i],at=`class="it" style="left:${x}%;top:${y}%" title="${FN[t]} 等級${L}" data-a="fld" data-i="${i}"`;
   return t==3?`<div ${at}><div class="crop"><b class="lv">${L}</b></div></div>`:`<div ${at}><div class="em">${['🌲🌲',CLAYI,'🪨🪨'][t]}</div><b class="lv">${L}</b></div>`}).join('');
@@ -284,7 +294,7 @@ const udetail=k=>{const u=us()[k];return `<tr><td colspan="4" style="text-align:
 function trainer(b){
  return `<h4 class="sh">訓練</h4><p class="mut">可以連續排隊(最多 ${TRAIN_QMAX} 批),每按一次「訓練」就加到佇列最後,前一批訓練完才會開始下一批。</p>`+ttab(b.id)+`<table class="tb"><tr><th>兵種</th><th>能力</th><th>成本 / 時間</th><th>數量</th></tr>`+us().map((u,k)=>u.b!=b.id?'':`<tr><td><a data-a="udesc" data-k="${k}" title="點一下看詳細說明"><b>${u.n}</b></a><br>現有 ${S.u[k]}</td><td>攻 ${Math.round(u.a*ab())} 步防 ${Math.round(u.di*db())} 騎防 ${Math.round(u.dc*db())}<br>速 ${u.s} 載 ${u.c} 糧 ${u.up}</td><td>${costH(u.r)}<br>⏱ ${tm(u.t*pw(.9,Math.max(0,S.bld[b.id]-1)))}/名</td><td><input id="n${k}" type="number" min="1" value="1"> <a data-a="fill" data-k="${k}">(最多)</a><br><button data-a="tr" data-k="${k}">訓練</button></td></tr>${UOPEN===k?udetail(k):''}`).join('')+'</table>'}
 function sender(){const t=TGT||nearestCamp();
- return `<h4 class="sh">出兵</h4><p>目標座標 x <input id="tx" type="number" value="${t[0]}"> y <input id="ty" type="number" value="${t[1]}"> <small class="mut">(可在地圖上點選目標)</small></p><p class="mut">目標是營寨:攻不破守軍就全軍覆沒;打贏的話守軍會損兵、庫存會減少,營寨被打過約 12 遊戲小時後重新集結(每位玩家各自計算)。目標是玩家的城池:依雙方戰力結算,雙方都會損兵。勝利後依各兵種攜帶量搬回資源,部隊返回後才入庫。</p><table class="tb"><tr><th>兵種</th><th>現有</th><th>派出</th></tr>`+us().map((u,k)=>`<tr><td>${u.n}</td><td>${S.u[k]}</td><td><input id="s${k}" type="number" min="0" max="${S.u[k]}" value="${S.u[k]}"></td></tr>`).join('')+`</table><p><button data-a="raid">出兵掠奪</button></p>`+mvt()}
+ return `<h4 class="sh">出兵</h4><p>目標座標 x <input id="tx" type="number" value="${t[0]}"> y <input id="ty" type="number" value="${t[1]}"> <small class="mut">(可在地圖上點選目標)</small></p><p class="mut">目標是營寨:攻不破守軍就全軍覆沒;打贏的話守軍會損兵、庫存會減少,營寨被打過約 12 遊戲小時後重新集結(每位玩家各自計算)。目標是玩家的城池:部隊抵達的那一刻才會開戰(對方會先收到來襲警報),依雙方當時的戰力結算,雙方都會損兵;戰況會用飛鴿傳書寫成戰報寄給雙方。勝利後依各兵種攜帶量搬回資源,部隊返回後才入庫。</p><table class="tb"><tr><th>兵種</th><th>現有</th><th>派出</th></tr>`+us().map((u,k)=>`<tr><td>${u.n}</td><td>${S.u[k]}</td><td><input id="s${k}" type="number" min="0" max="${S.u[k]}" value="${S.u[k]}"></td></tr>`).join('')+`</table><p><button data-a="raid">出兵掠奪</button></p>`+mvt()}
 function demolishBox(){const can=S.bld.gov>=DEMOLISH_GOV;
  return `<h4 class="sh">拆除</h4>`+(can?`<p class="mut">每次拆除一級(不退還資源),需要約建造時間一半的時間,期間會占用施工佇列。拆到 0 級,這塊地就會清空,可以重新蓋別的建築。</p><p><button data-a="dem" data-slot="${bs}">${DM===bs?'再按一次確認:拆除一級':'拆除一級'}</button></p>`:`<p class="mut">${B.find(x=>x.id=='gov').n}達到 ${DEMOLISH_GOV} 級以上才能拆除建築。</p>`)}
 function vBuildMenu(){const i=bs;let h=`<div class="ttl">選擇要蓋的建築<small>(第 ${i+1} 塊空地)</small></div><div class="g">`;
@@ -312,7 +322,7 @@ function vMap(){const [cx,cy]=mc,W2=36,H2=18,ox=300,oy=165,P=(dx,dy)=>[ox+(dx+dy
  let info='';
  if(sel){const p=npcAt(sel[0],sel[1]),vl=VIL.get(sel[0]+','+sel[1]),me=sel[0]==home().x&&sel[1]==home().y;
   if(me)info=`<p>${fcastle(CASTLE_COL[S.fac])} <b>${esc(NICK)}的城池</b>(${home().x}|${home().y})</p>`;
-  else if(vl)info=`<p>${fcastle(CASTLE_COL[vl.f]||'#888')} <b>${esc(vl.n)}</b>(${sel[0]}|${sel[1]}) · ${FAC[vl.f]||''}家 · 威望 ${vl.p}<br>距離 ${distTo(sel[0],sel[1]).toFixed(1)} 格</p><p class="mut">可以出兵掠奪(新手保護期 ${PROTECT_DAYS} 個遊戲日內不能被攻擊)。</p><button data-a="tgo">前往軍奉行出兵</button> <button data-a="mailto" data-x="${sel[0]}" data-y="${sel[1]}">✉ 寄信給他</button>`;
+  else if(vl)info=`<p>${fcastle(CASTLE_COL[vl.f]||'#888')} <b>${esc(vl.n)}</b>(${sel[0]}|${sel[1]}) · ${FAC[vl.f]||''}家 · 威望 ${vl.p}<br>距離 ${distTo(sel[0],sel[1]).toFixed(1)} 格</p><p class="mut">可以出兵掠奪(新手保護期 ${PROTECT_DAYS} 個遊戲日內不能被攻擊)。部隊抵達時才會開戰,對方會先收到來襲警報。</p><button data-a="tgo">前往軍奉行出兵</button> <button data-a="mailto" data-x="${sel[0]}" data-y="${sel[1]}">✉ 寄信給他</button>`;
   else if(!p)info=`<p class="mut">(${sel[0]}|${sel[1]}) 荒地,暫無可做之事。</p>`;
   else if(p.zg)info=`<p>${ZGICON} <b>${p.n}</b>(${sel[0]}|${sel[1]}):竹中半兵衛隱居之處。行三顧之禮後可請他出仕(全資源產量 +15%)。已拜訪 ${S.zg}/3 次。</p>${S.zg>=3?'<p class="ok">竹中半兵衛已經出仕。</p>':`<p>禮物 ${costH([300*(S.zg+1),300*(S.zg+1),300*(S.zg+1),300*(S.zg+1)])}</p><button data-a="visit">第 ${S.zg+1} 次拜訪</button>`}`;
   else{const ci=G.campInfo(sel[0],sel[1]),gl=Object.entries(ci.g).filter(([k,v])=>v>0).map(([k,v])=>`${k}×${v}`).join('、');
@@ -363,7 +373,7 @@ try{document.getElementById('lgi').innerHTML=ICONS.arm}catch(e){}
 function render(){
  $('#nav').innerHTML=NAV.map(([v,n,ic])=>`<button data-a="${v=='x'?'soon':'nav'}" data-v="${v}" class="${view==v||(v=='out'&&view=='f')||(v=='in'&&view=='b')?'on':''}"><i>${ic}</i>${n}${v=='mail'&&MAIL.unread?` <b class="bad">(${MAIL.unread})</b>`:''}</button>`).join('');
  const V={shop:vShop,out:vOut,in:vIn,f:vF,b:vB,map:vMap,rank:vRank,quest:vQuest,rep:vRep,mail:vMail};
- $('#main').innerHTML=guideBar()+V[view]();$('#side').innerHTML=sidebar();const c=$('#chat');if(c)c.scrollTop=c.scrollHeight;dirty=0}
+ $('#main').innerHTML=incBar()+guideBar()+V[view]();$('#side').innerHTML=sidebar();const c=$('#chat');if(c)c.scrollTop=c.scrollHeight;dirty=0}
 
 async function api(p,b,m,k){const r=await fetch(p,{method:m||(b?'POST':'GET'),headers:b?{'Content-Type':'application/json'}:{},body:b?JSON.stringify(b):undefined,credentials:'same-origin',keepalive:!!k});let j=null;try{j=await r.json()}catch(e){}return{ok:r.ok&&(!j||j.ok!==false),s:r.status,j}}
 function authUI(reg,msg){const m=$('#modal');m.style.display='flex';
@@ -382,12 +392,12 @@ function adopt(st,t0){S=G.fix(st);speed=SPEED;const lag=(Date.now()-t0)/1000;if(
 function queueSend(a){pend++;chain=chain.then(()=>send(a)).catch(()=>{}).then(()=>{pend--})}
 async function send(a){const t0=Date.now();
  try{const r=await api('/api/act',{action:a,rev:REV},'POST',1),j=r.j||{};
-  if(j.state&&j.rev!=null){REV=j.rev;if(pend<=1||!r.ok)adopt(j.state,t0)}
+  noteSrv(j);if(j.state&&j.rev!=null){REV=j.rev;if(pend<=1||!r.ok)adopt(j.state,t0)}
   else if(r.s==409)await pull(true);
   if(r.ok){setCloud('已同步 '+tnow());if(j.msg)toast(j.msg)}else{if(j.msg)toast(j.msg);if(!j.state&&r.s!=409)setCloud('同步失敗')}
  }catch(e){setCloud('離線')}}
 async function pull(force){if(!ME||(pend&&!force))return;const t0=Date.now();
- try{const r=await api('/api/save');if(r.ok&&r.j){REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);setCloud('已同步 '+tnow())}}}catch(e){setCloud('離線')}}
+ try{const r=await api('/api/save');if(r.ok&&r.j){noteSrv(r.j);REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);setCloud('已同步 '+tnow())}}}catch(e){setCloud('離線')}}
 
 function doA(a,after){const r=G.perform(a);if(!r.ok){toast(r.msg||'無法執行');return false}if(r.msg)toast(r.msg);if(after)after();dirty=1;if(ME)queueSend(a);else save();return true}
 function newGame(f){setTimeout(()=>modal(WELCOME),50);S=G.init(f);if(ME)speed=SPEED;view='out';bv=null;curPos='';syncMc();sel=null;TGT=null;VIL.clear();$('#modal').style.display='none';dirty=1;if(ME)queueSend({t:'init',fac:f});else save();render()}
@@ -453,7 +463,7 @@ function act(d){
 
 async function start(){KEY='sg_village_v3'+(ME?'_'+ME.id:'');try{GOFF=localStorage.getItem(KEY+'_goff')==='1'}catch(e){}
  if(ME){NICK=ME.nick||'主公';speed=SPEED;const t0=Date.now();
-  try{const r=await api('/api/save');if(r.ok&&r.j){REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);setCloud('已載入雲端進度')}}else setCloud('同步失敗')}catch(e){setCloud('離線')}
+  try{const r=await api('/api/save');if(r.ok&&r.j){noteSrv(r.j);REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);setCloud('已載入雲端進度')}}else setCloud('同步失敗')}catch(e){setCloud('離線')}
   if(S){drawRes();render();pollMail()}else pick();return}
  if(load()){drawRes();render()}else pick()}
 
@@ -475,7 +485,9 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='
 const busy=()=>['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName);
 setInterval(()=>{if(!S)return;const n=Date.now(),dt=(n-last)/1000*speed;last=n;G.adv(dt,{quiet:dt/speed>300});
  const sg=(S.log[0]?S.log[0].t+S.log[0].m:'')+S.u.join(',')+JSON.stringify(S.q)+JSON.stringify(S.tr);if(sg!==sig){sig=sg;dirty=1}
- drawRes();updCd();if(dirty&&!busy())render()},250);
+ drawRes();updCd();
+ if(ME&&Date.now()-lastRes>8000){const nowS=Date.now()+CLK;if(INC.some(e=>e.arrAt<=nowS)||S.mv.some(m=>m.pending&&m.sentAt&&nowS>=m.sentAt+m.dur/SPEED*1000)){lastRes=Date.now();pull(true)}}
+ if(dirty&&!busy())render()},250);
 setInterval(()=>{if(S){if(!ME)save();if(!busy())render()}},4000);
 setInterval(()=>{if(ME&&S)pollMail();if(ME&&S&&!pend)pull();if(ME&&S&&view=='map')loadWorld()},60000);
 addEventListener('beforeunload',()=>{if(S&&!ME)save()});
