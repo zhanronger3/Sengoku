@@ -20,6 +20,47 @@ function table(fac, a, b, c, labels) {
   a.forEach((n, k) => { if (n > 0 || (b && b[k] > 0)) rows.push(`  ${G.UN[fac][k].n}:${labels[0]} ${n}${c ? `,${labels[1]} ${b[k]}` : ""}${labels[2] ? `,${labels[2]} ${labels[3](k)}` : ""}`); });
   return rows.join("\n");
 }
+// 攻城段落:破門槌拆城牆、大筒類轟擊建築(沒有攻城器械時回傳空字串)
+function siegeText(sg, dFac) {
+  if (!sg) return "";
+  const L = [];
+  const w = G.F[dFac].w.n;
+  if (sg.wall) L.push(sg.wall.to < sg.wall.from ? `破門槌 ${sg.rams} 具猛撞${w},城牆從等級 ${sg.wall.from} 被撞到等級 ${sg.wall.to}。` : `破門槌 ${sg.rams} 具撞了半天,${w}依然屹立(等級 ${sg.wall.from})。`);
+  else if (sg.rams > 0) L.push("破門槌一路抬到城下,才發現這座城根本沒有城牆可撞。");
+  for (const h of sg.hits) {
+    if (h.missing) L.push(`砲手把大筒對準${h.name},城裡卻根本沒有這棟建築,砲彈全落了空。`);
+    else if (h.to < h.from) L.push(`${h.rnd ? "砲手沒有明確的目標,隨手一陣亂轟" : "砲手依照指令集中轟擊"},${h.name}從等級 ${h.from} 被打到等級 ${h.to}${h.to < 1 ? "(夷為平地)" : ""}。`);
+    else L.push(`大筒轟向${h.name}(等級 ${h.from}),但砲火不夠猛,只留下滿牆焦痕。`);
+  }
+  return L.length ? "【攻城】\n" + L.join("\n") : "";
+}
+// 偵察報告。res: G.scoutBattle 的結果
+function buildScout(res, ctx) {
+  const { attNick: a, defNick: d, attPos, defPos } = ctx;
+  const aFac = res.attFac, dFac = res.defFac, sentN = sum(res.sent), deadN = sum(res.deadA);
+  const caught = res.lossFrac > 0;
+  if (!res.ok) {
+    return {
+      att: { s: `【偵察】${d}:偵察失敗`, b: `${fmtTime(ctx.arrAt)},${a}派出的 ${sentN} 名偵察兵潛入(${defPos.x}|${defPos.y}),卻被${d}的偵察兵一一識破,全數被擊殺,沒有帶回任何情報。` },
+      def: { s: `【警戒】擊退了${a}的偵察兵`, b: `${fmtTime(ctx.arrAt)},${a}(${attPos.x}|${attPos.y})派出 ${sentN} 名偵察兵窺探城池,被我方偵察兵全數識破、擊殺。` },
+    };
+  }
+  const r = res.rep, names = (arr) => arr.map((n, k) => (n > 0 ? `${G.UN[dFac][k].n}×${n}` : "")).filter(Boolean).join("、") || "無";
+  const bl = Object.entries(r.bld).map(([id, l]) => `${(G.B.find((x) => x.id === id) || { n: id }).n} Lv${l}`).join("、") || "無";
+  const body = [
+    `${fmtTime(ctx.arrAt)},${a}派出的 ${sentN} 名偵察兵潛入${d}的城池(${defPos.x}|${defPos.y}),帶回了以下情報:`,
+    `【資源】${RES.map((n, i) => `${n} ${r.res[i]}`).join("、")}\n(埋藏所可藏匿每種資源約 ${r.hide} 單位,這部分搶不走)`,
+    `【守軍】${names(r.u)}`,
+    `【城牆】${r.wall > 0 ? `${G.F[dFac].w.n} 等級 ${r.wall}` : "尚未築起城牆"}`,
+    `【建築】${bl}`,
+    caught ? `偵察兵在潛入時被對方的偵察兵發現,折損 ${deadN} 人,對方已經知道有人在窺探。` : "偵察兵全員平安撤出,對方毫不知情。",
+    "部隊正在返回中。",
+  ].join("\n\n");
+  return {
+    att: { s: `【偵察】${d}:情報到手`, b: body },
+    def: caught ? { s: `【警戒】發現${a}的偵察兵`, b: `${fmtTime(ctx.arrAt)},${a}(${attPos.x}|${attPos.y})派出 ${sentN} 名偵察兵潛入城中,被我方偵察兵發現並擊殺 ${deadN} 人,但仍有人帶著情報逃脫。` } : null,
+  };
+}
 // res: G.pvpBattle 的結果;ctx: { id, attNick, defNick, attPos, defPos, arrAt, dist }
 function build(res, ctx) {
   const { id, attNick: a, defNick: d, attPos, defPos } = ctx;
@@ -56,7 +97,7 @@ function build(res, ctx) {
   const tDef = `【敵方】守軍 ${defN} 人 → 陣亡 ${deadD} 人\n${table(dFac, res.defBefore, res.deadD, true, ["原有", "陣亡"])}`;
   const closerW = pick(CLOSERS_WIN, id, "cw"), closerL = pick(CLOSERS_LOSE, id, "cl");
   const attBody = [
-    setting, defense, battle, clash, strength,
+    setting, defense, battle, clash, strength, siegeText(res.sg, dFac),
     res.win ? `結果:大獲全勝!${a}軍攻破${d}的防線。` : `結果:敗北。${a}軍未能攻下${d}的城池,${survN > 0 ? "殘部正在撤退。" : "全軍覆沒。"}`,
     tAtt, tDef.replace("【敵方】", "【對手】"),
     res.win ? `【戰利品】${lootTxt}(部隊返回後入庫)${cave ? "\n" + cave : ""}\n部隊正在返回中。` : (survN > 0 ? "部隊正在返回中。" : ""),
@@ -64,7 +105,7 @@ function build(res, ctx) {
   ].filter(Boolean).join("\n\n");
   const defBody = [
     `${fmtTime(ctx.arrAt)},${weather}。${a}(${attPos.x}|${attPos.y})的軍勢 ${sentN} 人(${unitsText(aFac, res.sent)})殺到城下。`,
-    defense, battle.replace(attMain, `敵軍的${attMain}`).replace(attCav || "\u0000", `敵軍的${attCav}`), clash.replace(attMain, `敵軍的${attMain}`), strength,
+    defense, battle.replace(attMain, `敵軍的${attMain}`).replace(attCav || "\u0000", `敵軍的${attCav}`), clash.replace(attMain, `敵軍的${attMain}`), strength, siegeText(res.sg, dFac),
     res.win ? `結果:城池失守!守軍不敵,${a}軍搶掠而去。` : `結果:守城成功!${d}軍擊退了${a}的進攻。`,
     tDef.replace("【敵方】", "【我方】"), tAtt.replace("【我方】", "【敵方】"),
     res.win ? `【被搶走的資源】${lootTxt}${cave ? "\n" + cave : ""}` : "【被搶走的資源】無",
@@ -77,4 +118,4 @@ function build(res, ctx) {
     verdict,
   };
 }
-module.exports = { build, fmtTime };
+module.exports = { build, buildScout, fmtTime };

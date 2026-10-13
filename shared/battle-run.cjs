@@ -15,6 +15,7 @@ const CLAIM_TTL = 20000;      // 某個請求認領結算後,超過這麼久沒�
 const FIZZLE_GRACE = 30000;   // 出兵紀錄遺失時,抵達時間過了這麼久才取消
 const MAIL_LIMIT = 2400;
 const akey = (id) => "atk_" + id;
+const seedOf = (id) => { let h = 2166136261; for (const c of String(id)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
 const ikey = (uid) => "inc_" + uid;
 
 async function registerAttack({ battle, mail, rec, now }) {
@@ -71,8 +72,10 @@ async function resolveAttack({ saves, battle, mail, id, now }) {
     if (st.atkRes && st.atkRes[id]) { res = st.atkRes[id]; break; } // 已經結算過(前一次中途失敗)
     core.settleTo(st, rec.arrAt);                                      // 先把防守方補算到抵達的那一刻
     if (G.pvpProtected(st, rec.arrAt)) { res = { void: true, why: "protected" }; break; }
-    const r = G.pvpBattle({ fac: rec.att.fac, send: rec.send, ab: rec.att.ab }, st);
-    G.pvpApplyDef(st, r, { id, attNick: rec.att.n, attPos: { x: rec.att.x, y: rec.att.y } });
+    const ctxA = { id, attNick: rec.att.n, attPos: { x: rec.att.x, y: rec.att.y } };
+    let r;
+    if (rec.kind === "scout") { r = G.scoutBattle({ fac: rec.att.fac, send: rec.send }, st); G.scoutApplyDef(st, r, ctxA); }
+    else { r = G.pvpBattle({ fac: rec.att.fac, send: rec.send, ab: rec.att.ab, tg: rec.tg || [], seed: seedOf(id) }, st); G.pvpApplyDef(st, r, ctxA); }
     const w = await saves.setJSON(rec.def.uid, { state: st, rev: g.data.rev + 1, updatedAt: now }, { onlyIfMatch: g.etag });
     if (!w || w.modified !== false) { res = r; break; }
     await sleep(Math.random() * 6 * (i + 1));
@@ -95,7 +98,7 @@ async function resolveAttack({ saves, battle, mail, id, now }) {
   }
 
   // 4 戰報(兩邊各一封;信件編號固定,重複寄也只會有一封)
-  const rp = R.build(res, {
+  const rp = (res.scout ? R.buildScout : R.build)(res, {
     id, attNick: rec.att.n, defNick: rec.def.n, attPos: { x: rec.att.x, y: rec.att.y }, defPos: { x: rec.def.x, y: rec.def.y },
     arrAt: rec.arrAt, dist: rec.dist || 0,
   });

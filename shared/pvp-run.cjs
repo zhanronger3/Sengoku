@@ -54,12 +54,12 @@ async function prepare({ saves, world, battle, mail, uid, nick, body, stored, et
     try {
       await B.registerAttack({
         battle, mail, now,
-        rec: { id: aid, att: { uid, n: nick, x: r.pos.x, y: r.pos.y, fac: r.fac, ab: r.ab }, def: { uid: hit.uid, n: hit.rec.n, x: hit.rec.x, y: hit.rec.y }, send: r.send, sentAt: now, arrAt, go: r.go, dur: r.dur, dist: r.dist },
+        rec: { id: aid, att: { uid, n: nick, x: r.pos.x, y: r.pos.y, fac: r.fac, ab: r.ab }, def: { uid: hit.uid, n: hit.rec.n, x: hit.rec.x, y: hit.rec.y }, send: r.send, sentAt: now, arrAt, go: r.go, dur: r.dur, dist: r.dist, kind: r.kind || "", tg: r.tg || [] },
       });
     } catch (e) { /* 登記失敗:攻擊方的「出征中」紀錄在抵達時間過後會自動取消,部隊折返 */ }
     await unlock(world, uid).catch(() => {});
     const total = r.send.reduce((p, q) => p + q, 0), mins = Math.max(1, Math.round((arrAt - now) / 60000));
-    return { status: 200, body: { ok: true, msg: `已出兵 ${total} 人前往 ${hit.rec.n}(${tx}|${ty}),約 ${mins} 分鐘後抵達;抵達時才會開戰,戰況會用飛鴿傳書通知你`, state: att, rev: next, now } };
+    return { status: 200, body: { ok: true, msg: `已派${r.kind ? "偵察兵" : "兵"} ${total} 人前往 ${hit.rec.n}(${tx}|${ty}),約 ${mins} 分鐘後抵達;抵達時才會開戰,戰況會用飛鴿傳書通知你`, state: att, rev: next, now } };
   } catch (e) {
     await unlock(world, uid).catch(() => {});
     throw e;
