@@ -1,7 +1,7 @@
 // 遊戲規則:同時給瀏覽器(dist/game.js)和 Netlify 函式(server-core.cjs)使用。
 // 沒有任何畫面相關的程式,所有操作都透過 perform() 進行。
 const G=(()=>{
-const SPEED=60,CD=6*3600,CAMP_RESPAWN=12*3600,STASH_MULT=3,TRAIN_QMAX=10,DEMOLISH_GOV=3,NSLOTS=27,NU=10,TRB=['infb','cavb','wsh','pal','res'],MULTI=['wh','gr','cave']; // 城內 21 塊建地;藏屋敷、米藏、埋藏所在舊的升到滿級後可再蓋新的
+const SPEED=60,CD=6*3600,CAMP_RESPAWN=12*3600,STASH_MULT=3,TRAIN_QMAX=10,DEMOLISH_GOV=3,NSLOTS=21,NU=10,TRB=['infb','cavb','wsh','pal','res'],MULTI=['wh','gr','cave']; // 城內 21 塊建地;藏屋敷、米藏、埋藏所在舊的升到滿級後可再蓋新的
 const GOLD_RATE=200,EXCHANGE_COST=1,PROTECT_DAYS=2; // 1 金幣買 200 單位資源;平倉每次 1 金幣;新手保護 2 個真實日(依開城時間 born 計算,與時間倍率無關)
 const RN=['木材','泥土','鐵塊','糧食'],FN=['伐木場','泥坑','鐵礦場','農田'];
 const FT=[0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,3,3];
