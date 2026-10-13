@@ -6,6 +6,8 @@ const world = require("./world-store.cjs");
 const pvp = require("./pvp-run.cjs");
 const battles = require("./battle-run.cjs");
 const A = require("./acct.cjs");
+const ships = require("./ship-run.cjs");
+const market = require("./market-run.cjs");
 
 // 在處理這位玩家的請求之前,先結算跟他有關、已經到期的玩家對戰(失敗不應該讓正常的請求跟著失敗)
 async function settleBattles({ saves, world: wstore, battle, mail, uid, now }) {
@@ -13,6 +15,11 @@ async function settleBattles({ saves, world: wstore, battle, mail, uid, now }) {
     await battles.resolveDueFor({ saves, world: wstore, battle, mail, uid, now });
   } catch (e) {
     console.error("resolveDueFor failed", e);
+  }
+  try {
+    await ships.resolveDueFor({ saves, world: wstore, battle, mail, uid, now });
+  } catch (e) {
+    console.error("ships.resolveDueFor failed", e);
   }
 }
 
@@ -66,6 +73,13 @@ async function act({ stores, user, body, now }) {
   // 撤回玩家對戰的出兵
   if (body?.action?.t === "recallp" && stored) {
     const res = await pvp.recall({ saves, world: wstore, battle, mail, uid: key, owner, body, stored, etag, now });
+    return attach(res);
+  }
+
+  // 樂市樂座:運送、掛單、取消掛單、接受掛單
+  const MK = { shipp: market.ship, offerp: market.offer, offerx: market.cancel, acceptp: market.accept };
+  if (MK[body?.action?.t] && stored) {
+    const res = await MK[body.action.t]({ saves, world: wstore, battle, mail, uid: key, owner, nick, body, stored, etag, now });
     return attach(res);
   }
 
