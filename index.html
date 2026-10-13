@@ -363,12 +363,13 @@ const heroTab=()=>{const h=S.hero,U=us();let t=`<h4 class="sh">英雄</h4>`;
  const oc=Object.entries(S.occ||{});t+=`<h4 class="sh">佔領的營寨 ${oc.length}/${G.occSlots()}</h4><p class="mut">評定眾 10/15/20 級可佔領 1/2/3 座。營寨要在距離城池 ${G.OCC_RANGE} 格內,由英雄帶兵出征(軍奉行的出兵頁面勾選「派英雄同行」)全滅守軍後佔領;每座每種資源每小時 +15×(營寨階級+1)。</p>`+(oc.length?'<table class="tb"><tr><th>營寨</th><th>座標</th><th>產出(每種資源/時)</th></tr>'+oc.map(([k,o])=>{const [x,y]=k.split(',').map(Number),n=npcAt(x,y);return `<tr><td>${n?n.n:'營寨'}</td><td>${x}|${y}</td><td>+${15*((o.tier||0)+1)}</td></tr>`}).join('')+'</table>':'');
  return t};
 const artTab=()=>{const sl=G.artSlots();return `<h4 class="sh">名物 ${S.art.length}/${sl}</h4><p class="mut">藏寶閣每 10 級可收藏 1 件名物。英雄帶兵打贏營寨有機會帶回名物(越遠的營寨越好的東西);藏寶閣沒有空位就拿不回來。</p>`+(S.art.length?'<table class="tb"><tr><th>名物</th><th>效果</th><th></th></tr>'+S.art.map(id=>{const a=G.ARTM[id];return `<tr><td><b>${a.n}</b></td><td>${a.d}</td><td><a data-a="artdrop" data-id="${id}" class="x" title="丟棄">✖</a></td></tr>`}).join('')+'</table>':'<p class="mut">目前沒有名物。</p>')};
-let AL=null;
-async function loadAlly(){if(!ME)return;try{const r=await api('/api/ally');if(r.ok&&r.j&&r.j.ok!==false){AL=r.j;dirty=1}}catch(e){}}
+let AL=null,ALt=0;
+async function loadAlly(){if(!ME)return;ALt=Date.now();try{const r=await api('/api/ally');if(r.ok&&r.j&&r.j.ok!==false){AL=r.j;dirty=1}}catch(e){}}
 async function allyDo(a){const r=await api('/api/ally',a,'POST');if(r.j){if(r.j.msg)toast(r.j.msg);if(r.j.ok)AL=r.j;dirty=1}else toast('操作失敗,請稍後再試')}
 function embTab(){
  if(!ME)return '<p class="mut">聯盟需要登入後使用。</p>';
  if(AL==null){loadAlly();return '<p class="mut">載入中…</p>'}
+ if(Date.now()-ALt>15000)loadAlly(); // 等級可能剛升上去,定期重新向伺服器確認
  const a=AL.ally;let h='<h4 class="sh">聯盟</h4>';
  if(!a){
   h+=`<p class="mut">你還沒有加入聯盟。奏者番 ${AL.need.join} 級可接受邀請,${AL.need.create} 級可建立聯盟(你所有城池中最高 ${AL.lv} 級)。要加入別人的聯盟,可以寄信給盟主請他邀請你。</p>`;
