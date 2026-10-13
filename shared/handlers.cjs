@@ -87,6 +87,7 @@ async function act({ stores, user, body, now }) {
   const res = core.act(stored, body, now, { pos });
   if (res.store === "delete") {
     // 重新開始:本丸與所有分城一起清掉
+    try { await require("./ally-run.cjs").act({ saves, world: wstore, mail, user, body: { action: { t: "leave" } }, now }); } catch {}
     for (const k of await A.list(wstore, owner)) {
       await saves.delete(k);
       try { await world.remove(wstore, k); } catch {}
