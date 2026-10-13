@@ -115,7 +115,7 @@ svg text{user-select:none}
 <body>
 <div id="app">
 <div id="hd"><div class="logo"><span class="lgi" id="lgi"></span>車肥羊<small>戰國</small></div>
-<span id="who" class="mut" style="font-size:12px"></span><span id="cloud" class="mut" style="font-size:12px"></span><div id="tn"><button data-a="help">遊戲指南</button><button data-a="set">遊戲設定</button><button data-a="soon" data-m="每日一題尚未開放">每日一題</button><button data-a="soon" data-m="論壇尚未開放">論 壇</button><button data-a="soon" data-m="客服中心尚未開放">客服中心</button><button data-a="logout">登 出</button><button data-a="nav" data-v="shop">商 城</button></div></div>
+<span id="who" class="mut" style="font-size:12px"></span><span id="cloud" class="mut" data-a="syncnow" style="font-size:12px;cursor:pointer"></span><div id="tn"><button data-a="help">遊戲指南</button><button data-a="set">遊戲設定</button><button data-a="soon" data-m="每日一題尚未開放">每日一題</button><button data-a="soon" data-m="論壇尚未開放">論 壇</button><button data-a="soon" data-m="客服中心尚未開放">客服中心</button><button data-a="logout">登 出</button><button data-a="nav" data-v="shop">商 城</button></div></div>
 <div id="rb"></div>
 <div id="body"><nav id="nav"></nav><main id="main"></main><aside id="side"></aside></div>
 </div>
@@ -382,22 +382,35 @@ async function doLogin(){const r=await api('/api/login',{email:$('#ae').value.tr
 async function doSign(){const email=$('#ae').value.trim(),password=$('#ap').value,nickname=$('#an').value.trim();const r=await api('/api/signup',{email,password,nickname});
  if(!r.ok)return authUI(true,'註冊失敗:'+((r.j&&r.j.error)||'請稍後再試'));
  const l=await api('/api/login',{email,password});if(!l.ok)return authUI(false,'註冊完成。若需要信箱驗證,請先到信箱點擊驗證連結,再回來登入');await finish()}
-async function finish(){const r=await api('/api/me');if(r.ok&&r.j&&r.j.id){ME=r.j;$('#modal').style.display='none';$('#who').textContent=ME.email;start()}else authUI(false,'無法確認登入狀態')}
-async function doLogout(){if(!ME)return toast('目前是訪客模式(沒有連上後端)');try{await chain}catch(e){}await api('/api/logout',{});location.reload()}
+async function finish(){const r=await api('/api/me');if(r.ok&&r.j&&r.j.id){ME=r.j;AUTHLOST=false;$('#modal').style.display='none';$('#who').textContent=ME.email;await start();flush()}else authUI(false,'無法確認登入狀態')}
+async function doLogout(){if(!ME)return toast('目前是訪客模式(沒有連上後端)');await drain();await api('/api/logout',{});location.reload()}
 
-let REV=0,pend=0,chain=Promise.resolve();
+let REV=0,OUT=[],flushing=false,AUTHLOST=false;
 const tnow=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
-const setCloud=t=>{$('#cloud').textContent=t?' ☁ '+t:''};
+const setCloud=t=>{const el=$('#cloud');el.textContent=t?' ☁ '+t:'';el.title=t?'點一下立即同步':''};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function adopt(st,t0){S=G.fix(st);speed=SPEED;const lag=(Date.now()-t0)/1000;if(lag>0)G.adv(lag*speed,{quiet:true});syncMc();dirty=1}
-function queueSend(a){pend++;chain=chain.then(()=>send(a)).catch(()=>{}).then(()=>{pend--})}
-async function send(a){const t0=Date.now();
- try{const r=await api('/api/act',{action:a,rev:REV},'POST',1),j=r.j||{};
-  noteSrv(j);if(j.state&&j.rev!=null){REV=j.rev;if(pend<=1||!r.ok)adopt(j.state,t0)}
-  else if(r.s==409)await pull(true);
-  if(r.ok){setCloud('已同步 '+tnow());if(j.msg)toast(j.msg)}else{if(j.msg)toast(j.msg);if(!j.state&&r.s!=409)setCloud('同步失敗')}
- }catch(e){setCloud('離線')}}
-async function pull(force){if(!ME||(pend&&!force))return;const t0=Date.now();
- try{const r=await api('/api/save');if(r.ok&&r.j){noteSrv(r.j);REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);setCloud('已同步 '+tnow())}}}catch(e){setCloud('離線')}}
+function relogin(){AUTHLOST=true;setCloud('登入已過期,請重新登入');authUI(false,'登入已過期(閒置太久了),請重新登入。你剛才的操作會在登入後自動補送。')}
+// 帶自動續期的請求:401 時先打 /api/me(伺服器會換新登入),再試一次
+async function apiAuth(p,b,m,k){let r=await api(p,b,m,k);if(r.s==401){await api('/api/me').catch(()=>{});r=await api(p,b,m,k)}return r}
+function queueSend(a){OUT.push(a);setCloud('同步中…');flush()}
+async function flush(){if(flushing||!ME||AUTHLOST)return;flushing=true;
+ try{while(OUT.length){const a=OUT[0],r=await send(a);if(r==='again')continue;if(r==='retry'){setCloud('同步失敗,稍後自動重試');break}OUT.shift()}}finally{flushing=false}
+ if(!OUT.length&&!AUTHLOST)setCloud('已同步 '+tnow())}
+async function drain(){for(let i=0;i<40&&(OUT.length||flushing);i++){if(!flushing)flush();await sleep(250)}}
+let again409=0;
+async function send(a){const t0=Date.now();let r;
+ try{r=await apiAuth('/api/act',{action:a,rev:REV},'POST',1)}catch(e){setCloud('離線,稍後重試');return'retry'}
+ const j=r.j||{};
+ if(r.s==401){relogin();return'retry'}
+ if(r.s>=500||r.s==0)return'retry';
+ noteSrv(j);
+ if(r.ok){again409=0;if(j.state&&j.rev!=null){REV=j.rev;if(OUT.length<=1)adopt(j.state,t0)}if(j.msg)toast(j.msg);return'ok'}
+ if(r.s==409){if(j.rev!=null)REV=j.rev;if(++again409<=3){await sleep(100+Math.random()*300);return'again'}again409=0;await pull(true);return'drop'}
+ if(j.state&&j.rev!=null){REV=j.rev;adopt(j.state,t0)}
+ if(j.msg)toast(j.msg);return'drop'}
+async function pull(force){if(!ME||AUTHLOST||((OUT.length||flushing)&&!force))return;const t0=Date.now();
+ try{const r=await apiAuth('/api/save');if(r.s==401)return relogin();if(r.ok&&r.j){noteSrv(r.j);REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);if(!OUT.length)setCloud('已同步 '+tnow())}}}catch(e){setCloud('離線,稍後重試')}}
 
 function doA(a,after){const r=G.perform(a);if(!r.ok){toast(r.msg||'無法執行');return false}if(r.msg)toast(r.msg);if(after)after();dirty=1;if(ME)queueSend(a);else save();return true}
 function newGame(f){setTimeout(()=>modal(WELCOME),50);S=G.init(f);if(ME)speed=SPEED;view='out';bv=null;curPos='';syncMc();sel=null;TGT=null;VIL.clear();$('#modal').style.display='none';dirty=1;if(ME)queueSend({t:'init',fac:f});else save();render()}
@@ -408,12 +421,13 @@ function act(d){
  if(d.a=='dolog')return doLogin();
  if(d.a=='dosign')return doSign();
  if(d.a=='logout')return doLogout();
+ if(d.a=='syncnow'){if(!ME)return;if(AUTHLOST)return relogin();setCloud('同步中…');flush();pull(true);return}
  if(d.a=='soon')return toast(d.m||'尚未開放');
  if(d.a=='help')return modal(HELP);
  if(d.a=='set'){modal(`<h3>遊戲設定</h3>`+(ME?`<p class="mut">線上模式的時間流速由伺服器決定(目前 ×${SPEED})。</p>`:`<p>時間流速 <select id="spd">${[[1,'×1(真實)'],[10,'×10'],[60,'×60'],[300,'×300']].map(([v,n])=>`<option value="${v}" ${v==speed?'selected':''}>${n}</option>`).join('')}</select></p><p class="mut">資源與施工在關閉頁面後仍會繼續,重新開啟時補算(最多 24 小時)。</p>`)+`<p><button data-a="reset">重新開始</button></p>`);return}
  if(d.a=='reset'){if(!act.rc){act.rc=1;toast('再按一次「重新開始」確認清除進度');setTimeout(()=>act.rc=0,4000);return}act.rc=0;
   (async()=>{try{localStorage.removeItem(KEY);localStorage.removeItem(KEY+'_goff')}catch(e){}GOFF=false;
-   if(ME){try{await chain;let r=await api('/api/act',{action:{t:'reset'},rev:REV});if(r.s==409&&r.j&&r.j.rev!=null){REV=r.j.rev;await api('/api/act',{action:{t:'reset'},rev:REV})}}catch(e){}REV=0;setCloud('')}
+   if(ME){try{await drain();let r=await api('/api/act',{action:{t:'reset'},rev:REV});if(r.s==409&&r.j&&r.j.rev!=null){REV=r.j.rev;await api('/api/act',{action:{t:'reset'},rev:REV})}}catch(e){}REV=0;setCloud('')}
    S=null;$('#rb').innerHTML=$('#side').innerHTML=$('#main').innerHTML=$('#nav').innerHTML='';pick()})();return}
  if(!S)return;
  if(d.a=='nav'){view=d.v;bv=null;bs=null;dirty=1;if(view=='mail'){mt=ME?mt:'in';loadMail()}}
@@ -481,7 +495,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b)
 document.addEventListener('change',e=>{if(e.target.id=='spd'){speed=+e.target.value;if(S&&!ME)save()}if(e.target.id=='brs')SH.res=+e.target.value});
 document.addEventListener('input',e=>{const id=e.target.id;if(id=='bgd')SH.gold=Math.max(1,Math.floor(+e.target.value||1));else if(id=='mlx')CMP.x=e.target.value;else if(id=='mly')CMP.y=e.target.value;else if(id=='mls')CMP.s=e.target.value;else if(id=='mlb')CMP.b=e.target.value;else if(/^r[0-3]$/.test(id)){SH.r[+id[1]]=Math.max(0,Math.floor(+e.target.value||0));updBal()}});
 document.addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.d)op[d.dataset.d]=d.open},true);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible')pull()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'){flush();pull()}});
+addEventListener('online',()=>{flush();pull(true)});
 const busy=()=>['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName);
 setInterval(()=>{if(!S)return;const n=Date.now(),dt=(n-last)/1000*speed;last=n;G.adv(dt,{quiet:dt/speed>300});
  const sg=(S.log[0]?S.log[0].t+S.log[0].m:'')+S.u.join(',')+JSON.stringify(S.q)+JSON.stringify(S.tr);if(sg!==sig){sig=sg;dirty=1}
@@ -489,8 +504,9 @@ setInterval(()=>{if(!S)return;const n=Date.now(),dt=(n-last)/1000*speed;last=n;G
  if(ME&&Date.now()-lastRes>8000){const nowS=Date.now()+CLK;if(INC.some(e=>e.arrAt<=nowS)||S.mv.some(m=>m.pending&&m.sentAt&&nowS>=m.sentAt+m.dur/SPEED*1000)){lastRes=Date.now();pull(true)}}
  if(dirty&&!busy())render()},250);
 setInterval(()=>{if(S){if(!ME)save();if(!busy())render()}},4000);
-setInterval(()=>{if(ME&&S)pollMail();if(ME&&S&&!pend)pull();if(ME&&S&&view=='map')loadWorld()},60000);
-addEventListener('beforeunload',()=>{if(S&&!ME)save()});
+setInterval(()=>{if(ME&&S){flush();pollMail();pull();if(view=='map')loadWorld()}},60000);
+setInterval(()=>{if(ME&&S&&OUT.length&&!flushing&&!AUTHLOST)flush()},8000);
+addEventListener('beforeunload',e=>{if(S&&!ME)save();if(ME&&(OUT.length||flushing)){e.preventDefault();e.returnValue=''}});
 
 boot();
 </script>
