@@ -91,7 +91,27 @@ async function act({ stores, user, body, now }) {
   }
 
   if (body?.action?.t === "reset" && key !== owner) return { status: 422, body: { ok: false, msg: "只能在本丸重新開始" } };
-  const res = core.act(stored, body, now, { pos });
+  // 分城也能用金幣:金幣是玩家的(存在本丸),分城的金幣操作先向本丸扣款
+  const GOLDT = ["buy", "balance", "rushall"];
+  let cap = null, useStored = stored;
+  if (key !== owner && stored && GOLDT.includes(body?.action?.t)) {
+    const cg = await saves.getWithMetadata(owner, { type: "json" });
+    if (!cg || !cg.data) return { status: 422, body: { ok: false, msg: "找不到本丸存檔" } };
+    cap = { g: cg, st: core.settle(JSON.parse(JSON.stringify(cg.data.state)), now) };
+    useStored = { ...stored, state: { ...stored.state, gold: cap.st.gold } };
+  }
+  const res = core.act(useStored, body, now, { pos });
+  if (cap && res.store && res.store !== "delete") {
+    const spent = cap.st.gold - res.store.state.gold;
+    if (spent > 1e-9) {
+      cap.st.gold -= spent;
+      const wc = await saves.setJSON(owner, { ...cap.g.data, state: cap.st, updatedAt: now }, { onlyIfMatch: cap.g.etag });
+      if (wc && wc.modified === false) return { status: 409, body: { ok: false, msg: "同步衝突,請再試一次" } };
+    }
+    res.body = { ...res.body, state: { ...res.body.state, gold: cap.st.gold } };
+    res.store = { ...res.store, state: { ...res.store.state, gold: 0 } };
+    res.refund = spent > 1e-9 ? spent : 0;
+  }
   if (res.store === "delete") {
     // 重新開始:本丸與所有分城一起清掉
     try { await require("./ally-run.cjs").act({ saves, world: wstore, mail, user, body: { action: { t: "leave" } }, now }); } catch {}
@@ -100,11 +120,15 @@ async function act({ stores, user, body, now }) {
       try { await world.remove(wstore, k); } catch {}
     }
     try { await wstore.delete(A.key(owner)); } catch {}
+    try { await world.removePlayer(wstore, owner); } catch {}
   } else if (res.store) {
     const needPublish = world.stampPub(res.store.state, nick, now);
     // 只有在資料沒被別的請求改過時才寫入,避免同時操作互相覆蓋
     const w = await saves.setJSON(key, res.store, etag ? { onlyIfMatch: etag } : { onlyIfNew: true });
-    if (w && w.modified === false) return { status: 409, body: { ok: false, msg: "同步衝突,請再試一次" } };
+    if (w && w.modified === false) {
+      if (res.refund) await require("./world-store.cjs").casUpdate(saves, owner, (c) => (c && c.state ? { ...c, state: { ...c.state, gold: (c.state.gold || 0) + res.refund } } : undefined));
+      return { status: 409, body: { ok: false, msg: "同步衝突,請再試一次" } };
+    }
     if (needPublish) {
       try { await world.publishState(wstore, key, res.store.state, owner); } catch {}
     }
@@ -121,7 +145,12 @@ async function save({ stores, user, now, c }) {
   let got = await saves.getWithMetadata(key, { type: "json" });
   if (key !== owner && !(got && got.data && A.ownedBy(got.data.state, key, owner))) { key = owner; got = await saves.getWithMetadata(key, { type: "json" }); }
   got = await world.ensureRegistered(saves, wstore, key, world.nickOf(user), got, now);
-  return { status: 200, body: { ...core.view(got?.data ?? null, now), c: key, cities: await cityList(saves, wstore, owner), incoming: await battles.incomingFor(battle, owner) } };
+  const vw = core.view(got?.data ?? null, now);
+  if (key !== owner && vw.state && vw.state.col) {
+    const cg = await saves.get(owner, { type: "json" });
+    if (cg && cg.state) vw.state.gold = core.settle(JSON.parse(JSON.stringify(cg.state)), now).gold;
+  }
+  return { status: 200, body: { ...vw, c: key, cities: await cityList(saves, wstore, owner), incoming: await battles.incomingFor(battle, owner) } };
 }
 
 module.exports = { act, save, settleBattles, cityList, pickCity };

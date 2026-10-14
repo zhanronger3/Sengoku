@@ -5,6 +5,7 @@ const G = require("./game.cjs");
 const core = require("./server-core.cjs");
 const W = require("./world-store.cjs");
 const M = require("./mail-store.cjs");
+const FB = require("./feedback-run.cjs");
 
 const MAX_AMOUNT = 1_000_000;
 const LOG_KEY = "gold_log";
@@ -76,6 +77,8 @@ async function handle({ method, secret, expected, body, saves, world, mail, now 
   }
   if (method !== "POST") return { status: 405, body: { ok: false, msg: "Method Not Allowed" } };
 
+  if (body && body.t === "fblist") return { status: 200, body: { ok: true, list: await FB.list(world) } };
+  if (body && body.t === "fbdel") { await FB.remove(world, String(body.id || "")); return { status: 200, body: { ok: true, list: await FB.list(world) } }; }
   const amount = Math.floor(Number(body && body.amount));
   if (!Number.isFinite(amount) || amount < 1 || amount > MAX_AMOUNT) return { status: 422, body: { ok: false, msg: `金額要是 1 到 ${MAX_AMOUNT} 的整數` } };
   const reason = M.clean(body.reason, 60);

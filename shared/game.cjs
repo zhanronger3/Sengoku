@@ -7,9 +7,9 @@ const RN=['木材','泥土','鐵塊','糧食'],FN=['伐木場','泥坑','鐵礦�
 const FT=[0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,3,3];
 const FC=[[40,100,50,60],[80,40,80,50],[100,80,30,60],[70,90,70,20]];
 const F={
- wei:{n:'織田家',s:'織',t:'織田',d:'以「天下布武」為目標。知行所可讓外城與內城同時施工;木柵防禦強但耐久低;內政指令最多(勸農、御用金、普請)。',w:{n:'木柵',r:[90,150,60,70]}},
- shu:{n:'德川家',s:'德',t:'德川',d:'以忍耐與穩健著稱,三河武士忠勇善戰。軍隊多為高防禦的鐵砲與足輕;石垣耐久高。德川家出兵攻擊時,對方埋藏所的效果只有 2/3。外城與內城共用一條施工佇列。',w:{n:'石垣',r:[60,130,100,80]}},
- wu:{n:'豐臣家',s:'豐',t:'豐臣',d:'從足輕崛起的天下人。埋藏所的容量為兩倍;土壘漆壁防禦中等;兵種成本低廉。外城與內城共用一條施工佇列。',w:{n:'土壘漆壁',r:[100,110,100,60]}}};
+ wei:{n:'織田家',s:'織',t:'織田',d:'以「天下布武」為目標。知行所可讓城外與城內同時施工;木柵防禦強但耐久低;內政指令最多(勸農、御用金、普請)。',w:{n:'木柵',r:[90,150,60,70]}},
+ shu:{n:'德川家',s:'德',t:'德川',d:'以忍耐與穩健著稱,三河武士忠勇善戰。軍隊多為高防禦的鐵砲與足輕;石垣耐久高。德川家出兵攻擊時,對方埋藏所的效果只有 2/3。城外與城內共用一條施工佇列。',w:{n:'石垣',r:[60,130,100,80]}},
+ wu:{n:'豐臣家',s:'豐',t:'豐臣',d:'從足輕崛起的天下人。埋藏所的容量為兩倍;土壘漆壁防禦中等;兵種成本低廉。城外與城內共用一條施工佇列。',w:{n:'土壘漆壁',r:[100,110,100,60]}}};
 
 const W={wei:[0,4,7,11,14,18,21,25,28,32,35,39,42,46,49,53,56,60,63,67,70],wu:[0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57,60],shu:[0,3,5,8,10,13,15,18,20,23,25,28,30,33,35,38,40,42,45,47,50]};
 // 單位:[名稱,攻,步防,騎防,速度,攜帶,耗糧,木,泥,鐵,糧,訓練秒數, 特殊類別k, 訓練建築b, 兵學塾解鎖等級lv, 尚未開放soon]
@@ -103,7 +103,7 @@ const hide=()=>inst('cave').reduce((t,x)=>t+hideAt(x.l),0);
 const BMAP=Object.fromEntries(B.map(b=>[b.id,b]));
 const recalc=()=>{for(const b of B){if(b.id==='wall')continue;S.bld[b.id]=S.slots.reduce((m,x)=>x&&x.b===b.id&&x.l>=1?Math.max(m,x.l):m,0)}};
 const slotOf=id=>S.slots.findIndex(x=>x&&x.b===id&&x.l>=1);
-function canBuildNew(b){if((b.id==='pal'&&S.slots.some(x=>x&&x.b==='res'))||(b.id==='res'&&S.slots.some(x=>x&&x.b==='pal')))return `${BMAP.pal.n}與${BMAP.res.n}同一座城只能蓋一種`;const ex=S.slots.filter(x=>x&&x.b===b.id);if(!ex.length)return '';
+function canBuildNew(b){if(b.id==='pal'&&S.col)return `${BMAP.pal.n}整個帳號只有一座(蓋在本丸),分城請蓋${BMAP.res.n}`;if(b.id==='res'&&!S.col)return `${BMAP.res.n}只有分城可以蓋,本丸請蓋${BMAP.pal.n}`;const ex=S.slots.filter(x=>x&&x.b===b.id);if(!ex.length)return '';
  if(MULTI.includes(b.id))return ex.every(x=>x.l>=b.m)?'':`需要先把現有的${b.n}升到滿級(${b.m} 級),才能再蓋一座`;
  return `${b.n}每個城池只能蓋一座`}
 // ====== 英雄、營寨佔領、名物 ======
@@ -144,7 +144,7 @@ const home=()=>(S&&S.pos)||{x:0,y:0};
 const distTo=(x,y)=>Math.hypot(x-home().x,y-home().y);
 const prest=()=>Math.round(S.fld.reduce((a,b)=>a+b,0)*6+B.reduce((a,b)=>a+S.bld[b.id],0)*12+(S.u.reduce((a,b)=>a+b,0)+awayUnits().reduce((a,b)=>a+b,0))*2); // 出征中的兵也算在威望裡
 const rnd=k=>{const x=Math.sin(k*12.9898+78.233)*43758.5453;return x-Math.floor(x)}; // 可重現的亂數,伺服器與瀏覽器結果一致
-const fix=s=>{if(s.rc==null)s.rc=0;if(s.loy==null)s.loy=100;if(s.hero===undefined)s.hero=null;if(!s.occ)s.occ={};if(!Array.isArray(s.gar))s.gar=[];if(!Array.isArray(s.out))s.out=[];if(!Array.isArray(s.art))s.art=[];if(!Array.isArray(s.ships))s.ships=[];if(!s.shipRes)s.shipRes={};if(s.kids==null)s.kids=0;if(!s.atkRes)s.atkRes={};for(const m of(s.mv||[]))if(!m.sent)m.sent=(m.send||[]).slice();if(!s.camps)s.camps={};
+const fix=s=>{if(!s.stat)s.stat={};for(const k of['trained','raids','fup','bup','sent','ship'])if(s.stat[k]==null)s.stat[k]=0;if(s.rc==null)s.rc=0;if(s.loy==null)s.loy=100;if(s.hero===undefined)s.hero=null;if(!s.occ)s.occ={};if(!Array.isArray(s.gar))s.gar=[];if(!Array.isArray(s.out))s.out=[];if(!Array.isArray(s.art))s.art=[];if(!Array.isArray(s.ships))s.ships=[];if(!s.shipRes)s.shipRes={};if(s.kids==null)s.kids=0;if(!s.atkRes)s.atkRes={};for(const m of(s.mv||[]))if(!m.sent)m.sent=(m.send||[]).slice();if(!s.camps)s.camps={};
  if(!s.tr)s.tr={};for(const b of TRB){const v=s.tr[b];s.tr[b]=Array.isArray(v)?v:(v?[v]:[])}
  if(!Array.isArray(s.u))s.u=[];while(s.u.length<NU)s.u.push(0); // 舊存檔:兵種補到 10 種
  for(const m of(s.mv||[])){for(const f of['send','sent']){if(Array.isArray(m[f]))while(m[f].length<NU)m[f].push(0)}}
@@ -167,11 +167,15 @@ function init(f,pos){const bld={};B.forEach(b=>bld[b.id]=0);
 // 分城:由開墾代官建立的新城池,資源很少,金幣與任務由本丸管理
 function initCity(f,pos,o){init(f,pos);S.col=1;S.own=o.own;S.cname=o.cname||'';S.gold=0;S.res=[500,500,500,500];S.born=o.now;S.saved=o.now;S.log=[];S.rep=[];
  logm(`${fa().n}的分城建立了!城內有 ${NSLOTS} 塊空地,先蓋知行所吧。`);return S}
-const expSlots=()=>Math.max(S.bld.pal>=20?3:S.bld.pal>=15?2:S.bld.pal>=10?1:0,S.bld.res>=20?2:S.bld.res>=10?1:0); // 本丸御殿 10/15/20 級各增加 1 個擴張名額(開分城或佔領城池各用 1 個)
+const KID_PREST=[10000,20000,25000]; // 這座城自己的威望要達到多少,才能開第 1/2/3 座分城
+const expSlots=()=>S.col?(S.bld.res>=20?2:S.bld.res>=10?1:0):(S.bld.pal>=20?3:S.bld.pal>=15?2:S.bld.pal>=10?1:0); // 本丸御殿 10/15/20 級各增加 1 個擴張名額(開分城或佔領城池各用 1 個)
 const slotsFree=()=>expSlots()-(S.kids||0)-S.mv.filter(m=>m.sl).length;
-function startQ(k,c,dur,o){const l=lane(k);if(S.q[l])return S.fac=='wei'?`${k=='f'?'外城':'內城'}已有施工中的項目`:'施工佇列已滿(只有織田家能外城內城同時施工)';
+function startQ(k,c,dur,o){const l=lane(k);if(S.q[l])return S.fac=='wei'?`${k=='f'?'城外':'城內'}已有施工中的項目`:'施工佇列已滿(只有織田家能城外城內同時施工)';
  if(!canPay(c))return '資源不足';pay(c);S.q[l]={k,start:S.t,dur,end:S.t+dur,cost:c,...o};return ''}
 // 英雄打贏營寨:獲得經驗;營寨被清空且在範圍內、還有名額就佔領;有機會帶回名物
+// 英雄榜用:全部兵力(含出征中)的總攻擊、總防禦(含刀鍛冶所/具足屋加成)
+function powers(){const U=us(),aw=awayUnits();let at=0,df=0;U.forEach((u,k)=>{const n=(S.u[k]||0)+(aw[k]||0);at+=n*u.a;df+=n*(u.di+u.dc)/2});
+ return {at:Math.round(at*(1+.015*(S.bld.smi||0))),df:Math.round(df*(1+.015*(S.bld.arm||0)))}}
 function heroGain(h,xp){h.xp+=xp;let up=0;
  while(h.lv<HERO_MAXLV&&h.xp>=heroNeed(h.lv)){h.xp-=heroNeed(h.lv);h.lv++;h.pts+=5;up++}
  if(up)logm(`英雄${h.n}升到等級 ${h.lv}!獲得 ${up*5} 點屬性點(到評定眾分配)`,1)}
@@ -192,9 +196,9 @@ function heroWin(h,m,c,D){
 function settleEvents(opt){
  if(S.ships&&S.ships.length)S.ships=S.ships.filter(x=>x.ret>S.t);
  for(const k of Object.keys(S.camps||{}))if(S.t-S.camps[k].t>=CAMP_RESPAWN)delete S.camps[k];
- for(const l of['f','b']){const q=S.q[l];if(q&&q.end<=S.t){if(q.k=='f'){S.fld[q.i]++;logm(`${q.name} 升到等級 ${q.to}`)}
+ for(const l of['f','b']){const q=S.q[l];if(q&&q.end<=S.t){if(q.k=='f'){S.fld[q.i]++;S.stat.fup++;logm(`${q.name} 升到等級 ${q.to}`)}
   else if(q.dm){const c=S.slots[q.slot];if(c){if(q.to<1)S.slots[q.slot]=null;else c.l=q.to}recalc();logm(`${q.name}完成,${q.to<1?'這塊地已經清空':'剩餘等級 '+q.to}`)}
-  else{if(q.slot==='wall')S.bld.wall++;else{const c=S.slots[q.slot];if(c)c.l=q.to;else S.slots[q.slot]={b:q.id,l:q.to};recalc()}logm(`${q.name} 升到等級 ${q.to}`)}S.q[l]=null}}
+  else{S.stat.bup++;if(q.slot==='wall')S.bld.wall++;else{const c=S.slots[q.slot];if(c)c.l=q.to;else S.slots[q.slot]={b:q.id,l:q.to};recalc()}logm(`${q.name} 升到等級 ${q.to}`)}S.q[l]=null}}
  for(const b of TRB){const q=S.tr[b];
   while(q.length&&q[0].next!=null&&q[0].next<=S.t){const o=q[0],t=o.next;S.u[o.u]++;S.stat.trained++;o.n--;
    if(o.n>0)o.next=t+o.per;else{logm(`${us()[o.u].n} 訓練完成`);q.shift();if(q.length)q[0].next=t+q[0].per}}}
@@ -260,6 +264,8 @@ function launchCheck(a,npc){const U=us(),send=U.map((_,k)=>Math.min(S.u[k]||0,Ma
  if(kind==='found'){
   if(send.some((x,k)=>x&&U[k].k!=='set')||send.reduce((p,q)=>p+q,0)!==3)return {err:'開分城需要剛好派出 3 名開墾代官(不能帶其他兵種)'};
   if(slotsFree()<1)return {err:`沒有擴張名額:${BMAP.pal.n} 10 級有 1 個名額、15 級 2 個、20 級 3 個(目前 ${BMAP.pal.n} ${S.bld.pal} 級,已使用或預留 ${(S.kids||0)+S.mv.filter(m=>m.sl).length} 個)`};
+  const kn=(S.kids||0)+S.mv.filter(m=>m.sl&&m.kind==='found').length,th=KID_PREST[kn];
+  if(th&&prest()<th)return {err:`這座城的威望要達到 ${th} 才能開第 ${kn+1} 座分城(目前 ${prest()})`};
   return {send,kind,tg:[],sl:1}}
  if(kind==='reinf'){if(a.hero)return {err:'英雄不能駐防別的城池'};
   if(send.some((x,k)=>x&&U[k].k))return {err:'只有一般戰鬥兵種可以增援駐防(偵察兵、器械、行政官、開墾代官不行)'};
@@ -290,7 +296,7 @@ function pvpLaunch(att,a,meta){
   const sp=Math.min(...send.map((x,k)=>x?U[k].s:99),hero?heroSpd(S.hero):99),dur=Math.max(1,Math.round(dist/sp*3600));
   send.forEach((x,k)=>S.u[k]-=x);const hi=hero?{n:S.hero.n,atk:heroAtk(S.hero),carry:heroCarry(S.hero)}:null;if(hero)S.hero.st='away';
   const name=kind==='found'?`新城預定地(${tx}|${ty})`:`${meta.defNick}(${tx}|${ty})`;
-  S.mv.push({pv:1,pending:1,aid:meta.aid,tx,ty,name,def:0,sent:send.slice(),send:send.slice(),go:S.t+dur,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0],sentAt:meta.now,kind,tg,sl,hero});
+  S.stat.sent++;S.mv.push({pv:1,pending:1,aid:meta.aid,tx,ty,name,def:0,sent:send.slice(),send:send.slice(),go:S.t+dur,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0],sentAt:meta.now,kind,tg,sl,hero});
   logm(kind==='found'?`派 3 名開墾代官前往${name}建立分城,速度 ${sp} 格/時`:kind==='reinf'?`派 ${send.reduce((p,q)=>p+q,0)} 名士兵前往${name}增援駐防,速度 ${sp} 格/時`:`派${kind?'偵察兵':'兵'}前往${name},出兵 ${send.reduce((p,q)=>p+q,0)} 人,速度 ${sp} 格/時;部隊抵達後才會${kind?'展開偵察':'開戰'}`);
   return {ok:true,tx,ty,dur,sp,dist,send,go:S.t+dur,fac:S.fac,ab:ab(),pos:{...home()},kind,tg,hero:hi,ar:Math.max(0,artSlots()-S.art.length),ah:S.art.slice()}})}
 // 攻城:存活的破門槌拆城牆;存活的大筒類器械轟擊建築(軍奉行 10/20 級可指定 1/2 處,否則隨機 1 處)。在防守方的狀態(S)上試算,不改存檔
@@ -426,7 +432,7 @@ function shipLaunch(att,a,meta){return withS(att,()=>{
  const n=Math.ceil(tot/merCap());if(n>merFree())return bad(`商人不足:需要 ${n} 名(每名載 ${merCap()}),目前有空的商人 ${merFree()} 名`);
  const dist=distTo(meta.x,meta.y);if(dist<=0)return bad('不能運給自己這座城');
  const dur=merDur(dist);r.forEach((x,i)=>S.res[i]-=x);
- S.ships.push({id:meta.aid,tx:meta.x,ty:meta.y,name:meta.name,r,n,go:S.t+dur,ret:S.t+2*dur,at:meta.now+Math.round(dur/SPEED*1000)});
+ S.stat.ship++;S.ships.push({id:meta.aid,tx:meta.x,ty:meta.y,name:meta.name,r,n,go:S.t+dur,ret:S.t+2*dur,at:meta.now+Math.round(dur/SPEED*1000)});
  logm(`${n} 名商人載著 ${r.join('/')} 前往${meta.name},約 ${Math.round(dur/60)} 分鐘後抵達`);
  return {ok:true,r,n,dur,pos:{...home()},dist}})}
 // 收貨:資源入庫(超出倉庫容量的部分損失)。重複呼叫不會重複入庫
@@ -453,8 +459,20 @@ function acceptCheck(acc,o){return withS(acc,()=>{
  const dist=distTo(o.x,o.y);if(dist<=0)return bad('這是你自己的城池');
  return {ok:true,n,dist,dur:merDur(dist)}})}
 function acceptTake(acc,o,meta){return withS(acc,()=>{const n=Math.ceil(o.wa/merCap()),dist=distTo(o.x,o.y),dur=merDur(dist),r=[0,0,0,0];r[o.wi]=o.wa;S.res[o.wi]-=o.wa;
- S.ships.push({id:meta.aid,tx:o.x,ty:o.y,name:`${o.n}(${o.x}|${o.y})`,r,n,go:S.t+dur,ret:S.t+2*dur,at:meta.now+Math.round(dur/SPEED*1000)});
+ S.stat.ship++;S.ships.push({id:meta.aid,tx:o.x,ty:o.y,name:`${o.n}(${o.x}|${o.y})`,r,n,go:S.t+dur,ret:S.t+2*dur,at:meta.now+Math.round(dur/SPEED*1000)});
  logm(`接受 ${o.n} 的掛單:付出 ${o.wa} ${RN[o.wi]},換得 ${o.ga} ${RN[o.gi]}(商隊約 ${Math.round(dur/60)} 分鐘後送達)`);return {dur,dist,n}})}
+// ====== 每日任務(台灣時間 00:00 換日,不管有沒有完成,隔天都會重抽)======
+let NOW=0;const setNow=t=>{NOW=t};
+const dayKey=ms=>new Date(ms+8*3600e3).toISOString().slice(0,10);
+const DQ=[
+ {n:'升級資源田 1 次',k:'fup',v:1,g:1},{n:'升級建築 1 次',k:'bup',v:1,g:1},
+ {n:'訓練 10 名士兵',k:'trained',v:10,g:2},{n:'派商人運送資源 1 次',k:'ship',v:1,g:2},{n:'出兵 1 次',k:'sent',v:1,g:2},
+ {n:'升級資源田 3 次',k:'fup',v:3,g:3},{n:'成功掠奪 1 次',k:'raids',v:1,g:3},
+ {n:'升級建築 3 次',k:'bup',v:3,g:4},{n:'訓練 50 名士兵',k:'trained',v:50,g:4},{n:'成功掠奪 3 次',k:'raids',v:3,g:5}];
+const hashStr=x=>{let h=2166136261;for(const c of String(x)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)>>>0}return h};
+function dailyRoll(ms){if(S.col)return;const t=ms||NOW;if(!t)return;const d=dayKey(t);if(S.daily&&S.daily.d===d)return;
+ S.daily={d,i:hashStr((S.born||0)+'|'+d)%DQ.length,b:{...S.stat},done:0}}
+const dailyInfo=()=>{if(!S.daily)return null;const q=DQ[S.daily.i],have=Math.max(0,(S.stat[q.k]||0)-(S.daily.b[q.k]||0));return {...q,have:Math.min(have,q.v),ok:have>=q.v,done:!!S.daily.done,d:S.daily.d}};
 function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作');const t=a.t;
  if(t=='f'){const i=int(a.i,0,17);if(i==null)return bad('參數錯誤');if(S.fld[i]>=20)return bad('已達最高等級');
   const e=startQ('f',costF(i),durF(i),{i,name:FN[FT[i]],to:S.fld[i]+1});return e?bad(e):ok()}
@@ -473,7 +491,7 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
   const b=BMAP[c.b],to=c.l-1;
   if(c.b==='wh'||c.b==='gr'){const keep=c.l;c.l=to;const ci=c.b==='gr'?[3]:[0,1,2],over=ci.some(i=>S.res[i]>cap(i));c.l=keep;if(over)return bad('現有資源超過拆除後的容量,請先用掉一些再拆')}
   const dur=Math.max(30,Math.round(durB(b,to)*0.5)),e=startQ('b',[0,0,0,0],dur,{slot,id:c.b,name:b.n+'(拆除)',to,dm:1});if(e)return bad(e);return ok()}
- if(t=='rushall'){if(S.col)return bad('金幣、任務與拜訪由本丸統一管理,請切換回本丸操作');const ls=['f','b'].filter(l=>S.q[l]);if(!ls.length)return bad('沒有施工中的項目');if(S.gold<2*ls.length)return bad('金幣不足(每項 2 金幣)');
+ if(t=='rushall'){const ls=['f','b'].filter(l=>S.q[l]);if(!ls.length)return bad('沒有施工中的項目');if(S.gold<2*ls.length)return bad('金幣不足(每項 2 金幣)');
   S.gold-=2*ls.length;ls.forEach(l=>S.q[l].end=S.t);adv(0.01);return ok()}
  if(t=='cancel'){const l=a.l;if(l!=='f'&&l!=='b')return bad('參數錯誤');const q=S.q[l];if(!q)return bad('沒有施工中的項目');
   q.cost.forEach((x,i)=>S.res[i]=Math.min(cap(i),S.res[i]+x));if(q.k==='b'&&q.slot!=='wall'&&q.slot!=null){const c=S.slots[q.slot];if(c&&c.l<1)S.slots[q.slot]=null}S.q[l]=null;return {ok:true,msg:'已取消,資源全額退還'}}
@@ -502,7 +520,7 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
   const ci=campInfo(tx,ty);if(!kind&&ci&&ci.empty)return bad(`這座營寨已被清空,約 ${Math.ceil(ci.respawnIn/3600)} 遊戲小時後重新集結`);
   const sp=Math.min(...send.map((x,k)=>x?us()[k].s:99),withHero?heroSpd(S.hero):99);send.forEach((x,k)=>S.u[k]-=x);const dur=Math.max(1,Math.round(distTo(tx,ty)/sp*3600));
   if(withHero)S.hero.st='away';
-  S.mv.push({tx,ty,name:n.n,def:n.def,sent:send.slice(),send,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0],kind,hero:withHero});logm(`派${kind?'偵察兵':'兵'}前往${n.n}(${tx}|${ty}),速度 ${sp} 格/時`);return ok()}
+  S.stat.sent++;S.mv.push({tx,ty,name:n.n,def:n.def,sent:send.slice(),send,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0],kind,hero:withHero});logm(`派${kind?'偵察兵':'兵'}前往${n.n}(${tx}|${ty}),速度 ${sp} 格/時`);return ok()}
  if(t=='hero'){if(S.hero)return bad('已經有英雄了');if(S.bld.cnl<1)return bad(`需要先建造${BMAP.cnl.n}`);const k=int(a.k,0,NU-1);if(k==null)return bad('請選擇要提拔的兵種');const u=us()[k];
   if(u.k)return bad('這個兵種不能提拔為英雄');if((S.u[k]||0)<1)return bad(`城裡沒有${u.n}可以提拔`);const c=u.r.map(x=>x*20);if(!canPay(c))return bad('資源不足(提拔費用是該兵種成本的 20 倍)');
   pay(c);S.u[k]--;const names=HN[S.fac];S.hero={n:S.col?names[Math.floor(hash(S.pos.x,S.pos.y,k)*names.length)%names.length]:LORD[S.fac],k,lv:1,xp:0,pts:5,a:0,d:0,s:0,c:0,st:'home'};
@@ -515,13 +533,14 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
   if(!m||m.pv||m.pending||m.ret||m.arr<=S.t||m.tx!==a.tx||m.ty!==a.ty)return bad('這支部隊現在無法撤回');
   const el=Math.max(1,Math.round(S.t-(m.arr-m.dur)));m.ret=1;m.recalled=1;m.arr=S.t+el;m.dur=el;m.loot=[0,0,0,0];
   logm(`撤回前往${m.name}的部隊,已走 ${Math.round(el/60)} 分鐘,同樣時間後返回`);return ok()}
- if(t=='buy'){if(S.col)return bad('金幣、任務與拜訪由本丸統一管理,請切換回本丸操作');const k=int(a.res,0,3),g=int(a.gold,1,100000);if(k==null||g==null)return bad('請輸入購買的金幣數量');if(S.gold<g)return bad('金幣不足');
+ if(t=='buy'){const k=int(a.res,0,3),g=int(a.gold,1,100000);if(k==null||g==null)return bad('請輸入購買的金幣數量');if(S.gold<g)return bad('金幣不足');
   const amt=g*GOLD_RATE;if(S.res[k]+amt>cap(k))return bad(`${RN[k]}藏屋敷放不下(目前最多再買 ${Math.max(0,Math.floor((cap(k)-S.res[k])/GOLD_RATE))} 金幣)`);
   S.gold-=g;S.res[k]+=amt;logm(`用 ${g} 金幣買了 ${amt} ${RN[k]}`);return {ok:true,msg:`花費 ${g} 金幣,獲得 ${amt} ${RN[k]}`}}
- if(t=='balance'){if(S.col)return bad('金幣、任務與拜訪由本丸統一管理,請切換回本丸操作');if(!Array.isArray(a.r))return bad('參數錯誤');const r=[0,1,2,3].map(i=>int(a.r[i],0,1000));if(r.some(x=>x==null)||!r.some(x=>x>0))return bad('請設定比例(每項 0~1000,至少一項大於 0)');
+ if(t=='balance'){if(!Array.isArray(a.r))return bad('參數錯誤');const r=[0,1,2,3].map(i=>int(a.r[i],0,1000));if(r.some(x=>x==null)||!r.some(x=>x>0))return bad('請設定比例(每項 0~1000,至少一項大於 0)');
   if(S.gold<EXCHANGE_COST)return bad(`平倉需要 ${EXCHANGE_COST} 金幣`);S.gold-=EXCHANGE_COST;S.res=balanceTargets(r);logm(`平倉完成,比例 ${r.join(':')}`);return {ok:true,msg:'平倉完成'}}
+ if(t=='claimd'){if(S.col)return bad('每日任務由本丸管理,請切換回本丸領取');dailyRoll(NOW);const q=dailyInfo();if(!q)return bad('每日任務尚未產生');if(q.done)return bad('今天的每日任務獎勵已領取');if(!q.ok)return bad('每日任務尚未完成');S.daily.done=1;S.gold+=q.g;return {ok:true,msg:`每日任務完成,獲得 ${q.g} 金幣`}}
  if(t=='claim'){if(S.col)return bad('金幣、任務與拜訪由本丸統一管理,請切換回本丸操作');const q=QS.find(x=>x.id===a.id);if(!q||S.qd.includes(q.id)||!q.ok())return bad('任務尚未完成');S.qd.push(q.id);if(q.g)S.gold+=q.g;if(q.r)q.r.forEach((x,i)=>S.res[i]=Math.min(cap(i),S.res[i]+x));return {ok:true,msg:'任務獎勵已領取'}}
  return bad('未知的操作')}
-return {get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,NU,TRB,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,protectedAt,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvpProtected,pvpLaunch,pvpBattle,pvpApplyDef,pvpApplyAtt,pvpRecall,scoutBattle,scoutApplyDef,launchCheck,initCity,ART,ARTM,garrApply,garrTake,garrReturn,garrDur,GAR_MAX,HN,occSlots,artSlots,heroAtk,heroDef,heroSpd,heroCarry,heroNeed,occY,OCC_RANGE,HERO_MAXLV,MERC,MSPEED,merCap,merBusy,merFree,merDur,shipLaunch,shipApply,offerCheck,offerTake,offerRefund,acceptCheck,acceptTake,expSlots,slotsFree,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,DEMOLISH_GOV,UDESC,DEMOLISH_GOV,UDESC,CAMP_RESPAWN,STASH_MULT,defOf};
+return {powers,setNow,dailyRoll,dailyInfo,DQ,dayKey,KID_PREST,get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,NU,TRB,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,protectedAt,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvpProtected,pvpLaunch,pvpBattle,pvpApplyDef,pvpApplyAtt,pvpRecall,scoutBattle,scoutApplyDef,launchCheck,initCity,ART,ARTM,garrApply,garrTake,garrReturn,garrDur,GAR_MAX,HN,occSlots,artSlots,heroAtk,heroDef,heroSpd,heroCarry,heroNeed,occY,OCC_RANGE,HERO_MAXLV,MERC,MSPEED,merCap,merBusy,merFree,merDur,shipLaunch,shipApply,offerCheck,offerTake,offerRefund,acceptCheck,acceptTake,expSlots,slotsFree,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,DEMOLISH_GOV,UDESC,DEMOLISH_GOV,UDESC,CAMP_RESPAWN,STASH_MULT,defOf};
 })();
 if(typeof module!=='undefined')module.exports=G;

@@ -90,7 +90,8 @@ async function resolveFound({ saves, world, battle, mail, rec, now }) {
       const g = await saves.getWithMetadata(ck, { type: "json" });
       if (g && g.data && g.data.state) st = g.data.state;
       else {
-        st = G.initCity(rec.att.fac, { x, y }, { own: owner, cname: `${rec.att.n}的分城`, now: rec.arrAt });
+        const no = await A.nextNo(world, owner);
+        st = G.initCity(rec.att.fac, { x, y }, { own: owner, cname: `${rec.att.n}的分城${no}`, now: rec.arrAt });
         const w = await saves.setJSON(ck, { state: st, rev: 1, updatedAt: now }, { onlyIfNew: true });
         if (w && w.modified === false) st = (await saves.get(ck, { type: "json" })).state;
       }

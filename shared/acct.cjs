@@ -15,16 +15,24 @@ async function add(world, uid, ck) {
   if (ck === uid) return;
   await W.casUpdate(world, key(uid), (cur) => {
     const c = (cur && cur.c) || [];
-    return c.includes(ck) ? undefined : { c: [...c, ck] };
+    return c.includes(ck) ? undefined : { ...(cur || {}), c: [...c, ck] };
   });
 }
 async function drop(world, uid, ck) {
   await W.casUpdate(world, key(uid), (cur) => {
     const c = (cur && cur.c) || [];
-    return c.includes(ck) ? { c: c.filter((k) => k !== ck) } : undefined;
+    return c.includes(ck) ? { ...(cur || {}), c: c.filter((k) => k !== ck) } : undefined;
   });
+}
+// 分城編號:依「開城順序」整個帳號統一排,用過的號碼不會重複使用
+async function nextNo(world, uid) {
+  const r = await W.casUpdate(world, key(uid), (cur) => {
+    const c = (cur && cur.c) || [];
+    return { ...(cur || {}), c, n: ((cur && cur.n) != null ? cur.n : c.length) + 1 };
+  });
+  return r.n;
 }
 // 這座城是否屬於這位玩家(以存檔為準)
 const ownedBy = (state, ck, uid) => !!state && (state.own || ck) === uid;
 
-module.exports = { key, isCityKey, list, add, drop, ownedBy };
+module.exports = { nextNo, key, isCityKey, list, add, drop, ownedBy };

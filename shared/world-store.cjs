@@ -147,8 +147,10 @@ function stampPub(state, nick, now) {
   G.S = state;
   const p = G.prest();
   const o = state.pub;
-  const need = !o || o.n !== nick || o.f !== state.fac || Math.abs(p - o.p) >= Math.max(5, o.p * 0.05) || now - o.t > 600000;
-  if (need) state.pub = { p, t: now, n: nick, f: state.fac };
+  const pw = G.powers(), h = state.hero, hl = h ? h.lv : 0, hx = h ? h.xp : 0, ar = (state.art || []).length;
+  const big = (a, b) => Math.abs(a - (b || 0)) >= Math.max(5, (b || 0) * 0.05);
+  const need = !o || o.n !== nick || o.f !== state.fac || big(p, o.p) || big(pw.at, o.at) || big(pw.df, o.df) || o.hl !== hl || o.ar !== ar || now - o.t > 600000;
+  if (need) state.pub = { p, t: now, n: nick, f: state.fac, at: pw.at, df: pw.df, hn: h ? h.n : "", hl, hx, ar };
   return need;
 }
 // 這位玩家(帳號)所屬聯盟的標籤,沒有聯盟回傳 ""
@@ -161,7 +163,41 @@ async function tagOf(world, owner) {
 async function publishState(world, key, st, owner) {
   const o = st.own || owner || key;
   let a = ""; try { a = await tagOf(world, o); } catch {}
-  return publish(world, key, { x: st.pos.x, y: st.pos.y, n: st.pub.n, f: st.pub.f, p: st.pub.p, b: st.born || 0, o, m: st.col ? 0 : 1, a });
+  try { await require("./chat-run.cjs").registerNick(world, st.pub.n, o); } catch {}
+  await publish(world, key, { x: st.pos.x, y: st.pos.y, n: st.pub.n, f: st.pub.f, p: st.pub.p, b: st.born || 0, o, m: st.col ? 0 : 1, a });
+  try { await publishPlayer(world, o, key, st, a); } catch (e) { console.error("publishPlayer failed", e); }
+}
+// 英雄榜(玩家榜):同一位玩家所有城池合併。pl_<帳號> 記每座城的數字,prank 是全部玩家的合併結果
+const PRANK_MAX = 300;
+async function publishPlayer(world, owner, key, st, tag) {
+  const A = require("./acct.cjs");
+  const mine = new Set(await A.list(world, owner));
+  const P = st.pub;
+  const pl = await casUpdate(world, "pl_" + owner, (cur) => {
+    const cs = { ...((cur && cur.cs) || {}) };
+    for (const k of Object.keys(cs)) if (!mine.has(k)) delete cs[k];
+    cs[key] = { p: P.p, at: P.at || 0, df: P.df || 0, ar: P.ar || 0, hn: P.hn || "", hl: P.hl || 0, hx: P.hx || 0, x: st.pos.x, y: st.pos.y, m: st.col ? 0 : 1, f: P.f, n: P.n };
+    return { cs };
+  });
+  const cs = Object.values(pl.cs);
+  const cap = cs.find((c) => c.m) || cs[0];
+  let best = null;
+  for (const c of cs) if (c.hl > 0 && (!best || c.hl > best.hl || (c.hl === best.hl && c.hx > best.hx))) best = c;
+  const row = { o: owner, n: cap.n, f: cap.f, a: tag || "", x: cap.x, y: cap.y, c: cs.length, p: cs.reduce((s, c) => s + c.p, 0), at: cs.reduce((s, c) => s + c.at, 0), df: cs.reduce((s, c) => s + c.df, 0), ar: cs.reduce((s, c) => s + c.ar, 0), hn: best ? best.hn : "", hl: best ? best.hl : 0, hx: best ? best.hx : 0 };
+  await casUpdate(world, "prank", (cur) => {
+    const a = ((cur && cur.a) || []).filter((r) => r.o !== owner);
+    a.push(row);
+    a.sort((u, v) => v.p - u.p);
+    return { a: a.slice(0, PRANK_MAX) };
+  });
+}
+async function removePlayer(world, owner) {
+  try { await world.delete("pl_" + owner); } catch {}
+  await casUpdate(world, "prank", (cur) => (cur && cur.a.some((r) => r.o === owner) ? { a: cur.a.filter((r) => r.o !== owner) } : undefined));
+}
+async function topPlayers(world) {
+  const r = await world.get("prank", { type: "json" });
+  return (r && r.a) || [];
 }
 // 只更新某座城池在地圖與排行榜上的聯盟標籤(加入、退出聯盟時用)
 async function setTag(world, key, pos, tag) {
@@ -183,4 +219,4 @@ async function ensureRegistered(saves, world, uid, nick, got, now) {
   return await saves.getWithMetadata(uid, { type: "json" });
 }
 
-module.exports = { tagOf, setTag, claimTile, CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };
+module.exports = { publishPlayer, removePlayer, topPlayers, tagOf, setTag, claimTile, CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };
