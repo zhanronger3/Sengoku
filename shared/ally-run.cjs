@@ -19,6 +19,7 @@ async function retag(world, owner) {
   try {
     const tag = await W.tagOf(world, owner);
     for (const k of await A.list(world, owner)) await W.setTag(world, k, await world.get("owner_" + k, { type: "json" }), tag);
+    await W.setPlayerAlly(world, owner);
   } catch (e) { console.error("retag failed", e); }
 }
 // 這位玩家所有城池裡最高的奏者番等級

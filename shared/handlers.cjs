@@ -35,10 +35,12 @@ async function pickCity(wstore, owner, c) {
 // 這位玩家所有城池的摘要(給城池選單用)
 async function cityList(saves, wstore, owner) {
   const keys = await A.list(wstore, owner), out = [];
+  const pl = keys.length > 1 ? (await wstore.get("pl_" + owner, { type: "json" })) || { cs: {} } : null;
   for (const k of keys) {
     const g = await saves.get(k, { type: "json" });
     const st = g && g.state;
     if (!st || !st.pos || !A.ownedBy(st, k, owner)) continue;
+    if (pl && !pl.cs[k] && st.pub) { try { const s2 = JSON.parse(JSON.stringify(st)); s2.pub = null; world.stampPub(s2, st.pub.n, Date.now()); await world.publishState(wstore, k, s2, owner); } catch {} }
     out.push({ k, x: st.pos.x, y: st.pos.y, f: st.fac, col: st.col ? 1 : 0, loy: Math.floor(st.loy == null ? 100 : st.loy), n: st.col ? st.cname || "分城" : "本丸" });
   }
   return out;

@@ -169,13 +169,30 @@ async function publishState(world, key, st, owner) {
 }
 // 英雄榜(玩家榜):同一位玩家所有城池合併。pl_<帳號> 記每座城的數字,prank 是全部玩家的合併結果
 const PRANK_MAX = 300;
+async function allyInfo(world, owner) {
+  const m = await world.get("alm_" + owner, { type: "json" });
+  if (!m || !m.a) return { tag: "", name: "" };
+  const a = await world.get("ally_" + m.a, { type: "json" });
+  return { tag: (a && a.tag) || "", name: (a && a.name) || "" };
+}
+// 聯盟變動後,更新英雄榜(玩家榜)裡這位玩家的聯盟
+async function setPlayerAlly(world, owner) {
+  const { tag, name } = await allyInfo(world, owner);
+  await casUpdate(world, "prank", (cur) => {
+    const r = cur && cur.a.find((x) => x.o === owner);
+    return !r || ((r.a || "") === tag && (r.an || "") === name) ? undefined : (r.a = tag, r.an = name, cur);
+  });
+}
 async function publishPlayer(world, owner, key, st, tag) {
   const A = require("./acct.cjs");
   const mine = new Set(await A.list(world, owner));
   const P = st.pub;
+  const rk = await world.get("rank", { type: "json" }), old = (rk && rk.a) || [];
   const pl = await casUpdate(world, "pl_" + owner, (cur) => {
     const cs = { ...((cur && cur.cs) || {}) };
     for (const k of Object.keys(cs)) if (!mine.has(k)) delete cs[k];
+    // 還沒用新格式公開過的城池:先用舊的排行榜資料湊數,這樣城池數不會少算
+    for (const k of mine) if (!cs[k]) { const r = old.find((x) => x.id === k); if (r) cs[k] = { p: r.p || 0, at: 0, df: 0, ar: 0, hn: "", hl: 0, hx: 0, x: r.x, y: r.y, m: r.m ? 1 : 0, f: r.f, n: r.n }; }
     cs[key] = { p: P.p, at: P.at || 0, df: P.df || 0, ar: P.ar || 0, hn: P.hn || "", hl: P.hl || 0, hx: P.hx || 0, x: st.pos.x, y: st.pos.y, m: st.col ? 0 : 1, f: P.f, n: P.n };
     return { cs };
   });
@@ -183,7 +200,8 @@ async function publishPlayer(world, owner, key, st, tag) {
   const cap = cs.find((c) => c.m) || cs[0];
   let best = null;
   for (const c of cs) if (c.hl > 0 && (!best || c.hl > best.hl || (c.hl === best.hl && c.hx > best.hx))) best = c;
-  const row = { o: owner, n: cap.n, f: cap.f, a: tag || "", x: cap.x, y: cap.y, c: cs.length, p: cs.reduce((s, c) => s + c.p, 0), at: cs.reduce((s, c) => s + c.at, 0), df: cs.reduce((s, c) => s + c.df, 0), ar: cs.reduce((s, c) => s + c.ar, 0), hn: best ? best.hn : "", hl: best ? best.hl : 0, hx: best ? best.hx : 0 };
+  const ai = await allyInfo(world, owner);
+  const row = { o: owner, n: cap.n, f: cap.f, a: ai.tag || tag || "", an: ai.name, x: cap.x, y: cap.y, c: cs.length, p: cs.reduce((s, c) => s + c.p, 0), at: cs.reduce((s, c) => s + c.at, 0), df: cs.reduce((s, c) => s + c.df, 0), ar: cs.reduce((s, c) => s + c.ar, 0), hn: best ? best.hn : "", hl: best ? best.hl : 0, hx: best ? best.hx : 0 };
   await casUpdate(world, "prank", (cur) => {
     const a = ((cur && cur.a) || []).filter((r) => r.o !== owner);
     a.push(row);
@@ -219,4 +237,4 @@ async function ensureRegistered(saves, world, uid, nick, got, now) {
   return await saves.getWithMetadata(uid, { type: "json" });
 }
 
-module.exports = { publishPlayer, removePlayer, topPlayers, tagOf, setTag, claimTile, CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };
+module.exports = { allyInfo, setPlayerAlly, publishPlayer, removePlayer, topPlayers, tagOf, setTag, claimTile, CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };
