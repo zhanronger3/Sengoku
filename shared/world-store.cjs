@@ -144,12 +144,22 @@ async function queryWindow(world, x0, y0, x1, y1, viewer) {
 }
 
 // 方框內的營寨現況(全服共用的狀態:庫存、重生倒數、誰佔領)
+// 把範圍內有玩家城池的格子記進 G.NOCAMP(營寨不蓋在城池上)
+async function markCityTiles(world, x0, y0, x1, y1) {
+  const seen = new Set();
+  for (let cx = Math.floor(x0 / CH) - 0; cx <= Math.floor(x1 / CH); cx++) for (let cy = Math.floor(y0 / CH); cy <= Math.floor(y1 / CH); cy++) seen.add(cx + "," + cy);
+  await Promise.all([...seen].map(async (k) => {
+    const [cx, cy] = k.split(",").map(Number), c = await world.get(ckey(cx, cy), { type: "json" });
+    if (c && c.v) for (const v of Object.values(c.v)) G.NOCAMP.add(v.x + "," + v.y);
+  }));
+}
 async function queryCamps(world, x0, y0, x1, y1, viewer, now) {
   [x0, y0, x1, y1] = [x0, y0, x1, y1].map((n) => Math.floor(+n));
   if (![x0, y0, x1, y1].every(Number.isFinite)) return [];
   if (x1 < x0) [x0, x1] = [x1, x0];
   if (y1 < y0) [y0, y1] = [y1, y0];
   x1 = Math.min(x1, x0 + 30); y1 = Math.min(y1, y0 + 30);
+  await markCityTiles(world, x0, y0, x1, y1);
   const cells = [];
   for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) { const n = G.npcAt(x, y); if (n && !n.zg) cells.push([x, y, n]); }
   const docs = await Promise.all(cells.map(([x, y]) => world.get(`camp_${x}_${y}`, { type: "json" })));
@@ -267,4 +277,4 @@ async function ensureRegistered(saves, world, uid, nick, got, now) {
   return await saves.getWithMetadata(uid, { type: "json" });
 }
 
-module.exports = { queryCamps, allyInfo, setPlayerAlly, publishPlayer, removePlayer, topPlayers, tagOf, setTag, claimTile, CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };
+module.exports = { markCityTiles, queryCamps, allyInfo, setPlayerAlly, publishPlayer, removePlayer, topPlayers, tagOf, setTag, claimTile, CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };

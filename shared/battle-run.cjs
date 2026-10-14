@@ -137,7 +137,7 @@ function campReport(res, rec, n) {
   const head = `${R.fmtTime(rec.arrAt)},你的軍勢(出兵 ${sent} 人,英雄帶隊)抵達${pos}${res.occupied ? ",守軍是玩家的駐軍" : ""}。\n我方攻擊力 ${res.A}、守軍防禦力 ${res.D}。\n\n`;
   let tail;
   if (!res.win) tail = `進攻失敗,全軍覆沒,英雄戰死(需要到評定眾復活)。守軍也受到損傷。`;
-  else if (res.occupy) tail = `戰勝!陣亡 ${lost} 人,守軍被全滅。\n生還的 ${res.garr.reduce((p, q) => p + q, 0)} 人留下駐守,營寨現在是你的:每種資源每小時 +${15 * (res.tier + 1)}。${res.loot.some((x) => x > 0) ? `\n搶得 ${res.loot.join("/")} 已直接入庫。` : ""}${res.art.length ? "\n英雄似乎還找到了什麼寶物(若藏寶閣有空位會收進去)。" : ""}`;
+  else if (res.occupy) tail = `戰勝!陣亡 ${lost} 人,守軍被全滅。\n生還的 ${res.garr.reduce((p, q) => p + q, 0)} 人留下駐守,營寨現在是你的:每種資源每小時 +${15 * (res.tier + 1)}。${res.loot.some((x) => x > 0) ? `\n搶得 ${res.loot.join("/")} 已直接入庫。` : ""}${res.art.length ? `\n英雄在營寨裡找到了名物${res.art.map((id) => `「${((G.ARTM || {})[id] || {}).n || id}」`).join("、")}(藏寶閣有空位、且還沒有同一件才會收進去)。` : ""}`;
   else tail = `戰勝!陣亡 ${lost} 人。${res.loot.some((x) => x > 0) ? `搶得 ${res.loot.join("/")}(部隊返回後入庫)。` : ""}\n守軍已全滅,但這座營寨不在這座城 15×15 範圍內,或評定眾的佔領名額已滿,所以沒有佔領(營寨回到無主,等待重新集結)。`;
   return { s: `【營寨】${res.win ? "戰勝" : "戰敗"} ${pos}`, b: head + tail };
 }

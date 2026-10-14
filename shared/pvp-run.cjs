@@ -41,6 +41,7 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
     const tx = Math.floor(+a.tx), ty = Math.floor(+a.ty);
     if (!Number.isFinite(tx) || !Number.isFinite(ty)) return await fail("座標錯誤");
     let hit = null, act = { ...a };
+    if (!found) await W.markCityTiles(world, tx, ty, tx, ty);
     const npc = !found && G.npcAt(tx, ty);
     if (npc) {
       // 營寨(全服共用):無主、被別人佔領、或自己佔領的(自己佔領的就是增援駐軍)

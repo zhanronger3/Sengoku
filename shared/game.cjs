@@ -38,11 +38,19 @@ const TIERS=[
  {n:'山賊山城',e:'⛰️',g:{野盜:40,野盜頭領:10,山賊總頭目:6}},
  {n:'石山本願寺',e:'🛕',g:{一向一揆門徒:60,一向一揆坊官:10,一向一揆大將:4}},
  {n:'大筒陣地',e:'💣',g:{竹束防護眾:30,重裝大筒車:8}}];
-const ZG={x:4,y:1},CAMP_DENS=0.05;
+const ZG={x:4,y:1},CAMP_DENS=0.05,CAMP_BLK=4,CAMP_PER=2;
+const NOCAMP=new Set(); // 玩家城池所在的格子(營寨不會蓋在城上);客戶端與伺服器各自在讀到城池時填入
+// 保底:地圖切成 4×4 的小區塊,每塊固定 2 座營寨,所以任何 7×7 範圍至少完整包含一塊,至少有 2 座營寨。再加上原本隨機散布的營寨(保留舊的,已佔領的不會消失)
+function campSpot(x,y){
+ const bx=Math.floor(x/CAMP_BLK),by=Math.floor(y/CAMP_BLK),cells=[];
+ for(let i=0;i<CAMP_BLK;i++)for(let j=0;j<CAMP_BLK;j++){const cx=bx*CAMP_BLK+i,cy=by*CAMP_BLK+j;if(cx===ZG.x&&cy===ZG.y)continue;cells.push([hash(cx,cy,31337),cx,cy])}
+ cells.sort((a,b)=>a[0]-b[0]);
+ return cells.slice(0,CAMP_PER).some(c=>c[1]===x&&c[2]===y)}
 const defOf=g=>Object.entries(g).reduce((a,[u,c])=>a+c*(N[u][1]+N[u][2])/2,0);
 function npcAt(x,y){
  if(x===ZG.x&&y===ZG.y)return {n:'菩提山城',e:'🏯',zg:1};
- if(hash(x,y,21)>=CAMP_DENS)return null; // 營寨隨機散布在整張地圖(不再排在格點上)
+ if(NOCAMP.has(x+','+y))return null;
+ if(hash(x,y,21)>=CAMP_DENS&&!campSpot(x,y))return null;
  const ti=Math.min(5,Math.floor(hash(x,y,90001)*6)),t=TIERS[ti],k=.8+hash(x,y,2)*.5,g={}; // 六種階級平均分佈,跟離原點遠近無關
  for(const [u,c] of Object.entries(t.g))g[u]=Math.max(1,Math.round(c*k));
  const def=defOf(g);
@@ -598,6 +606,6 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
  if(t=='claimd'){if(S.col)return bad('每日任務由本丸管理,請切換回本丸領取');dailyRoll(NOW);const q=dailyInfo();if(!q)return bad('每日任務尚未產生');if(q.done)return bad('今天的每日任務獎勵已領取');if(!q.ok)return bad('每日任務尚未完成');S.daily.done=1;S.gold+=q.g;return {ok:true,msg:`每日任務完成,獲得 ${q.g} 金幣`}}
  if(t=='claim'){if(S.col)return bad('金幣、任務與拜訪由本丸統一管理,請切換回本丸操作');const q=QS.find(x=>x.id===a.id);if(!q||S.qd.includes(q.id)||!q.ok())return bad('任務尚未完成');S.qd.push(q.id);if(q.g)S.gold+=q.g;if(q.r)q.r.forEach((x,i)=>S.res[i]=Math.min(cap(i),S.res[i]+x));return {ok:true,msg:'任務獎勵已領取'}}
  return bad('未知的操作')}
-return {campMs,campFresh,campCur,campView,campBattle,campScout,campSync,campAbandon,occCheck,garDef,garSum,powers,setNow,dailyRoll,dailyInfo,DQ,dayKey,KID_PREST,get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,NU,TRB,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,protectedAt,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvpProtected,pvpLaunch,pvpBattle,pvpApplyDef,pvpApplyAtt,pvpRecall,scoutBattle,scoutApplyDef,launchCheck,initCity,ART,ARTM,garrApply,garrTake,garrReturn,garrDur,GAR_MAX,HN,occSlots,artSlots,heroAtk,heroDef,heroSpd,heroCarry,heroNeed,occY,OCC_RANGE,HERO_MAXLV,MERC,MSPEED,merCap,merBusy,merFree,merDur,shipLaunch,shipApply,offerCheck,offerTake,offerRefund,acceptCheck,acceptTake,expSlots,slotsFree,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,DEMOLISH_GOV,UDESC,DEMOLISH_GOV,UDESC,CAMP_RESPAWN,STASH_MULT,defOf};
+return {NOCAMP,campSpot,campMs,campFresh,campCur,campView,campBattle,campScout,campSync,campAbandon,occCheck,garDef,garSum,powers,setNow,dailyRoll,dailyInfo,DQ,dayKey,KID_PREST,get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,NU,TRB,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,protectedAt,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvpProtected,pvpLaunch,pvpBattle,pvpApplyDef,pvpApplyAtt,pvpRecall,scoutBattle,scoutApplyDef,launchCheck,initCity,ART,ARTM,garrApply,garrTake,garrReturn,garrDur,GAR_MAX,HN,occSlots,artSlots,heroAtk,heroDef,heroSpd,heroCarry,heroNeed,occY,OCC_RANGE,HERO_MAXLV,MERC,MSPEED,merCap,merBusy,merFree,merDur,shipLaunch,shipApply,offerCheck,offerTake,offerRefund,acceptCheck,acceptTake,expSlots,slotsFree,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,DEMOLISH_GOV,UDESC,DEMOLISH_GOV,UDESC,CAMP_RESPAWN,STASH_MULT,defOf};
 })();
 if(typeof module!=='undefined')module.exports=G;
