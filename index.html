@@ -3,48 +3,51 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>車肥羊戰國 · 復刻原型</title>
+<title>車肥羊戰國</title>
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <style>
-:root{--bg:#fffdf6;--pn:#fff;--ink:#3a2410;--bd:#9b5a22;--h1:#f8b53c;--h2:#e08f17;--bt:#fbe3ae;--tb:#f3d6a0;--lk:#8a3a0c;--hero:#1c4fa3;--bad:#c0261b;--ok:#2b7a2b;--act:#f7b733;--mut:#8a7358;--grass:#8fc65f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#241a10;--pn:#2f2216;--ink:#f1dfc0;--bd:#b8742f;--h1:#a8680f;--h2:#744409;--bt:#4a3320;--tb:#5a3d22;--lk:#f0b060;--hero:#8db8ff;--bad:#ff8a7a;--ok:#7dcc7d;--act:#b8741a;--mut:#b49a78;--grass:#527d38}}
-:root[data-theme="dark"]{--bg:#241a10;--pn:#2f2216;--ink:#f1dfc0;--bd:#b8742f;--h1:#a8680f;--h2:#744409;--bt:#4a3320;--tb:#5a3d22;--lk:#f0b060;--hero:#8db8ff;--bad:#ff8a7a;--ok:#7dcc7d;--act:#b8741a;--mut:#b49a78;--grass:#527d38}
+:root{--bg:#3f0a10;--pn:#120c0d;--ink:#f1e6d3;--bd:#9a7a46;--gold:#d4b370;--h1:#70091d;--h2:#45050f;--bt:#14161d;--tb:#4d0c18;--lk:#e8c97a;--hero:#e8c97a;--bad:#ff8272;--ok:#9bd596;--act:#8a1026;--mut:#c2b09a;--grass:#2f5a3a;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.5 "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif}
+body{margin:0;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg fill='%23d9b36a' fill-opacity='.07' stroke='%23d9b36a' stroke-opacity='.18' stroke-width='3'%3E%3Ccircle cx='120' cy='120' r='112' fill='none'/%3E%3Cg id='p'%3E%3Cellipse cx='120' cy='62' rx='34' ry='48'/%3E%3C/g%3E%3Cuse href='%23p' transform='rotate(72 120 120)'/%3E%3Cuse href='%23p' transform='rotate(144 120 120)'/%3E%3Cuse href='%23p' transform='rotate(216 120 120)'/%3E%3Cuse href='%23p' transform='rotate(288 120 120)'/%3E%3Ccircle cx='120' cy='120' r='22'/%3E%3C/g%3E%3C/svg%3E") 94% 120px/260px no-repeat,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg fill='%23d9b36a' fill-opacity='.07' stroke='%23d9b36a' stroke-opacity='.18' stroke-width='3'%3E%3Ccircle cx='120' cy='120' r='112' fill='none'/%3E%3Cg id='p'%3E%3Cellipse cx='120' cy='62' rx='34' ry='48'/%3E%3C/g%3E%3Cuse href='%23p' transform='rotate(72 120 120)'/%3E%3Cuse href='%23p' transform='rotate(144 120 120)'/%3E%3Cuse href='%23p' transform='rotate(216 120 120)'/%3E%3Cuse href='%23p' transform='rotate(288 120 120)'/%3E%3Ccircle cx='120' cy='120' r='22'/%3E%3C/g%3E%3C/svg%3E") 3% 62%/210px no-repeat,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='22' viewBox='0 0 44 22'%3E%3Cg fill='none' stroke='%23d9b36a' stroke-opacity='.16' stroke-width='1'%3E%3Ccircle cx='0' cy='22' r='22'/%3E%3Ccircle cx='0' cy='22' r='16'/%3E%3Ccircle cx='0' cy='22' r='10'/%3E%3Ccircle cx='44' cy='22' r='22'/%3E%3Ccircle cx='44' cy='22' r='16'/%3E%3Ccircle cx='44' cy='22' r='10'/%3E%3Ccircle cx='22' cy='11' r='22'/%3E%3Ccircle cx='22' cy='11' r='16'/%3E%3Ccircle cx='22' cy='11' r='10'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(#4a0c14,#360810 70%,#2d070d);color:var(--ink);font:13px/1.5 "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif}
 a,[data-a]{cursor:pointer}
 a{color:var(--lk);text-decoration:underline}
 button,input,select{font:inherit;color:inherit}
-button{background:var(--bt);border:1px solid var(--bd);border-radius:4px;padding:2px 10px;font-weight:bold}
-button:hover{filter:brightness(.93)}
+button{background:var(--bt);color:var(--ink);border:1px solid var(--bd);border-radius:4px;padding:2px 10px;font-weight:bold}
+button:hover{filter:brightness(1.3)}
 button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--bad);outline-offset:1px}
 input[type=number],input[type=text],input[type=password]{width:70px;background:var(--pn);border:1px solid var(--bd);padding:1px 4px}
-#app{max-width:1020px;margin:0 auto}
-#hd{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;padding:8px 12px;background:linear-gradient(var(--h1),var(--h2));border-bottom:4px solid var(--bd)}
-.logo{font-size:30px;font-weight:900;color:#fff;letter-spacing:2px;text-shadow:2px 2px 0 #7a3b00,-1px -1px 0 #7a3b00;white-space:nowrap}
-.logo small{font-size:14px;background:#c0261b;border:2px solid #fff;border-radius:50%;padding:3px 5px;margin-left:4px;vertical-align:middle;letter-spacing:0}
+#app{width:100%;max-width:1020px;margin:0 auto;flex:1 0 auto}
+#copyright{flex-shrink:0;text-align:center;padding:14px 12px;margin-top:18px;border-top:1px solid rgba(212,179,112,.35);background:rgba(0,0,0,.3);color:var(--mut);font-size:12px}
+#hd{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;padding:10px 12px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg fill='%23d9b36a' fill-opacity='.07' stroke='%23d9b36a' stroke-opacity='.18' stroke-width='3'%3E%3Ccircle cx='120' cy='120' r='112' fill='none'/%3E%3Cg id='p'%3E%3Cellipse cx='120' cy='62' rx='34' ry='48'/%3E%3C/g%3E%3Cuse href='%23p' transform='rotate(72 120 120)'/%3E%3Cuse href='%23p' transform='rotate(144 120 120)'/%3E%3Cuse href='%23p' transform='rotate(216 120 120)'/%3E%3Cuse href='%23p' transform='rotate(288 120 120)'/%3E%3Ccircle cx='120' cy='120' r='22'/%3E%3C/g%3E%3C/svg%3E") right -34px center/230px no-repeat,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='22' viewBox='0 0 44 22'%3E%3Cg fill='none' stroke='%23d9b36a' stroke-opacity='.16' stroke-width='1'%3E%3Ccircle cx='0' cy='22' r='22'/%3E%3Ccircle cx='0' cy='22' r='16'/%3E%3Ccircle cx='0' cy='22' r='10'/%3E%3Ccircle cx='44' cy='22' r='22'/%3E%3Ccircle cx='44' cy='22' r='16'/%3E%3Ccircle cx='44' cy='22' r='10'/%3E%3Ccircle cx='22' cy='11' r='22'/%3E%3Ccircle cx='22' cy='11' r='16'/%3E%3Ccircle cx='22' cy='11' r='10'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(var(--h1),var(--h2));border-top:3px solid var(--gold);border-bottom:3px solid var(--gold);box-shadow:0 4px 10px rgba(0,0,0,.45)}
+.logo{font-size:30px;font-weight:900;letter-spacing:2px;white-space:nowrap;background:linear-gradient(180deg,#fff0c0,#e2b559 55%,#a97a2a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(1px 2px 0 #3a0710);display:flex;align-items:center;gap:6px}
+.logo .lgi{display:inline-block;width:44px;height:44px;filter:none}.logo .lgi svg{width:100%;height:100%;display:block}
+.logo small{-webkit-text-fill-color:#f1e6d3;font-size:14px;background:#8a0f1c;border:2px solid var(--gold);border-radius:50%;padding:3px 5px;margin-left:4px;vertical-align:middle;letter-spacing:0}
 #tn{display:flex;flex-wrap:wrap;gap:4px;margin-left:auto}
-#tn button{font-size:13px;color:var(--lk);background:var(--bt)}
-#rb{display:flex;flex-wrap:wrap;gap:4px 14px;padding:8px 12px;font-size:13px}
+#tn button{font-size:13px;color:var(--ink);background:var(--bt)}
+#rb{display:flex;flex-wrap:wrap;gap:4px 14px;padding:8px 12px;font-size:13px;background:rgba(0,0,0,.28);border-bottom:1px solid rgba(212,179,112,.35)}
 .ri{white-space:nowrap}
 .bad{color:var(--bad)}.ok{color:var(--ok)}.mut{color:var(--mut)}
 #body{display:grid;grid-template-columns:82px minmax(0,1fr) 262px;gap:10px;padding:0 10px 30px}
 #nav{display:flex;flex-direction:column;gap:6px}
-#nav button{display:flex;flex-direction:column;align-items:center;padding:5px 2px;border:2px solid var(--bd);border-radius:10px;font-size:12px;background:var(--bt)}
+#nav button{display:flex;flex-direction:column;align-items:center;padding:5px 2px;border:2px solid var(--bd);border-radius:10px;font-size:12px;background:var(--bt);color:var(--ink)}
 #nav button i{font-style:normal;font-size:26px;line-height:1.1}
-#nav button.on{background:var(--act);box-shadow:0 0 0 2px #fff inset}
+#nav button.on{background:linear-gradient(#a3162d,#6e0c1d);border-color:var(--gold);box-shadow:0 0 8px rgba(232,201,122,.55),0 0 0 1px var(--gold) inset}
 #main{min-width:0}
 .ttl{font-size:22px;font-weight:bold;margin:2px 0 8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .ttl small{font-size:14px;font-weight:normal}
-.flag{display:inline-block;background:#f08a1c;color:#fff;font-size:15px;padding:4px 7px 9px;clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);border:0}
+.flag{display:inline-block;background:#b3121f;color:#fff;font-size:15px;padding:4px 7px 9px;clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);border:0}
+.faq{margin:4px 0}.faq>summary{cursor:pointer;font-size:13px}.paper .faq>summary{color:#3a2410}.paper .faq .fa{color:#5a3d20}.faq .fa{font-size:12px;line-height:1.6;padding:4px 0 6px 10px;color:var(--mut,#c9b8a8)}
 .flag.s{font-size:11px;padding:1px 4px 5px}
 .cols{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
 .info{min-width:150px;flex:1}
 .sh{margin:10px 0 3px;font-size:14px}
-.fr{border:7px solid #8a4b1d;outline:1px solid #4d2808;box-shadow:inset 0 0 0 2px #d79a58;position:relative;overflow:hidden}
+.fr{border:7px solid #5a0f1a;outline:2px solid var(--gold);box-shadow:inset 0 0 0 2px #a3182a;position:relative;overflow:hidden}
 .sc{width:100%}
-.sc-out{max-width:470px;aspect-ratio:1/1;background:radial-gradient(circle at 47% 30%,#a7d877,#86bb58 65%,#74a84a)}
-.sc-in{max-width:640px;aspect-ratio:4/3.2;background:radial-gradient(circle at 50% 40%,#9ccb6c,#7fb552 70%,#6e9e44)}
-.yard{position:absolute;left:4%;top:4%;width:92%;height:80%;background:repeating-linear-gradient(90deg,transparent 0 38px,rgba(0,0,0,.05) 38px 40px),repeating-linear-gradient(0deg,#c9cdc3 0 38px,#bfc4b9 38px 40px)}
-.yard.nowall{outline:2px dashed rgba(60,40,20,.45);outline-offset:-1px}
+.sc-out{max-width:470px;aspect-ratio:1/1;background:radial-gradient(circle at 47% 30%,#4f8a47,#3c6f3a 65%,#2c5430)}
+.sc-in{max-width:640px;aspect-ratio:4/3.9;background:radial-gradient(circle at 50% 40%,#3d7040,#2f5a3a 70%,#234836)}
+.yard{position:absolute;left:4%;top:4%;width:92%;height:80%;background:repeating-linear-gradient(90deg,transparent 0 38px,rgba(0,0,0,.12) 38px 40px),repeating-linear-gradient(0deg,#8c8e62 0 38px,#82855a 38px 40px)}
+.yard.nowall{outline:2px dashed rgba(241,230,211,.55);outline-offset:-1px}
 .wl{position:absolute;cursor:pointer;z-index:1;box-shadow:0 2px 3px rgba(0,0,0,.35)}
 .tw{position:absolute;cursor:pointer;z-index:2;border:2px solid rgba(0,0,0,.55);border-top:6px dotted rgba(0,0,0,.6);box-shadow:0 2px 4px rgba(0,0,0,.4)}
 .wood .wl.h{background:repeating-linear-gradient(90deg,#8a5a2c 0 7px,#5e3a18 7px 9px)}
@@ -57,22 +60,31 @@ input[type=number],input[type=text],input[type=password]{width:70px;background:v
 .stone .wl.v{background:repeating-linear-gradient(90deg,transparent 0 7px,rgba(40,44,50,.6) 7px 8px),repeating-linear-gradient(0deg,#a3a9b0 0 18px,#7c838b 18px 20px)}
 .stone .tw{background:#8d949b}
 .wlab{position:absolute;left:50%;top:0;transform:translate(-50%,-2px);z-index:3;cursor:pointer}
-.gate{position:absolute;left:50%;top:84%;transform:translate(-50%,-50%);z-index:3;font-size:26px;cursor:pointer}
+.gate{position:absolute;left:50%;top:84%;transform:translate(-50%,-86%);z-index:3;cursor:pointer;line-height:0}
+.gate svg{display:block;filter:drop-shadow(0 3px 3px rgba(0,0,0,.6))}
+.ic{width:1em;height:1em;display:inline-block;vertical-align:-.12em}
+.em .ic{width:1.35em;height:1.35em;vertical-align:baseline}
+.cd .e .ic{width:1.5em;height:1.5em}
 .it{position:absolute;transform:translate(-50%,-50%);text-align:center;line-height:1}
 .it .em{font-size:clamp(22px,5vw,36px);white-space:nowrap}
-.lv{display:inline-block;min-width:22px;padding:1px 4px;background:#222;color:#fff;border:2px solid #fff;border-radius:5px;font-size:13px;line-height:15px}
+.lv{display:inline-block;min-width:22px;padding:1px 4px;background:#000;color:#fff;border:2px solid #e9dccb;border-radius:5px;font-size:13px;line-height:15px}
 .it .em+.lv{position:relative;top:-6px}
 .lv.sm{position:absolute;right:-10px;top:-4px;font-size:10px;min-width:16px;line-height:11px;padding:0 2px;border-width:1px}
-.crop{width:68px;height:38px;background:linear-gradient(#f6cf55,#e8b230);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);display:flex;align-items:center;justify-content:center}
-.lb{display:inline-block;background:#c0261b;color:#fff;border:1px solid #fff;font-size:12px;width:19px;height:19px;line-height:17px;margin-top:-8px;position:relative}
+.crop{width:68px;height:38px;background:linear-gradient(#cfa63e,#a67f22);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);display:flex;align-items:center;justify-content:center}
+.lb{display:inline-block;background:#8a0f1c;color:#fff;border:1px solid #e9dccb;font-size:12px;width:19px;height:19px;line-height:17px;margin-top:-8px;position:relative}
 .dim{opacity:.4;filter:grayscale(.6)}
 .plot .em{opacity:.55}
+.guide{background:linear-gradient(#4d0c18,#2f0710);border:1px solid var(--gold);border-left:5px solid #d4a84a;padding:8px 12px;margin:0 0 10px;border-radius:4px;line-height:1.7}
+.guide span{color:var(--mut)}
+@keyframes pulse{from{filter:drop-shadow(0 0 0 rgba(232,201,122,0))}to{filter:drop-shadow(0 0 9px rgba(232,201,122,.95))}}
+.plot.hint .em{animation:pulse 1s infinite alternate;opacity:.95}
+.cd.hl{border-color:var(--gold);box-shadow:0 0 10px rgba(232,201,122,.6)}
 .sc-in .it{z-index:4}
 .it.big .em{font-size:46px}
-.lamp{display:inline-block;width:26px;height:26px;line-height:24px;text-align:center;border-radius:50%;border:2px solid var(--bd);margin:2px;font-weight:bold;background:#ddd;color:#888}
-.lamp.on{background:#f0b400;color:#7a1b0c}
+.lamp{display:inline-block;width:26px;height:26px;line-height:24px;text-align:center;border-radius:50%;border:2px solid var(--bd);margin:2px;font-weight:bold;background:#2a1f1d;color:#6b5d58}
+.lamp.on{background:#c8102e;color:#fff}
 table.tb{border-collapse:collapse;width:100%;max-width:640px;margin:6px 0}
-.tb th{background:var(--tb);border:1px solid var(--bd);padding:3px 6px;color:var(--lk)}
+.tb th{background:var(--tb);border:1px solid var(--bd);padding:3px 6px;color:var(--gold)}
 .tb td{border:1px solid var(--bd);padding:3px 6px;text-align:center;background:var(--pn)}
 .tb tr.me td{background:var(--tb);font-weight:bold}
 .tb td.hero{color:var(--hero);font-weight:bold}
@@ -81,35 +93,59 @@ table.tb{border-collapse:collapse;width:100%;max-width:640px;margin:6px 0}
 .pg{text-align:center;margin:8px 0}
 #side details{border:1px solid var(--bd);background:var(--pn);margin-bottom:6px}
 #side summary{padding:3px 8px;cursor:pointer;list-style:none;font-weight:bold}
-#side summary::before{content:"+ ";color:var(--lk)}
+#side summary::before{content:"+ ";color:var(--gold)}
 #side details[open] summary::before{content:"− "}
 .dbody{padding:4px 10px 8px;border-top:1px solid var(--bd)}
 .ct{display:flex}
 .ct span{flex:1;text-align:center;padding:2px;background:var(--tb);border:1px solid var(--bd);font-weight:bold;cursor:pointer}
 .ct span.on{background:var(--act)}
 #chat{height:230px;overflow-y:auto;border:1px solid var(--bd);border-top:0;background:var(--pn);padding:4px 6px;font-size:12px}
-#chat .t{color:var(--ok)}
+img.aic.big{width:72px;height:72px;margin:4px 0;border-radius:8px}img.aic{width:28px;height:28px;vertical-align:middle;margin-right:2px;border-radius:5px}#chat .t{color:var(--ok)}.herocard{display:flex;gap:16px;align-items:center;background:linear-gradient(#4d0c18,#2f0710);border:2px solid var(--gold);border-radius:8px;padding:14px 18px;margin:8px 0 12px;max-width:720px}.hicon{flex:0 0 auto;width:108px;border:2px solid var(--gold);border-radius:8px;overflow:hidden;line-height:0;background:#240509;box-shadow:0 2px 10px rgba(0,0,0,.6)}.hicon img{display:block;width:100%;height:auto}.hicon.off img{filter:grayscale(1) brightness(.6)}@media(max-width:560px){.herocard{flex-direction:column;align-items:stretch}.hicon{width:42%;align-self:center}}.hname{font-size:24px;font-weight:900;color:var(--gold)}.hname small{font-size:14px;color:var(--ink)}.hbar{height:10px;border:1px solid var(--bd);background:#120c0d;border-radius:5px;margin:6px 0;overflow:hidden}.hbar i{display:block;height:100%;background:linear-gradient(#e8c97a,#a97a2a)}.hchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.hchips span{background:var(--pn);border:1px solid var(--bd);border-radius:10px;padding:1px 9px;font-size:13px}.chbox{border:1px solid var(--bd);border-top:0;background:var(--pn);padding:3px}.chbox input{background:#1b1415;border:1px solid var(--bd);padding:3px 5px}
 .scroll{background:var(--act);border-radius:18px;padding:14px;max-width:560px;margin:8px 0}
 .paper{background:repeating-linear-gradient(#fdf1d4 0 22px,#cdb98d 22px 23px);color:#3a2410;padding:10px 14px;min-height:240px;line-height:23px}
 .paper b{color:#7a2d0f}
-#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#c0261b;color:#fff;padding:6px 16px;border-radius:4px;display:none;z-index:9}
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:8;padding:14px;overflow:auto}
+.guide b,.guide a{color:#fff3d0}.guide .mut{color:#f0dcc4}.guide .bad,#toast .bad,.tb th .bad,.tb tr.me .bad,#nav .bad,.ct .bad{color:#ffe6df}
+#toast,.lb,.lamp.on,.logo small,#nav button.on{text-shadow:0 1px 1px rgba(0,0,0,.6)}
+.paper .tb td{background:rgba(255,248,225,.75);color:#3a2410;border-color:#a8935f}.paper .tb th{background:#6e1a22;color:#ffe9b0;border-color:#a8935f}.paper .tb tr.me td{background:#f0d9a0}
+.paper a{color:#8a1026}.paper .mut,.paper small.mut{color:#6a5640}.paper .bad{color:#a01010}.paper .ok{color:#1f6b2a}
+.paper input,.paper select,.paper textarea{background:#fff9e8;color:#3a2410;border:1px solid #8a7440}
+.paper button{background:#5a1020;color:#ffe9b0;border-color:#8a7440}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#8a0f1c;color:#fff;border:1px solid var(--gold);padding:6px 16px;border-radius:4px;display:none;z-index:9}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:8;padding:14px;overflow:auto}
 #modal .box{background:var(--bg);border:3px solid var(--bd);padding:16px 18px;max-width:720px;max-height:92%;overflow:auto}
 #modal .box h3{margin:0 0 6px}
+.logo img{display:block;height:52px;width:auto}
+#modal.au{background:#1a0a0c;align-items:flex-end;padding:0}
+#modal.au .bl{position:fixed;inset:-30px;background:url(/assets/poster.webp) center/cover;filter:blur(22px) brightness(.55)}
+#modal.au .po{position:fixed;inset:0;background:url(/assets/poster.webp) center/contain no-repeat}
+@media(max-width:700px){#modal.au .po{background-size:cover}}
+#modal.au .box{position:relative;width:min(340px,88vw);margin:0 auto 4vh;background:rgba(20,8,10,.78);color:#f6e7c8;text-align:center;border-color:#c9a24b;border-radius:6px}
+#modal.au .box input{width:200px}
+#c .bm,.bm{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:10px 0}
+.pc{border:2px solid var(--bd);background:linear-gradient(#1c1012,#100a0b);border-radius:8px;padding:10px 14px;margin:10px 0;line-height:1.55}
+.pc>p:first-child{margin-top:0}.pc>*:last-child{margin-bottom:0}
+.pc .sh{margin:0 0 8px;padding-bottom:5px;font-size:16px;color:var(--lk);border-bottom:1px solid rgba(154,122,70,.45)}
+.pc table.tb{max-width:none}.pc .bad{color:#ffb4a6}
+.bm .cd{border:2px solid var(--bd);background:linear-gradient(#1c1012,#100a0b);border-radius:8px;padding:10px 12px;font-size:14px;line-height:1.5;display:flex;flex-direction:column;gap:4px}
+.bm .cd b{font-size:16px;color:var(--lk)}.bm .cd p{margin:2px 0}.bm .cd>p:first-of-type{color:#e6d8c2}
+.bm .cd .bad{color:#ffb4a6;background:rgba(160,30,20,.25);border-radius:5px;padding:3px 7px}
+.bm .cd button{align-self:flex-start;margin-top:4px}
 #modal .g{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:8px 0}
 #modal .cd{border:2px solid var(--bd);background:var(--pn);padding:8px}
 .map-w{max-width:620px}
 svg text{user-select:none}
 @media(max-width:860px){#body{grid-template-columns:1fr}#nav{flex-direction:row;overflow-x:auto}#nav button{min-width:62px}}
+.ttl select{font-size:13px;font-weight:normal;padding:2px 4px;margin-left:8px;max-width:240px}
 </style>
 </head>
 <body>
 <div id="app">
-<div id="hd"><div class="logo">🐑 車肥羊<small>戰國</small></div>
-<span id="who" class="mut" style="font-size:12px"></span><span id="cloud" class="mut" style="font-size:12px"></span><div id="tn"><button data-a="help">遊戲指南</button><button data-a="set">遊戲設定</button><button data-a="soon" data-m="每日一題尚未開放">每日一題</button><button data-a="soon" data-m="論壇尚未開放">論 壇</button><button data-a="soon" data-m="客服中心尚未開放">客服中心</button><button data-a="logout">登 出</button><button data-a="nav" data-v="shop">商 城</button></div></div>
+<div id="hd"><div class="logo"><img src="/assets/logo.png" alt="車肥羊戰國" height="52"></div>
+<span id="who" class="mut" style="font-size:12px"></span><span id="cloud" class="mut" data-a="syncnow" style="font-size:12px;cursor:pointer"></span><div id="tn"><button data-a="help">遊戲指南</button><button data-a="set">遊戲設定</button><button data-a="soon" data-m="每日一題尚未開放">每日一題</button><button data-a="soon" data-m="論壇尚未開放">論 壇</button><button data-a="soon" data-m="客服中心尚未開放">客服中心</button><button data-a="logout">登 出</button><button data-a="nav" data-v="shop">商 城</button></div></div>
 <div id="rb"></div>
 <div id="body"><nav id="nav"></nav><main id="main"></main><aside id="side"></aside></div>
 </div>
+<footer id="copyright">© 2026 GORDON(曜榮).&nbsp; All rights reserved.</footer>
 <div id="toast"></div><div id="modal"></div>
 <script src="/auth.js"></script>
 <script src="/game.js"></script>
@@ -118,7 +154,7 @@ let KEY='sg_village_v3',ME=null,NICK='主公';
 const $=s=>document.querySelector(s);
 // S 就是 G.S(遊戲規則模組裡的目前狀態),UI 與規則共用同一份
 Object.defineProperty(window,'S',{get(){return G.S},set(v){G.S=v},configurable:true});
-const {SPEED,CD,NSLOTS,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,RN,FN,FT,FC,F,W,UN,N,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,prest,canBuildNew,slotOf}=G;
+const {SPEED,CD,NU,TRB,TRAIN_QMAX,DEMOLISH_GOV,NSLOTS,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,protectedAt,RN,FN,FT,FC,F,W,UN,N,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,prest,canBuildNew,slotOf}=G;
 const FAC={wei:'織田',shu:'德川',wu:'豐臣'};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const RI=['🪵','🧱','🪨','🌾'];
@@ -136,43 +172,158 @@ const clk=t=>{const s=Math.floor(8*3600+t)%86400;return pad(s/3600|0)+':'+pad(s/
 const dstr=t=>{const d=new Date(2011,9,23+Math.floor((8*3600+t)/86400));return pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+clk(t)};
 const costH=c=>c.map((x,i)=>`<span class="${S.res[i]>=x?'':'bad'}">${RI[i]}${x}</span>`).join(' ');
 const ter=(x,y)=>['🌲','💧','⛰️','🌾','','',''][(((x*73856093)^(y*19349663))>>>0)%7];
-let view='out',bv=null,bs=null,fv=0,sel=null,mc=[0,0],curPos='',rp=0,mt='in',ct=0,dirty=1,speed=SPEED,last=Date.now(),op={},TGT=null,sig='',SH={res:0,gold:1,r:[1,1,1,1]},VIL=new Map(),RKD=null;
+let view='out',bv=null,bs=null,fv=0,sel=null,mc=[0,0],curPos='',rp=0,mt='in',ct=0,dirty=1,speed=SPEED,last=Date.now(),op={acc:true},TGT=null,sig='',SH={res:0,gold:1,r:[1,1,1,1]},VIL=new Map(),CAMPS=new Map(),SHIPT=null,RKD=null,INC=[],CUR=null,CITIES=[],CLK=0,lastRes=0,MAIL={inbox:[],sent:[],unread:0,loaded:false},mo=null,UOPEN=null,DM=null,GOFF=false,CMP={x:'',y:'',s:'',b:''};
 
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2400)}
-function modal(h){const m=$('#modal');m.innerHTML='<div class="box">'+h+'<p><button data-a="close">關閉</button></p></div>';m.style.display='flex'}
-function pick(){const m=$('#modal');m.style.display='flex';
- m.innerHTML='<div class="box"><h3>選擇你的勢力</h3><p class="mut">開局後無法更改。你只有一座小村莊,先從種樹、挖礦、屯糧開始。</p><div class="g">'+Object.entries(F).map(([k,v])=>`<div class="cd"><span class="flag">${v.s}</span><p>${v.d}</p><p>兵種:${UN[k].map(u=>u.n).join('、')}</p><button data-a="pick" data-f="${k}">加入${v.n}</button></div>`).join('')+'</div></div>'}
+function modal(h){const m=$('#modal');m.className='';m.innerHTML='<div class="box">'+h+'<p><button data-a="close">關閉</button></p></div>';m.style.display='flex'}
+function pick(){const m=$('#modal');m.className='';m.style.display='flex';
+ m.innerHTML='<div class="box"><h3>選擇你的勢力</h3><p class="mut">開局後無法更改。你只有一座小城池,先從種樹、挖礦、屯糧開始。</p><div class="g">'+Object.entries(F).map(([k,v])=>`<div class="cd"><span class="flag">${v.s}</span><p>${v.d}</p><p>兵種:${UN[k].map(u=>u.n).join('、')}</p><button data-a="pick" data-f="${k}">加入${v.n}</button></div>`).join('')+'</div></div>'}
 
 function syncMc(){const h=home(),pk=h.x+','+h.y;if(pk!==curPos){curPos=pk;mc=[h.x,h.y]}}
 function nearestCamp(){const h=home();let best=null,bd=1e9;for(let r=0;r<=14;r++)for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const x=h.x+dx,y=h.y+dy,n=npcAt(x,y);if(n&&!n.zg){const d=Math.hypot(dx,dy);if(d<bd){bd=d;best=[x,y]}}}return best||[h.x+1,h.y+1]}
 async function loadWorld(){if(!ME||!S)return;const [cx,cy]=mc;try{const r=await api('/api/world?x0='+(cx-6)+'&y0='+(cy-6)+'&x1='+(cx+6)+'&y1='+(cy+6));
- if(r.ok&&r.j&&r.j.villages){for(const k of [...VIL.keys()]){const [x,y]=k.split(',').map(Number);if(x>=cx-6&&x<=cx+6&&y>=cy-6&&y<=cy+6)VIL.delete(k)}r.j.villages.forEach(v=>VIL.set(v.x+','+v.y,v));dirty=1}}catch(e){}}
+ if(r.ok&&r.j&&r.j.villages){for(const k of [...VIL.keys()]){const [x,y]=k.split(',').map(Number);if(x>=cx-6&&x<=cx+6&&y>=cy-6&&y<=cy+6)VIL.delete(k)}r.j.villages.forEach(v=>{VIL.set(v.x+','+v.y,v);G.NOCAMP.add(v.x+','+v.y)});if(r.j.camps){for(const k of [...CAMPS.keys()]){const [x,y]=k.split(',').map(Number);if(x>=cx-6&&x<=cx+6&&y>=cy-6&&y<=cy+6)CAMPS.delete(k)}r.j.camps.forEach(c=>CAMPS.set(c.x+','+c.y,c))}dirty=1}}catch(e){}}
 async function loadRank(){if(!ME)return;try{const r=await api('/api/rank');if(r.ok&&r.j&&r.j.rows){RKD=r.j;dirty=1}}catch(e){}}
 function save(){try{S.saved=Date.now();S.spd=speed;localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function load(){try{const s=localStorage.getItem(KEY);if(!s)return false;S=G.fix(JSON.parse(s));speed=S.spd||SPEED;const real=Math.min((Date.now()-S.saved)/1000,24*3600);if(real>0)G.adv(real*speed,{quiet:real>300});syncMc();return true}catch(e){return false}}
 
-const HELP='<h3>遊戲指南</h3><p>這是依據原作資料還原的單機原型。</p><ul><li>資源田(外城)產出木材、泥土、鐵塊、糧食。內城有 21 塊空地,自己決定要蓋什麼;城牆環繞城內建地,不佔建地。</li><li>知行所每個村莊只能一座;藏屋敷、米藏、埋藏所在現有的升到滿級後可以再蓋新的,效果加總。</li><li>知行所等級越高,所有施工越快(最多省 50%)。只有織田家能外城內城同時施工。</li><li>藏屋敷、米藏最高 20 級,容量 10 萬。</li><li>建築人口與軍隊都要吃糧;右上角資源列最後一項是「耗糧 / 糧食總產量」。</li><li>「埋藏所」可以藏起資源,避免被其他玩家搶走。城牆環繞城內建地,提高守軍防禦(織田家木柵、德川家石垣、豐臣家土壘漆壁)。</li><li>出征中的兵一樣要吃糧;糧食耗盡時,出征中的兵也會逃亡。</li><li>兵營訓練士兵;軍奉行出兵掠奪地圖上的據點。行軍速度取決於隊伍中最慢的兵種。</li><li>刀鍛冶所、具足屋每級加成兵種攻防 1.5%。</li><li>在地圖上的菩提山城行三顧之禮,可以請出竹中半兵衛。</li><li>商城:用金幣買資源,或把現有資源依比例平倉。</li><li>可以出兵掠奪其他玩家的村莊(對方在新手保護期內不行)。</li></ul><p class="mut">尚未實作:英雄、綠洲、寶物、集市、聯盟、資源運送、增援。</p>';
+const HELP='<h3>遊戲指南</h3><p>這是依據原作復刻日本戰國時期的多人遊戲。</p><ul><li>資源田(城外)產出木材、泥土、鐵塊、糧食。城內有 21 塊空地,自己決定要蓋什麼;城牆環繞城內建地,不佔建地。</li><li>知行所每個城池只能一座;藏屋敷、米藏、埋藏所在現有的升到滿級後可以再蓋新的,效果加總。</li><li>知行所等級越高,所有施工越快(最多省 50%)。只有織田家能城外城內同時施工。</li><li>藏屋敷、米藏最高 20 級,容量 10 萬。</li><li>足輕營、馬廻組可以連續排隊訓練(最多 10 批),每批依序完成。</li><li>建築人口與軍隊都要吃糧;右上角資源列最後一項是「耗糧 / 糧食總產量」。</li><li>「埋藏所」可以藏起資源,避免被其他玩家搶走。城牆環繞城內建地,提高守軍防禦(織田家木柵、德川家石垣、豐臣家土壘漆壁)。</li><li>出征中的兵一樣要吃糧;糧食耗盡時,出征中的兵也會逃亡。</li><li>兵營訓練士兵;軍奉行出兵掠奪地圖上的據點。行軍速度取決於隊伍中最慢的兵種。</li><li>刀鍛冶所、具足屋每級加成兵種攻防 1.5%。</li><li>在地圖上的菩提山城行三顧之禮,可以請出竹中半兵衛。</li><li>商城:用金幣買資源,或把現有資源依比例平倉。</li><li>本丸御殿 10/15/20 級各有 1/2/3 個擴張名額:派 3 名開墾代官到空地可開分城,或用行政官讓別人分城的忠誠度歸零來佔領(本丸無法被佔領)。左側「城池清單」或標題旁的選單可切換城池;分城的金幣與任務由本丸管理。</li><li>可以出兵掠奪其他玩家的城池(對方在新手保護期內不行)。部隊抵達時才開戰,對方會先收到來襲警報;戰況以戰報用飛鴿傳書寄給雙方。</li></ul><p class="mut">可以派兵增援自己的另一座城或盟友的城(軍奉行的「增援駐防」)。</p>';
 function drawRes(){const up=upkeep(),pd=rate(3);
  $('#rb').innerHTML=[0,1,2,3].map(i=>`<span class="ri" title="${RN[i]}">${RI[i]}${fmt(S.res[i])}/${cap(i)}</span>`).join('')+`<span class="ri" title="埋藏所可藏匿的量(每種資源)">🏺${hide()}</span><span class="ri ${up>pd?'bad':''}" title="耗糧 / 糧食總產量(每小時)">🍚${fmt(up)}/${fmt(pd)}</span>`}
-function updCd(){document.querySelectorAll('[data-cd]').forEach(e=>e.textContent=tm(+e.dataset.cd-S.t))}
-const ttl=()=>`<div class="ttl"><span class="flag">${fa().s}</span>${NICK}的村庄<small>(${home().x}|${home().y})</small><small class="mut">主城</small></div>`;
-const back=v=>`<p><a data-a="nav" data-v="${v}">« 返回${v=='in'?'內城':'外城'}</a></p>`;
+function updCd(){document.querySelectorAll('[data-cd]').forEach(e=>e.textContent=tm(+e.dataset.cd-S.t));document.querySelectorAll('[data-rt]').forEach(e=>{const r=(+e.dataset.rt-(Date.now()+CLK))/1000;e.textContent=r>0?tm(r):'結算中…'})}
+const noteSrv=j=>{if(!j)return;if(Array.isArray(j.incoming))INC=j.incoming;if(Array.isArray(j.cities)){CITIES=j.cities;dirty=1}if(j.now)CLK=j.now-Date.now()};
+const cityRef=(x,y)=>{const c=CITIES.find(z=>z.x==x&&z.y==y);return c&&CITIES.length>1?`「${esc(c.n)}」(${x}|${y})`:`你的城池(${x}|${y})`};
+function incBar(){if(!ME||!INC.length)return'';const fr=INC.filter(e=>e.k=='reinf'),hs=INC.filter(e=>e.k!='reinf');
+ const frH=fr.length?`<div class="guide" style="border-left-color:#4aa86a;background:linear-gradient(#10381f,#0a2314)"><b>🤝 盟軍增援</b><br>`+fr.map(e=>`${esc(e.n)}(${e.x}|${e.y})的援軍將於 <b data-rt="${e.arrAt}">${tm((e.arrAt-(Date.now()+CLK))/1000)}</b> 後抵達${e.tx!=null?cityRef(e.tx,e.ty):'你的城池'}`).join('<br>')+'</div>':'';
+ if(!hs.length)return frH;
+ return frH+`<div class="guide" style="border-left-color:#ff5a4a;background:linear-gradient(#5a0d12,#35070c)"><b>⚠ 來襲警報</b><br>`+hs.map(e=>`${esc(e.n)}(${e.x}|${e.y})的軍勢將於 <b data-rt="${e.arrAt}">${tm((e.arrAt-(Date.now()+CLK))/1000)}</b> 後抵達${e.tx!=null?cityRef(e.tx,e.ty):'你的城池'}<span class="mut">(兵力不明)</span>`).join('<br>')+`<br><span class="mut">部隊抵達時才會開戰,結果會用飛鴿傳書通知你。趁現在整備軍隊、升級城牆吧。</span></div>`}
+const cityName=()=>S.col?esc(S.cname||'分城'):esc(NICK)+'的主城',cnOf=c=>c.col?c.n:esc(NICK)+'的主城';
+const ttl=()=>`<div class="ttl"><span class="flag" style="background:${CASTLE_COL[S.fac]}">${fa().s}</span>${cityName()}<small>(${home().x}|${home().y})</small><small class="mut">${S.col?`二之丸・忠誠度 ${Math.floor(S.loy==null?100:S.loy)}/100`:'本丸'}</small>${citySel()}</div>`;
+const citySel=()=>CITIES.length>1?` <select id="csw" title="切換城池">${CITIES.map(c=>`<option value="${esc(c.k)}" ${c.k==CUR?'selected':''}>${cnOf(c)}(${c.x}|${c.y})${c.col?' 忠誠'+c.loy:''}</option>`).join('')}</select>`:'';
+const back=v=>`<p><a data-a="nav" data-v="${v}">« 返回${v=='in'?'城內':'城外'}</a></p>`;
 function qtab(){const rows=['f','b'].filter(l=>S.q[l]);if(!rows.length)return'';
- return `<table class="tb"><tr><th>刪除</th><th>任務 <a data-a="rushall">立即完成[2金幣]</a></th><th>剩餘時間</th><th>結束於</th></tr>`+rows.map(l=>{const q=S.q[l];return `<tr><td><a data-a="cancel" data-l="${l}" class="x">✖</a></td><td>${q.name}(等級 ${q.to})</td><td><span data-cd="${q.end}">${tm(q.end-S.t)}</span></td><td>${clk(q.end)}</td></tr>`}).join('')+'</table>'}
-const mvt=()=>S.mv.length?`<table class="tb"><tr><th>動向</th><th>目標</th><th>抵達</th></tr>`+S.mv.map(m=>{const out=m.go&&S.t<m.go,at=out?m.go:m.arr;return `<tr><td>${out?'出征':m.ret?'返回':'出征'}</td><td>${esc(m.name)}</td><td><span data-cd="${at}">${tm(at-S.t)}</span></td></tr>`}).join('')+'</table>':'';
+ return `<table class="tb"><tr><th>刪除</th><th>任務 <a data-a="rushall">立即完成[2金幣]</a></th><th>剩餘時間</th><th>結束於</th></tr>`+rows.map(l=>{const q=S.q[l];return `<tr><td><a data-a="cancel" data-l="${l}" class="x">✖</a></td><td>${q.dm?`${q.name}→等級 ${q.to}`:`${q.name}(等級 ${q.to})`}</td><td><span data-cd="${q.end}">${tm(q.end-S.t)}</span></td><td>${clk(q.end)}</td></tr>`}).join('')+'</table>'}
+const sumA=a=>(a||[]).reduce((p,q)=>p+q,0);
+const unitsStr=a=>us().map((u,k)=>a&&a[k]?`${u.n}×${a[k]}`:'').filter(Boolean).join('、')||'—';
+const mvt=()=>S.mv.length?`<table class="tb"><tr><th>動向</th><th>目標</th><th>兵力</th><th>時間</th></tr>`+S.mv.map((m,mi)=>{
+ const sent=m.sent||m.send,n0=sumA(sent),n1=sumA(m.send),back=m.ret&&!m.pending;
+ const st=m.pending?(S.t>=m.go?'已抵達,戰鬥結算中…':'出征中'):(back?(m.recalled?'撤軍返回中':'返回中'):(m.kind=='scout'?'偵察中':'出征中'));
+ const canRecall=m.pending?(S.t<m.go&&m.aid):(!back&&!m.pv&&m.arr>S.t);
+ const rcBtn=canRecall?` <button data-a="recall" data-i="${mi}" data-aid="${m.aid||''}" data-x="${m.tx}" data-y="${m.ty}">撤軍</button>`:'';
+ const at=m.pending?m.go:(back?m.arr:(m.go&&S.t<m.go?m.go:m.arr));
+ const loot=back&&!m.recalled&&m.loot&&m.loot.some(x=>x>0)?`<br>戰利品 ${m.loot.map((x,i)=>RI[i]+x).join(' ')}(抵達後入庫)`:'';
+ const tcell=m.pending&&S.t>=m.go?'—':`<span data-cd="${at}">${tm(at-S.t)}</span>`;
+ return `<tr><td>${st}${rcBtn}</td><td>${esc(m.name)}</td><td>${back?(m.recalled?`撤軍,<b>${n1} 人</b>返回`:`出兵 ${n0} 人 → <b>剩 ${n1} 人返回</b>`):`出兵 <b>${n0}</b> 人`}<br><small class="mut">${unitsStr(back?m.send:sent)}</small>${m.hero&&S.hero?`<br><small>⭐ 英雄「${esc(S.hero.n)}」帶隊</small>`:''}${loot}</td><td>${tcell}</td></tr>`}).join('')+'</table>':'';
 function vOut(){
  const sc=FP.map(([x,y],i)=>{const t=FT[i],L=S.fld[i],at=`class="it" style="left:${x}%;top:${y}%" title="${FN[t]} 等級${L}" data-a="fld" data-i="${i}"`;
-  return t==3?`<div ${at}><div class="crop"><b class="lv">${L}</b></div></div>`:`<div ${at}><div class="em">${['🌲🌲','🛖','🪨🪨'][t]}</div><b class="lv">${L}</b></div>`}).join('');
+  return t==3?`<div ${at}><div class="crop"><b class="lv">${L}</b></div></div>`:`<div ${at}><div class="em">${['🌲🌲',CLAYI,'🪨🪨'][t]}</div><b class="lv">${L}</b></div>`}).join('');
  const pr=[0,1,2,3].map(i=>`<div>${RI[i]} ${RN[i]}: <b>${Math.floor(i==3?rate(3)-upkeep():rate(i))}</b></div>`).join('');
- const lamps=[['兵','war'],['步','infb'],['騎','cavb'],['集',0],['學','acad'],['攻','smi'],['防','arm']].map(([c,id])=>`<span class="lamp ${id&&S.bld[id]?'on':''}">${c}</span>`).join('');
- const away=G.awayUnits(),ar=(S.u.map((n,k)=>n?`<div>${n} ${us()[k].n}</div>`:'').join('')||'<div class="mut">無</div>')+(away.some(x=>x)?`<div class="mut">出征中:${away.map((n,k)=>n?n+' '+us()[k].n:'').filter(Boolean).join('、')}</div>`:'');
- return `${ttl()}<div class="cols"><div class="fr sc sc-out"><svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%"><path d="M0 46 Q30 52 48 44 T100 40" stroke="#7fd6cf" stroke-width="1.6" fill="none" opacity=".7"/><path d="M52 46 Q54 70 100 80" stroke="#7fd6cf" stroke-width="1.6" fill="none" opacity=".7"/></svg>${sc}<div class="it" style="left:47%;top:30%;font-size:46px" data-a="nav" data-v="in" title="內城">🏯</div></div><div class="info"><h4 class="sh">生產力</h4>${pr}<h4 class="sh">建築指示燈</h4><div>${lamps}</div><h4 class="sh">軍隊</h4>${ar}</div></div>${qtab()}${mvt()}`}
-const SLP=[[18,14],[34,14],[50,14],[66,14],[82,14],[10,32],[26,32],[42,32],[58,32],[74,32],[90,32],[18,50],[34,50],[50,50],[66,50],[82,50],[18,68],[34,68],[50,68],[66,68],[82,68]];
-const BI={gov:['🏯','知'],wh:['🏠','藏'],gr:['🛖','米'],cave:['🕳️','埋'],war:['⛩️','軍'],infb:['⛺','足'],acad:['🏫','學'],smi:['🗡️','刀'],arm:['🥋','具'],cavb:['🐎','馬'],mill:['⚙️','精'],lum:['🪵','材'],kiln:['🏺','瓦'],smel:['🔥','鍊'],wall:['🚪','牆']};
+ const upg=id=>['f','b'].some(l=>S.q[l]&&S.q[l].id===id&&!S.q[l].dm),lampOn={'兵':S.mv.length>0,'步':!!(S.tr.infb||[]).length,'騎':!!(S.tr.cavb||[]).length,'樂':(S.ships||[]).some(x=>x.ret>S.t),'學':upg('acad'),'攻':upg('smi'),'防':upg('arm')},lampT={'兵':'有部隊在外行軍','步':'足輕營訓練中','騎':'馬廻組訓練中','樂':'商人運送資源中','學':'兵學塾升級中','攻':'刀鍛冶所升級中','防':'具足屋升級中'},lamps=Object.keys(lampOn).map(c=>`<span class="lamp ${lampOn[c]?'on':''}" title="${lampT[c]}">${c}</span>`).join('');
+ const away=G.awayUnits(),ar=(S.u.map((n,k)=>n?`<div>${n} ${us()[k].n}</div>`:'').join('')||'<div class="mut">無</div>')+(away.some(x=>x)?`<div class="mut">出征中:${away.map((n,k)=>n?n+' '+us()[k].n:'').filter(Boolean).join('、')}</div>`:'')+((S.out||[]).length?`<div class="mut">駐守在外:</div>`+S.out.map(o=>`<div class="mut">　${esc(o.name||(String(o.k||'').startsWith('camp:')?'營寨':'城池'))}(${o.x}|${o.y}):${(o.u||[]).map((n,k)=>n?n+' '+((us()[k]||{}).n||'兵'):'').filter(Boolean).join('、')}</div>`).join(''):'')+((S.gar||[]).length?`<div class="mut">駐防的友軍:</div>`+S.gar.map(g=>`<div class="mut">　${esc(g.n)}:${g.u.map((n,k)=>n?n+' '+((UN[g.fac]||[])[k]||{n:'兵'}).n:'').filter(Boolean).join('、')}</div>`).join(''):'');
+ return `${ttl()}<div class="cols"><div class="fr sc sc-out"><svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%"><path d="M0 46 Q30 52 48 44 T100 40" stroke="#7fd6cf" stroke-width="1.6" fill="none" opacity=".7"/><path d="M52 46 Q54 70 100 80" stroke="#7fd6cf" stroke-width="1.6" fill="none" opacity=".7"/></svg>${sc}<div class="it" style="left:47%;top:30%;font-size:58px" data-a="nav" data-v="in" title="城內(點一下進城)">${fcastle(CASTLE_COL[S.fac])}</div></div><div class="info"><h4 class="sh">生產力</h4>${pr}<h4 class="sh">建築指示燈</h4><div>${lamps}</div><h4 class="sh">軍隊</h4>${ar}</div></div>${qtab()}${ttab()}${mvt()}`}
+const SLP=[[10,12],[26,12],[42,12],[58,12],[74,12],[90,12],[18,30],[34,30],[50,30],[66,30],[82,30],[18,48],[34,48],[50,48],[66,48],[82,48],[18,66],[34,66],[50,66],[66,66],[82,66]];
+const BI={gov:['🏯','知'],wh:['🏠','藏'],gr:['🛖','米'],cave:['🕳️','埋'],war:['⛩️','軍'],infb:['⛺','足'],acad:['🏫','學'],smi:['🗡️','刀'],arm:['🥋','具'],cavb:['🐎','馬'],mill:['⚙️','精'],lum:['🪵','材'],kiln:['🏺','瓦'],smel:['🔥','鍊'],cnl:['📜','評'],wsh:['🛠️','工'],acc:['💰','勘'],pal:['🏯','本'],mkt:['🏪','市'],emb:['🚩','奏'],res:['🏯','二'],trs:['💎','寶'],pub:['🏗️','普'],wall:['🚪','牆']};
+
+const SV=(b)=>`<svg class="ic" viewBox="0 0 64 64" aria-hidden="true">${b}</svg>`;
+const ICONS={
+ // 藏屋敷:白壁土藏(海鼠壁、黑瓦、厚重的土藏門)
+ wh:SV(`<path d="M3 31L32 9l29 22v4H3z" fill="#2a2d33"/><path d="M3 31L32 9l29 22" fill="none" stroke="#6b717c" stroke-width="1.5"/><rect x="10" y="35" width="44" height="21" fill="#e8e2d4"/><rect x="10" y="45" width="44" height="11" fill="#2a2d33"/><path d="M10 56l6-11M18 56l6-11M26 56l6-11M34 56l6-11M42 56l6-11M50 56l4-8" stroke="#e8e2d4" stroke-width="1.6"/><rect x="25" y="36" width="14" height="20" fill="#4a2f1d" stroke="#1b1412"/><path d="M32 36v20M25 44h14M25 50h14" stroke="#1b1412" stroke-width="1.2"/><circle cx="28.5" cy="40" r="1.3" fill="#d4a84a"/><circle cx="35.5" cy="40" r="1.3" fill="#d4a84a"/><circle cx="32" cy="21" r="3" fill="#d4a84a"/>`),
+ // 足輕營:陣幕與幟旗
+ infb:SV(`<rect x="7" y="10" width="2.5" height="48" fill="#4a2f1d"/><rect x="54.5" y="10" width="2.5" height="48" fill="#4a2f1d"/><path d="M9.5 11h11v26h-11z" fill="#b3121f"/><circle cx="15" cy="20" r="3" fill="#e9dccb"/><path d="M43.5 11h11v26h-11z" fill="#b3121f"/><circle cx="49" cy="20" r="3" fill="#e9dccb"/><rect x="12" y="35" width="40" height="19" fill="#1b1412"/><path d="M12 35h8v19h-8zM28 35h8v19h-8zM44 35h8v19h-8z" fill="#8a0f1c"/><circle cx="32" cy="44.5" r="6" fill="#e9dccb"/><circle cx="32" cy="44.5" r="3.4" fill="#1b1412"/><path d="M12 35h40" stroke="#d4a84a" stroke-width="2.4"/><path d="M5 58h54" stroke="#4a3f38" stroke-width="3"/>`),
+ // 兵學塾:書院造的學問所,簷下掛著卷軸
+ acad:SV(`<path d="M1 27Q32 3 63 27l-6 4H7z" fill="#2a2d33"/><path d="M1 27Q32 3 63 27" fill="none" stroke="#6b717c" stroke-width="1.4"/><rect x="12" y="31" width="40" height="22" fill="#e8e2d4"/><path d="M12 31h40M12 42h40M22 31v22M32 31v22M42 31v22" stroke="#7a4b24" stroke-width="1.4"/><rect x="10" y="53" width="44" height="4" fill="#4a2f1d"/><rect x="11" y="31" width="2.5" height="22" fill="#4a2f1d"/><rect x="50.5" y="31" width="2.5" height="22" fill="#4a2f1d"/><rect x="38" y="43" width="19" height="13" rx="2" fill="#f1e5c4" stroke="#7a4b24"/><path d="M41 47h13M41 51h9" stroke="#8a0f1c" stroke-width="1.6"/><circle cx="33" cy="22" r="3" fill="#b3121f"/>`),
+ // 具足屋:武士甲冑(兜、前立、面頰、胴、袖)
+ arm:SV(`<path d="M20 27Q32 6 44 27z" fill="#1b1412"/><path d="M20 27Q32 21 44 27" stroke="#b3121f" stroke-width="3" fill="none"/><path d="M23 15Q32 0 41 15Q32 9 23 15z" fill="#d4a84a"/><path d="M19 28L11 40l12-3zM45 28l8 12-12-3z" fill="#b3121f"/><path d="M24 28Q32 41 40 28l-2 8q-6 6-12 0z" fill="#7a1018"/><path d="M26 33q6 3 12 0" stroke="#e9dccb" stroke-width="1.2" fill="none"/><path d="M15 40h34l-4 20H19z" fill="#1b1412"/><path d="M17 46h30M18.5 52h27M19.5 57h25" stroke="#b3121f" stroke-width="2"/><rect x="5" y="40" width="10" height="14" rx="1.5" fill="#2a2d33" stroke="#b3121f"/><rect x="49" y="40" width="10" height="14" rx="1.5" fill="#2a2d33" stroke="#b3121f"/><circle cx="32" cy="46" r="3" fill="#d4a84a"/>`),
+ // 精米所:水車小屋(水車、茅葺屋根、米俵)
+ mill:SV(`<path d="M0 55Q6 51 12 55T24 55T36 55T48 55T60 55V64H0z" fill="#3c6e8f"/><circle cx="19" cy="38" r="14" fill="none" stroke="#7a4b24" stroke-width="3"/><path d="M19 24v28M5 38h28M9 28l20 20M29 28L9 48" stroke="#7a4b24" stroke-width="2"/><g fill="#a8793c"><rect x="16" y="21" width="6" height="5"/><rect x="16" y="50" width="6" height="5"/><rect x="2" y="35" width="5" height="6"/><rect x="31" y="35" width="5" height="6"/></g><rect x="35" y="33" width="25" height="21" fill="#7a4b24"/><path d="M31 34L47.5 14 64 34z" fill="#c8a24a"/><path d="M36 30l11-12 11 12" stroke="#8a6a24" stroke-width="1.4" fill="none"/><rect x="43" y="40" width="9" height="14" fill="#2a1d14"/><ellipse cx="57" cy="52" rx="5" ry="3.5" fill="#e8dcc0" stroke="#7a4b24"/>`),
+ // 製材所:原木與圓鋸
+ lum:SV(`<g stroke="#4a2f1d" stroke-width="1.4"><rect x="6" y="46" width="40" height="11" rx="3" fill="#8b5a2b"/><ellipse cx="46" cy="51.5" rx="5.5" ry="5.5" fill="#d2a468"/><rect x="10" y="35" width="36" height="11" rx="3" fill="#99652f"/><ellipse cx="46" cy="40.5" rx="5.5" ry="5.5" fill="#dcb274"/></g><circle cx="46" cy="51.5" r="2.4" fill="none" stroke="#8b5a2b"/><circle cx="46" cy="40.5" r="2.4" fill="none" stroke="#8b5a2b"/><circle cx="40" cy="20" r="14" fill="#b9bec6" stroke="#6b7078" stroke-width="1.5"/><circle cx="40" cy="20" r="17" fill="none" stroke="#b9bec6" stroke-width="4" stroke-dasharray="3.3 3.3"/><circle cx="40" cy="20" r="5" fill="#4a4f57"/><circle cx="40" cy="20" r="1.8" fill="#d4a84a"/><path d="M8 27h12" stroke="#7a4b24" stroke-width="3"/>`),
+ // 瓦窯:登り窯與堆疊的黑瓦
+ kiln:SV(`<path d="M8 56Q32 4 56 56z" fill="#6b5b4d"/><path d="M14 48Q32 22 50 48M20 54Q32 36 44 54" stroke="#4a3f38" stroke-width="1.4" fill="none"/><path d="M25 56Q32 36 39 56z" fill="#e2631a"/><path d="M28.5 56Q32 44 35.5 56z" fill="#ffd26a"/><rect x="40" y="12" width="8" height="20" fill="#4a3f38"/><circle cx="44" cy="8" r="4" fill="#8d8f94" opacity=".8"/><circle cx="50" cy="3" r="3" fill="#8d8f94" opacity=".6"/><g fill="#2a2d33" stroke="#6b717c" stroke-width=".8"><path d="M2 58q3.5-8 7 0zM9 58q3.5-8 7 0zM16 58q3.5-8 7 0z"/><path d="M5.5 51q3.5-8 7 0zM12.5 51q3.5-8 7 0z"/><path d="M9 44q3.5-8 7 0z"/></g>`),
+ // 採礦精鍊所:たたら製鉄の爐、礦石與鶴嘴
+ smel:SV(`<path d="M6 12L28 34" stroke="#7a4b24" stroke-width="3.2" stroke-linecap="round"/><path d="M2 18Q12 4 26 8" stroke="#aab0b8" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M12 58L18 26H46L52 58z" fill="#6f6a66"/><path d="M12 58L18 26H46L52 58" fill="none" stroke="#3a3836" stroke-width="2"/><path d="M26 58Q32 38 38 58z" fill="#ff7a1a"/><path d="M29 58Q32 47 35 58z" fill="#ffd26a"/><path d="M32 26Q25 17 32 6Q39 17 32 26z" fill="#ff9d2a"/><path d="M32 22Q29 17 32 11Q35 17 32 22z" fill="#ffe08a"/><g fill="#3a3d44" stroke="#8d8f94" stroke-width=".8"><circle cx="8" cy="57" r="5"/><circle cx="57" cy="57" r="6"/><circle cx="51" cy="52" r="3.5"/></g>`),
+};
+// ===== 新圖示:戰國風 =====
+const ICONS_EXTRA={
+ // 米藏:高床の米蔵(茅葺き屋根、板壁、米俵)
+ gr:`<rect x="14" y="40" width="3.2" height="18" fill="#5a3a1f"/><rect x="25" y="40" width="3.2" height="18" fill="#5a3a1f"/><rect x="37" y="40" width="3.2" height="18" fill="#5a3a1f"/><rect x="47" y="40" width="3.2" height="18" fill="#5a3a1f"/><rect x="10" y="37" width="44" height="4.5" fill="#7a4b24"/><rect x="14" y="23" width="36" height="14" fill="#c9a56a"/><path d="M19 23v14M24 23v14M29 23v14M35 23v14M40 23v14M45 23v14" stroke="#8a6a3a" stroke-width="1"/><rect x="28" y="27" width="8" height="10" fill="#3a2a1c"/><path d="M4 26L32 5l28 21z" fill="#c8a24a" stroke="#8a6a24" stroke-width="1.4"/><path d="M12 24l20-15M20 24l12-9M44 24L32 11M52 24L35 12" stroke="#8a6a24" stroke-width="1" opacity=".8"/><path d="M50 40l8 18M54 40l8 18" stroke="#7a4b24" stroke-width="1.6"/><g stroke="#7a4b24" stroke-width="1.2"><ellipse cx="14" cy="55" rx="10" ry="4.5" fill="#d8b96a"/><path d="M8 51.5v7M14 50.5v8.5M20 51.5v7" fill="none"/><ellipse cx="18" cy="48" rx="8" ry="3.8" fill="#e0c47a"/></g>`,
+ // 埋藏所:半埋在土裡的甕與小判、插著的鐵鍬
+ cave:`<path d="M2 58Q32 28 62 58z" fill="#6b4a2a"/><path d="M2 58Q32 28 62 58" fill="none" stroke="#4a3320" stroke-width="1.5"/><path d="M8 52l4-3 5 3 6-3 5 3 6-3 6 3 7-3 5 3" fill="none" stroke="#4f7a3a" stroke-width="2"/><path d="M20 44Q18 32 26 28h12q8 4 6 16z" fill="#7a5a3a" stroke="#3a2a1a" stroke-width="1.4"/><ellipse cx="32" cy="28" rx="8.5" ry="3" fill="#2a1d14"/><path d="M20 38h24" stroke="#b3121f" stroke-width="2"/><g fill="#e8c24a" stroke="#8a6a1a" stroke-width=".9"><ellipse cx="28" cy="26.2" rx="4.4" ry="2"/><ellipse cx="36.5" cy="26.6" rx="4.4" ry="2"/><ellipse cx="32.5" cy="24.5" rx="4.4" ry="2"/></g><path d="M52 10L47 44" stroke="#7a4b24" stroke-width="3" stroke-linecap="round"/><path d="M44 44h10l-2 8h-6z" fill="#aab0b8" stroke="#6b717c" stroke-width="1"/><path d="M52 8h5" stroke="#7a4b24" stroke-width="3" stroke-linecap="round"/>`,
+ // 軍奉行:軍議所(陣屋、幟旗、軍配)
+ war:`<rect x="6" y="6" width="2.4" height="52" fill="#4a2f1d"/><path d="M8.4 7h11v24h-11z" fill="#b3121f"/><circle cx="13.9" cy="15" r="3" fill="#e9dccb"/><rect x="55.6" y="6" width="2.4" height="52" fill="#4a2f1d"/><path d="M44.6 7h11v24h-11z" fill="#b3121f"/><circle cx="50.1" cy="15" r="3" fill="#e9dccb"/><path d="M12 24Q32 8 52 24l-5 4H17z" fill="#2a2d33"/><path d="M12 24Q32 8 52 24" fill="none" stroke="#6b717c" stroke-width="1.3"/><rect x="17" y="28" width="30" height="12" fill="#e8e2d4"/><path d="M17 34h30M27 28v12M37 28v12" stroke="#7a4b24" stroke-width="1.2"/><rect x="16" y="40" width="32" height="3.5" fill="#4a2f1d"/><rect x="30.6" y="49" width="2.8" height="11" rx="1" fill="#d4a84a" stroke="#8a6a1a" stroke-width=".8"/><circle cx="32" cy="46" r="11.5" fill="#f1e5c4" stroke="#1b1412" stroke-width="2.2"/><circle cx="32" cy="46" r="6" fill="#c8102e"/><path d="M32 34.5v23M20.5 46h23" stroke="#1b1412" stroke-width=".7" opacity=".35"/>`,
+ // 刀鍛冶所:鍛冶爐、日本刀、鐵砧與火花
+ smi:`<path d="M2 58L6 34h20l4 24z" fill="#6f6a66" stroke="#3a3836" stroke-width="1.6"/><path d="M10 58Q16 42 22 58z" fill="#ff7a1a"/><path d="M13 58Q16 49 19 58z" fill="#ffd26a"/><path d="M14 34Q8 26 14 18Q20 26 14 34z" fill="#ff9d2a" opacity=".9"/><path d="M60 6Q42 18 27 45" stroke="#dfe3ea" stroke-width="4.2" fill="none" stroke-linecap="round"/><path d="M60 6Q43 19 28.5 44" stroke="#7d8fa6" stroke-width="1" fill="none" stroke-dasharray="2.2 1.8"/><ellipse cx="25.5" cy="48" rx="6" ry="2.7" transform="rotate(-30 25.5 48)" fill="#d4a84a" stroke="#8a6a1a" stroke-width="1"/><path d="M24 50L14 62" stroke="#1b1412" stroke-width="5" stroke-linecap="round"/><path d="M22.5 52l-3-2M19.5 56.5l-3-2M17 60l-3-2" stroke="#b3121f" stroke-width="1.6"/><path d="M36 60h22v-5H50l-3-5H38z" fill="#3a3d44" stroke="#1b1412" stroke-width="1"/><g fill="#ffd26a"><circle cx="40" cy="42" r="1.6"/><circle cx="46" cy="38" r="1.2"/><circle cx="52" cy="44" r="1.4"/><circle cx="35" cy="47" r="1.1"/></g>`,
+ // 馬廻組:騎馬武者(兜、背旗、長槍、緋紅馬衣)
+ cavb:`<path d="M10 4L26 30" stroke="#7a4b24" stroke-width="2.4" stroke-linecap="round"/><path d="M7 1l7 3-3 6z" fill="#dfe3ea" stroke="#6b717c" stroke-width=".8"/><rect x="14" y="14" width="1.6" height="16" fill="#4a2f1d"/><path d="M15.6 14h9v8h-9z" fill="#b3121f"/><path d="M12 56V44M20 56V45M42 56V45M50 56V43" stroke="#4a3320" stroke-width="3.6" stroke-linecap="round"/><path d="M10 44Q8 34 24 33H44Q58 34 56 44Q52 50 38 48H18Q12 49 10 44z" fill="#8b5a2b" stroke="#3a2a1a" stroke-width="1.2"/><path d="M12 40H54Q56 46 50 47H18Q12 47 12 40z" fill="#b3121f" stroke="#d4a84a" stroke-width="1.4"/><path d="M48 34Q52 22 58 18l4 5-5 4q-2 5-1 8z" fill="#8b5a2b" stroke="#3a2a1a" stroke-width="1.2"/><path d="M58 18l2-6 1 7" fill="#3a2a1a"/><path d="M50 30Q55 28 58 31" stroke="#1b1412" stroke-width="2.2" fill="none"/><path d="M10 40Q4 42 6 52" stroke="#1b1412" stroke-width="3" fill="none" stroke-linecap="round"/><rect x="24" y="19" width="12" height="15" rx="2" fill="#1b1412"/><path d="M25 24h10M25 29h10" stroke="#b3121f" stroke-width="1.8"/><path d="M24 17Q30 4 36 17z" fill="#1b1412"/><path d="M26.5 10Q30 3 33.5 10Q30 8 26.5 10z" fill="#d4a84a"/><path d="M26 17h8l-1 4h-6z" fill="#7a1018"/>`,
+ // 泥坑:挖開的黏土坑、黏土塊與磚
+ clay:`<ellipse cx="32" cy="52" rx="29" ry="9" fill="#8a6a3c"/><ellipse cx="30" cy="49" rx="20" ry="7.5" fill="#4a3322"/><ellipse cx="30" cy="50" rx="13" ry="4.2" fill="#6b5a4a"/><ellipse cx="26" cy="49" rx="5" ry="1.4" fill="#9bb3c2" opacity=".7"/><g fill="#b0623a" stroke="#6b3a1f" stroke-width="1"><circle cx="8" cy="48" r="4.5"/><circle cx="14" cy="43" r="3.5"/><circle cx="50" cy="45" r="4"/><circle cx="55" cy="51" r="3.2"/></g><g fill="#b5523b" stroke="#5a1d10" stroke-width="1"><rect x="46" y="34" width="12" height="5" rx="1"/><rect x="48" y="29" width="12" height="5" rx="1"/><rect x="45" y="39" width="12" height="5" rx="1"/></g>`,
+ // 知行所:武家屋敷(入母屋の黑瓦屋頂、白壁、家紋幔幕、石階)
+ gov:`<path d="M2 30Q32 8 62 30l-5 5H7z" fill="#2a2d33"/><path d="M2 30Q32 8 62 30" fill="none" stroke="#6b717c" stroke-width="1.4"/><path d="M22 22Q32 12 42 22l-3 3H25z" fill="#1b1412"/><rect x="29" y="14" width="6" height="6" fill="#e8e2d4"/><circle cx="32" cy="17" r="1.8" fill="#b3121f"/><rect x="8" y="35" width="48" height="19" fill="#e8e2d4"/><rect x="8" y="35" width="48" height="3" fill="#4a2f1d"/><g fill="#4a2f1d"><rect x="8" y="35" width="3" height="19"/><rect x="21" y="35" width="2.4" height="19"/><rect x="40.6" y="35" width="2.4" height="19"/><rect x="53" y="35" width="3" height="19"/></g><path d="M11 39h10v15H11zM43 39h10v15H43z" fill="#b3121f"/><circle cx="16" cy="46" r="3" fill="#e9dccb"/><circle cx="48" cy="46" r="3" fill="#e9dccb"/><rect x="25" y="40" width="14" height="14" fill="#2a1d14"/><path d="M32 40v14" stroke="#5a3a1f" stroke-width="1.2"/><path d="M5 54h54v3H5zM9 57h46v3H9z" fill="#8d949b" stroke="#5b6068" stroke-width=".8"/>`,
+ // 一向一揆砦:寺砦(木柵、櫓、「南無阿彌陀佛」筵旗)
+ ikko:`<ellipse cx="32" cy="59" rx="30" ry="3.5" fill="#3a2a1c" opacity=".4"/><g fill="#8b5a2b" stroke="#4a2f1d" stroke-width="1"><path d="M2 59V42l2.5-4.5L7 42V59z"/><path d="M8 59V42l2.5-4.5L13 42V59z"/><path d="M14 59V42l2.5-4.5L19 42V59z"/><path d="M45 59V42l2.5-4.5L50 42V59z"/><path d="M51 59V42l2.5-4.5L56 42V59z"/><path d="M57 59V42l2.5-4.5L62 42V59z"/></g><rect x="20" y="24" width="24" height="22" fill="#e8e2d4" stroke="#4a2f1d" stroke-width="1.2"/><path d="M20 35h24M32 24v22" stroke="#7a4b24" stroke-width="1.2"/><path d="M15 25Q32 8 49 25l-4 4H19z" fill="#2a2d33"/><rect x="26" y="46" width="12" height="13" fill="#1b1412"/><g><rect x="3" y="8" width="9" height="28" fill="#f1ead8" stroke="#6b5a4a" stroke-width=".8"/><path d="M7.5 12v20M5 17h5M5 23h5M5.5 29h4" stroke="#1b1412" stroke-width="1.5"/><rect x="52" y="8" width="9" height="28" fill="#f1ead8" stroke="#6b5a4a" stroke-width=".8"/><path d="M56.5 12v20M54 17h5M54 23h5M54.5 29h4" stroke="#1b1412" stroke-width="1.5"/></g><rect x="2" y="6" width="11" height="2" fill="#4a2f1d"/><rect x="51" y="6" width="11" height="2" fill="#4a2f1d"/>`,
+ // 南蠻館:南蠻船(黑船、十字帆、波浪)
+ nanban:`<path d="M0 50Q8 46 16 50T32 50T48 50T64 50V64H0z" fill="#3c6e8f"/><path d="M4 42h56l-8 14H12z" fill="#2a1d14" stroke="#1b1412" stroke-width="1.2"/><path d="M6 46h52" stroke="#b3121f" stroke-width="2"/><rect x="31" y="6" width="2.4" height="38" fill="#4a2f1d"/><path d="M12 10Q22 6 31 10V28Q22 31 12 28z" fill="#f1ead8" stroke="#6b5a4a" stroke-width=".8"/><path d="M33.4 8Q44 5 54 9V26Q44 29 33.4 26z" fill="#f1ead8" stroke="#6b5a4a" stroke-width=".8"/><path d="M21.5 11v17M12.5 19h18M43.7 10v16M34 17.5h19" stroke="#b3121f" stroke-width="2.4"/><path d="M33.4 6h10l-3 3 3 3h-10z" fill="#b3121f"/><path d="M52 42l8-6v6z" fill="#2a1d14"/><path d="M0 56Q8 52 16 56T32 56T48 56T64 56" fill="none" stroke="#b9d9e8" stroke-width="1.4" opacity=".8"/>`,
+ // 山賊山城:斷崖上的木造山寨(黑岩、原木棚壁、茅頂望樓、黑旗與篝火)——和竹中半兵衛的菩提山城(綠山白頂)明顯不同
+ sanzoku:`<path d="M0 62V40L8 34l5 6 7-9 8 7 6-5 9 7 7-6 7 8 7-3V62z" fill="#4a4540"/><path d="M0 40L8 34l5 6 7-9 8 7 6-5 9 7 7-6 7 8 7-3" fill="none" stroke="#1b1816" stroke-width="1.6"/><path d="M6 62V48M18 62V44M30 62V47M44 62V45M56 62V47" stroke="#2e2a26" stroke-width="1.4"/><g fill="#8b5a2b" stroke="#3a2412" stroke-width=".9"><path d="M5 40V27l2-3 2 3v13z"/><path d="M10 40V26l2-3 2 3v14z"/><path d="M15 40V27l2-3 2 3v13z"/><path d="M20 40V26l2-3 2 3v14z"/><path d="M40 38V26l2-3 2 3v12z"/><path d="M45 38V25l2-3 2 3v13z"/><path d="M50 38V26l2-3 2 3v12z"/><path d="M55 38V25l2-3 2 3v13z"/></g><rect x="26" y="22" width="12" height="18" fill="#6b4423" stroke="#3a2412"/><path d="M26 28h12M26 34h12" stroke="#3a2412" stroke-width=".9"/><rect x="29.5" y="30" width="5" height="10" fill="#120d0a"/><path d="M22 23L32 8l10 15z" fill="#b8923a" stroke="#6b4e12" stroke-width="1.2"/><path d="M26 20l6-9 6 9" stroke="#6b4e12" stroke-width=".9" fill="none"/><rect x="31.2" y="0" width="1.6" height="9" fill="#3a2412"/><path d="M32.8 0h9l-2.5 3 2.5 3h-9z" fill="#120d0a"/><path d="M36 1.5l3 3M39 1.5l-3 3" stroke="#e9dccb" stroke-width="1"/><path d="M12 55q2.4-8 4.8 0z" fill="#ff7a1a"/><path d="M13.4 55q1-4.5 2.2 0z" fill="#ffd26a"/><path d="M48 55q2.4-8 4.8 0z" fill="#ff7a1a"/><path d="M49.4 55q1-4.5 2.2 0z" fill="#ffd26a"/>`,
+ // 石山本願寺:大伽藍(本堂、重層屋根、石垣與護城河)
+ hongan:`<path d="M0 58Q8 55 16 58T32 58T48 58T64 58V64H0z" fill="#3c6e8f"/><path d="M4 58L8 46h48l4 12z" fill="#8d949b" stroke="#5b6068" stroke-width="1"/><path d="M12 46h40M10 52h44" stroke="#5b6068" stroke-width=".8"/><rect x="12" y="32" width="40" height="14" fill="#e8e2d4"/><g fill="#4a2f1d"><rect x="12" y="32" width="2.6" height="14"/><rect x="24" y="32" width="2.2" height="14"/><rect x="37.8" y="32" width="2.2" height="14"/><rect x="49.4" y="32" width="2.6" height="14"/></g><rect x="27" y="36" width="10" height="10" fill="#2a1d14"/><path d="M3 33Q32 20 61 33l-5 5H8z" fill="#2a2d33"/><path d="M3 33Q32 20 61 33" fill="none" stroke="#6b717c" stroke-width="1.4"/><rect x="18" y="18" width="28" height="9" fill="#e8e2d4"/><path d="M13 20Q32 8 51 20l-4 5H17z" fill="#2a2d33"/><path d="M13 20Q32 8 51 20" fill="none" stroke="#6b717c" stroke-width="1.2"/><path d="M32 8v-5" stroke="#d4a84a" stroke-width="2"/><circle cx="32" cy="2.6" r="1.8" fill="#d4a84a"/><circle cx="32" cy="23" r="2.6" fill="#b3121f"/><g><rect x="5" y="22" width="2" height="22" fill="#4a2f1d"/><path d="M7 22h6v14H7z" fill="#f1ead8" stroke="#6b5a4a" stroke-width=".6"/><path d="M10 25v8" stroke="#1b1412" stroke-width="1.4"/><rect x="57" y="22" width="2" height="22" fill="#4a2f1d"/><path d="M57 22h-6v14h6z" fill="#f1ead8" stroke="#6b5a4a" stroke-width=".6"/><path d="M54 25v8" stroke="#1b1412" stroke-width="1.4"/></g>`,
+ // 大筒陣地:大筒(大砲)與竹束、幔幕
+ otsutsu:`<path d="M0 12h64v6H0z" fill="#f1ead8" stroke="#6b5a4a" stroke-width=".8"/><path d="M0 12h64v6" stroke="#6b5a4a" stroke-width=".8" fill="none"/><g fill="#b3121f"><rect x="6" y="12" width="12" height="6"/><rect x="26" y="12" width="12" height="6"/><rect x="46" y="12" width="12" height="6"/></g><g fill="#e9dccb"><circle cx="12" cy="15" r="2"/><circle cx="32" cy="15" r="2"/><circle cx="52" cy="15" r="2"/></g><path d="M2 28H62V32H2z" fill="#4a2f1d"/><rect x="3" y="18" width="2" height="12" fill="#4a2f1d"/><rect x="59" y="18" width="2" height="12" fill="#4a2f1d"/><path d="M8 42L50 28l4 8L12 50z" fill="#2a2d33" stroke="#0f0d0c" stroke-width="1.4"/><path d="M46 29l7 3" stroke="#d4a84a" stroke-width="2.4"/><ellipse cx="53.5" cy="33" rx="2" ry="4" transform="rotate(-20 53.5 33)" fill="#0f0d0c"/><path d="M14 40l6-2M26 36l6-2" stroke="#d4a84a" stroke-width="1.6"/><path d="M6 50l14-8 6 4-12 12z" fill="#7a4b24" stroke="#4a2f1d" stroke-width="1"/><circle cx="30" cy="54" r="7" fill="#7a4b24" stroke="#3a2a1a" stroke-width="1.4"/><circle cx="30" cy="54" r="2.4" fill="#d4a84a"/><path d="M30 47v14M23 54h14M25 49l10 10M35 49L25 59" stroke="#3a2a1a" stroke-width="1"/><g fill="#c9b36a" stroke="#6b5a2a" stroke-width="1"><rect x="44" y="44" width="5" height="16" rx="2"/><rect x="50" y="44" width="5" height="16" rx="2"/><rect x="56" y="44" width="5" height="16" rx="2"/></g><path d="M44 49h17M44 55h17" stroke="#6b5a2a" stroke-width="1"/><circle cx="4" cy="57" r="3" fill="#2a2d33"/><circle cx="10" cy="59" r="3" fill="#2a2d33"/>`,
+ // 評定眾:書院造の評定所(御簾、縁側、掛軸、軍配)
+ cnl:`<path d="M2 28Q32 6 62 28l-5 4H7z" fill="#2a2d33"/><path d="M2 28Q32 6 62 28" fill="none" stroke="#6b717c" stroke-width="1.4"/><path d="M32 8v5" stroke="#d4a84a" stroke-width="2"/><ellipse cx="32" cy="6" rx="4.5" ry="3.6" fill="#b3121f" stroke="#d4a84a" stroke-width="1.2"/><rect x="9" y="32" width="46" height="21" fill="#e8e2d4"/><g fill="#4a2f1d"><rect x="9" y="32" width="3" height="21"/><rect x="26" y="32" width="2.4" height="21"/><rect x="36" y="32" width="2.4" height="21"/><rect x="52" y="32" width="3" height="21"/></g><rect x="12" y="34" width="14" height="14" fill="#c9b06a"/><path d="M12 37h14M12 40h14M12 43h14M12 46h14" stroke="#7a5a24" stroke-width=".9"/><rect x="12" y="32" width="14" height="3" fill="#7a1018"/><rect x="38" y="34" width="14" height="14" fill="#c9b06a"/><path d="M38 37h14M38 40h14M38 43h14M38 46h14" stroke="#7a5a24" stroke-width=".9"/><rect x="38" y="32" width="14" height="3" fill="#7a1018"/><rect x="29" y="35" width="6" height="14" fill="#f1ead8" stroke="#4a2f1d" stroke-width=".8"/><path d="M32 37v10" stroke="#b3121f" stroke-width="2"/><rect x="5" y="53" width="54" height="4" fill="#7a4b24"/><path d="M5 53h54" stroke="#4a2f1d" stroke-width="1"/><path d="M9 57v5M23 57v5M41 57v5M55 57v5" stroke="#4a2f1d" stroke-width="2"/>`,
+ // 鍛冶場:作事小屋(原木骨架、大筒的砲身、滑車與堆疊的木材)
+ wsh:`<path d="M6 60V28M52 60V28M6 28h46" stroke="#4a2f1d" stroke-width="3.4" fill="none"/><path d="M6 44h46" stroke="#4a2f1d" stroke-width="2.4"/><path d="M2 28L29 8l27 20z" fill="#7a4b24" stroke="#3a2412" stroke-width="1.2"/><path d="M8 26l21-15M17 27l12-9M44 27L29 12M36 27l-7-9" stroke="#3a2412" stroke-width=".9"/><path d="M22 52L48 40" stroke="#2a2d33" stroke-width="9" stroke-linecap="round"/><path d="M26 50.5l-2.5-5M33 47l-2.5-5M40 43.5l-2.5-5" stroke="#d4a84a" stroke-width="2.4"/><ellipse cx="48.5" cy="39.6" rx="2.4" ry="4.8" transform="rotate(-25 48.5 39.6)" fill="#0f0d0c"/><path d="M14 56l14-8 5 4-12 8z" fill="#8b5a2b" stroke="#3a2412" stroke-width="1"/><circle cx="26" cy="58" r="4.6" fill="#7a4b24" stroke="#3a2412" stroke-width="1.2"/><circle cx="26" cy="58" r="1.4" fill="#d4a84a"/><g><path d="M57 14v38" stroke="#4a2f1d" stroke-width="2.6"/><path d="M52 14h10" stroke="#4a2f1d" stroke-width="2.6"/><path d="M60 14v10" stroke="#6b5a4a" stroke-width="1.2"/><circle cx="60" cy="26" r="3" fill="none" stroke="#6b5a4a" stroke-width="1.6"/><path d="M60 29v9" stroke="#6b5a4a" stroke-width="1.2"/><rect x="56" y="38" width="8" height="5" fill="#8b5a2b" stroke="#3a2412" stroke-width=".8"/></g><g fill="#a0703a" stroke="#3a2412" stroke-width=".8"><ellipse cx="9" cy="60" rx="7" ry="3"/><ellipse cx="9" cy="55.5" rx="6.4" ry="2.8"/></g>`,
+ // 勘定所:商家(町屋)風——暖簾、算盤與小判
+ acc:`<path d="M3 30L32 12l29 18-4 3H7z" fill="#2a2d33"/><path d="M3 30L32 12l29 18" fill="none" stroke="#6b717c" stroke-width="1.4"/><rect x="8" y="33" width="48" height="22" fill="#e8e2d4"/><path d="M8 33h48" stroke="#4a2f1d" stroke-width="2.4"/><rect x="6" y="33" width="3" height="22" fill="#4a2f1d"/><rect x="55" y="33" width="3" height="22" fill="#4a2f1d"/><rect x="12" y="35" width="40" height="5" fill="#1b1412"/><path d="M12 35h40" stroke="#d4a84a" stroke-width="1"/><g fill="#1f3a5a" stroke="#0f1c2d" stroke-width=".8"><path d="M12 40h9v14h-9z"/><path d="M22.5 40h9v14h-9z"/><path d="M33 40h9v14h-9z"/><path d="M43.5 40h8.5v14h-8.5z"/></g><g fill="#f1ead8"><circle cx="16.5" cy="45" r="2.8"/><circle cx="27" cy="45" r="2.8"/><circle cx="37.5" cy="45" r="2.8"/><circle cx="47.7" cy="45" r="2.8"/></g><path d="M12 54h40" stroke="#4a2f1d" stroke-width="1.4"/><g transform="translate(2 54)"><rect x="3" y="2" width="22" height="7" rx="1.4" fill="#8b5a2b" stroke="#3a2412" stroke-width="1"/><path d="M9 2v7M15 2v7M21 2v7M3 5.5h22" stroke="#3a2412" stroke-width=".9"/><g fill="#e8dcc0"><circle cx="6" cy="4" r="1"/><circle cx="12" cy="7.2" r="1"/><circle cx="18" cy="4" r="1"/><circle cx="23" cy="7.2" r="1"/></g></g><g fill="#e8c24a" stroke="#8a6a1a" stroke-width=".9"><ellipse cx="44" cy="60" rx="5.2" ry="2.5"/><ellipse cx="50" cy="58.5" rx="5.2" ry="2.5"/><ellipse cx="47" cy="56.4" rx="5.2" ry="2.5"/></g><path d="M32 12v-6" stroke="#4a2f1d" stroke-width="1.6"/><path d="M32 6h9l-2 3 2 3h-9z" fill="#b3121f"/>`,
+ // 本丸御殿:壯麗的御殿(重層入母屋、唐破風、金鯱、朱欄)
+ pal:`<path d="M4 27Q32 6 60 27l-4 4H8z" fill="#2a2d33"/><path d="M4 27Q32 6 60 27" fill="none" stroke="#6b717c" stroke-width="1.5"/><path d="M16 14Q32 2 48 14l-4 4H20z" fill="#2a2d33"/><path d="M16 14Q32 2 48 14" fill="none" stroke="#6b717c" stroke-width="1.2"/><rect x="22" y="18" width="20" height="9" fill="#e8e2d4"/><path d="M22 22h20M32 18v9" stroke="#7a4b24" stroke-width="1"/><path d="M14 13q-3-5 0-9q4 3 0 9zM50 13q3-5 0-9q-4 3 0 9z" fill="#d4a84a" stroke="#8a6a1a" stroke-width=".8"/><circle cx="32" cy="6.5" r="2.2" fill="#d4a84a"/><rect x="8" y="31" width="48" height="20" fill="#e8e2d4"/><g fill="#4a2f1d"><rect x="8" y="31" width="3" height="20"/><rect x="21" y="31" width="2.4" height="20"/><rect x="40.6" y="31" width="2.4" height="20"/><rect x="53" y="31" width="3" height="20"/></g><path d="M11 34h10v14H11zM43 34h10v14H43z" fill="#4a1a6a"/><circle cx="16" cy="41" r="3" fill="#d4a84a"/><circle cx="48" cy="41" r="3" fill="#d4a84a"/><path d="M23.4 36Q32 28 40.6 36l-2 3H25.4z" fill="#2a2d33" stroke="#d4a84a" stroke-width="1"/><rect x="26" y="38" width="12" height="13" fill="#2a1d14"/><path d="M32 38v13" stroke="#d4a84a" stroke-width="1"/><rect x="4" y="51" width="56" height="3" fill="#b3121f"/><path d="M4 51h56" stroke="#7a1018" stroke-width="1"/><path d="M2 54h60v3H2zM6 57h52v3H6z" fill="#8d949b" stroke="#5b6068" stroke-width=".8"/>`,
+ // 藏寶閣:校倉造の寶藏(高床、斜面原木壁、金鎖、千両箱)
+ trs:`<path d="M6 24L32 8l26 16-4 3H10z" fill="#2a2d33"/><path d="M6 24L32 8l26 16" fill="none" stroke="#6b717c" stroke-width="1.4"/><circle cx="32" cy="14" r="2.6" fill="#d4a84a" stroke="#8a6a1a" stroke-width=".8"/><path d="M10 27h44v22H10z" fill="#a06a36" stroke="#3a2412" stroke-width="1.2"/><g stroke="#3a2412" stroke-width="1"><path d="M10 31h44M10 35h44M10 39h44M10 43h44M10 47h44" fill="none"/></g><g fill="#c98f52" stroke="#3a2412" stroke-width=".8"><ellipse cx="10" cy="29" rx="1.6" ry="2"/><ellipse cx="10" cy="33" rx="1.6" ry="2"/><ellipse cx="10" cy="37" rx="1.6" ry="2"/><ellipse cx="10" cy="41" rx="1.6" ry="2"/><ellipse cx="10" cy="45" rx="1.6" ry="2"/><ellipse cx="54" cy="29" rx="1.6" ry="2"/><ellipse cx="54" cy="33" rx="1.6" ry="2"/><ellipse cx="54" cy="37" rx="1.6" ry="2"/><ellipse cx="54" cy="41" rx="1.6" ry="2"/><ellipse cx="54" cy="45" rx="1.6" ry="2"/></g><rect x="25" y="32" width="14" height="17" fill="#2a1d14" stroke="#d4a84a" stroke-width="1.4"/><path d="M32 32v17" stroke="#d4a84a" stroke-width="1.2"/><circle cx="29.5" cy="41" r="1.6" fill="#d4a84a"/><circle cx="34.5" cy="41" r="1.6" fill="#d4a84a"/><path d="M29.5 41h5" stroke="#d4a84a" stroke-width="1.2"/><g stroke="#3a2412" stroke-width="2.4"><path d="M13 49v10M24 49v10M40 49v10M51 49v10"/></g><g fill="#e8c24a" stroke="#8a6a1a" stroke-width=".9"><rect x="43" y="53" width="14" height="6" rx="1.2"/><rect x="45" y="47.5" width="12" height="5.5" rx="1.2"/></g><path d="M43 56h14M50 53v6" stroke="#8a6a1a" stroke-width=".9"/><g fill="#e8c24a" stroke="#8a6a1a" stroke-width=".8"><ellipse cx="7" cy="60" rx="4" ry="2"/><ellipse cx="11.5" cy="58.4" rx="4" ry="2"/></g>`,
+ // 普請役所:普請奉行所(竹の足場、組みかけの屋根、曲尺と木槌)
+ pub:`<path d="M4 60V10M16 60V10M28 60V10M40 60V10" stroke="#a9b06a" stroke-width="2.4"/><path d="M4 18h36M4 32h36M4 46h36" stroke="#8a9248" stroke-width="2.2"/><path d="M4 18l12 14M16 18l12 14M28 18l12 14M4 46l12-14M16 46l12-14" stroke="#8a9248" stroke-width="1.2" opacity=".8"/><g stroke="#3a2412" stroke-width="1"><rect x="18" y="34" width="38" height="24" fill="#e8e2d4"/><path d="M18 40h38M18 46h38" stroke="#7a4b24" stroke-width=".9"/></g><g fill="#4a2f1d"><rect x="18" y="34" width="3" height="24"/><rect x="34" y="34" width="2.6" height="24"/><rect x="53" y="34" width="3" height="24"/></g><path d="M16 34L37 15l21 19" fill="none" stroke="#7a4b24" stroke-width="3"/><path d="M22 34l15-14 15 14" fill="none" stroke="#7a4b24" stroke-width="1.6"/><path d="M37 15v19" stroke="#7a4b24" stroke-width="1.6"/><path d="M26 20l11-5 11 5v6l-11-5-11 5z" fill="#2a2d33" opacity=".9"/><rect x="38" y="42" width="12" height="16" fill="#2a1d14"/><path d="M48 6l-6 22" stroke="#7a4b24" stroke-width="2.6" stroke-linecap="round"/><rect x="44" y="4" width="10" height="6" rx="1.4" fill="#6b4423" stroke="#3a2412" stroke-width="1" transform="rotate(-14 49 7)"/><path d="M52 50h10v3H55v8h-3z" fill="#d4a84a" stroke="#8a6a1a" stroke-width=".8"/>`,
+ // 野盜砦:木柵、望樓、破旗(戰國的山賊據點)
+ camp:`<ellipse cx="32" cy="58" rx="30" ry="4" fill="#3a2a1c" opacity=".45"/><g fill="#8b5a2b" stroke="#4a2f1d" stroke-width="1"><path d="M2 58V40l2.5-4.5L7 40V58z"/><path d="M8 58V40l2.5-4.5L13 40V58z"/><path d="M14 58V40l2.5-4.5L19 40V58z"/><path d="M20 58V40l2.5-4.5L25 40V58z"/><path d="M39 58V40l2.5-4.5L44 40V58z"/><path d="M45 58V40l2.5-4.5L50 40V58z"/><path d="M51 58V40l2.5-4.5L56 40V58z"/><path d="M57 58V40l2.5-4.5L62 40V58z"/></g><rect x="26" y="20" width="3.4" height="38" fill="#5a3a1f"/><rect x="34.6" y="20" width="3.4" height="38" fill="#5a3a1f"/><rect x="24" y="30" width="16" height="3.2" fill="#7a4b24"/><rect x="24" y="22" width="16" height="3.2" fill="#7a4b24"/><rect x="27" y="14" width="10" height="8" fill="#3a2a1c"/><path d="M22 15L32 3l10 12z" fill="#b8923a" stroke="#7a5a1a" stroke-width="1.2"/><rect x="29.6" y="36" width="4.8" height="22" fill="#1b1412"/><rect x="42" y="2" width="1.8" height="22" fill="#4a2f1d"/><path d="M43.8 2h14l-3 4 3 4-3 3 3 4h-14z" fill="#7a0f18"/><path d="M48 6l6 6M54 6l-6 6" stroke="#e9dccb" stroke-width="1.3"/><path d="M12 60q2.5-8 5 0zM48 60q2.5-8 5 0z" fill="#ff7a1a"/>`
+};
+// 依勢力上色的城池(天守):屋簷飾帶、旗幟與家紋用勢力色
+const CASTLE_COL={wei:'#d4142f',shu:'#2f7fd1',wu:'#e2b02a'};
+const castleSv=c=>`<path d="M5 61L11 45H53L59 61z" fill="#8d949b"/><path d="M8 52h48M6 57h52M20 45v7M32 45v7M44 45v7M13 52v5M26 52v5M38 52v5M51 52v5" stroke="#5b6068" stroke-width="1" opacity=".7"/><rect x="14" y="31" width="36" height="14" fill="#eee8d8"/><g fill="#1b1412"><rect x="18" y="35" width="5" height="5"/><rect x="29.5" y="35" width="5" height="5"/><rect x="41" y="35" width="5" height="5"/></g><path d="M5 32Q32 22 59 32L52 38H12z" fill="#2a2d33"/><rect x="6" y="30.6" width="52" height="3" fill="${c}"/><rect x="20" y="17" width="24" height="14" fill="#eee8d8"/><rect x="29" y="21" width="6" height="6" fill="#1b1412"/><path d="M14 18Q32 8 50 18L45 24H19z" fill="#2a2d33"/><rect x="15" y="16.8" width="34" height="2.8" fill="${c}"/><rect x="26" y="7" width="12" height="10" fill="#eee8d8"/><path d="M20 8Q32 -1 44 8L39 13H25z" fill="#2a2d33"/><circle cx="32" cy="4.5" r="2.6" fill="#d4a84a"/><path d="M27 61V51Q32 46 37 51V61z" fill="#1b1412"/><rect x="54.6" y="6" width="1.8" height="30" fill="#4a2f1d"/><path d="M56.4 6h7.4v11h-7.4z" fill="${c}"/>`;
+
+ICONS_EXTRA.mkt=`<path d="M4 26L32 10l28 16-4 3H8z" fill="#2a2d33"/><path d="M4 26L32 10l28 16" fill="none" stroke="#6b717c" stroke-width="1.4"/><rect x="8" y="30" width="48" height="24" fill="#e8e2d4"/><path d="M8 30h48v10H8z" fill="#2f4a8a"/><path d="M8 30v10M16 30v10M24 30v10M32 30v10M40 30v10M48 30v10M56 30v10" stroke="#e8e2d4" stroke-width="1.2"/><rect x="26" y="44" width="12" height="10" fill="#7a4b24"/><circle cx="14" cy="47" r="3.2" fill="#d4a84a" stroke="#8a6a1a"/><circle cx="50" cy="47" r="3.2" fill="#d4a84a" stroke="#8a6a1a"/>`;
+ICONS_EXTRA.res=`<path d="M6 28Q32 10 58 28l-4 4H10z" fill="#2a2d33"/><path d="M6 28Q32 10 58 28" fill="none" stroke="#6b717c" stroke-width="1.5"/><rect x="12" y="32" width="40" height="22" fill="#e8e2d4"/><rect x="26" y="40" width="12" height="14" fill="#7a4b24"/><rect x="15" y="36" width="8" height="8" fill="#9aa7b8"/><rect x="41" y="36" width="8" height="8" fill="#9aa7b8"/><path d="M32 10v-6" stroke="#6b717c" stroke-width="1.5"/><path d="M32 4l8 3-8 3z" fill="#c8412b"/>`;
+ICONS_EXTRA.emb=`<path d="M5 28L32 10l27 18-4 3H9z" fill="#2a2d33"/><path d="M5 28L32 10l27 18" fill="none" stroke="#6b717c" stroke-width="1.4"/><rect x="10" y="32" width="44" height="22" fill="#e8e2d4"/><rect x="28" y="40" width="8" height="14" fill="#7a4b24"/><path d="M14 34v18M20 34v18M44 34v18M50 34v18" stroke="#7a4b24" stroke-width="1.6"/><path d="M32 10V3" stroke="#6b717c" stroke-width="1.5"/><path d="M32 3h12v7H32z" fill="#2f4a8a"/><circle cx="38" cy="6.5" r="1.8" fill="#e8e2d4"/>`;
+for(const k of['gr','cave','war','smi','cavb','gov','cnl','wsh','acc','pal','trs','pub','mkt','res','emb'])ICONS[k]=SV(ICONS_EXTRA[k]);
+const CAMPSV={'野盜砦':'camp','一向一揆砦':'ikko','南蠻館':'nanban','山賊山城':'sanzoku','石山本願寺':'hongan','大筒陣地':'otsutsu'};
+const CLAYI=SV(ICONS_EXTRA.clay),CAMPI=SV(ICONS_EXTRA.camp);
+const fcastle=(c,sz)=>`<svg class="ic" viewBox="0 0 64 64" aria-hidden="true">${castleSv(c)}</svg>`;
+function gateSvg(kind,w){const fc={wei:['#a81e2e','#5a0a14'],shu:['#2f6bb8','#10305e'],wu:['#cf9d1e','#5e4608']}[S.fac]||['#8d949b','#5b6068'],base=fc[0],line=fc[1],ac={wei:'#b3121f',shu:'#2563c4',wu:'#d9a21c'}[S.fac]||'#b3121f';
+ return `<svg viewBox="0 0 120 86" width="${w}" aria-hidden="true"><path d="M3 86L11 42H109L117 86z" fill="${base}"/><path d="M11 52h98M8 62h104M6 72h108M30 42v10M60 42v10M90 42v10M18 52v10M46 52v10M74 52v10M102 52v10M26 62v10M54 62v10M82 62v10M110 62v10" stroke="${line}" stroke-width="1.2" opacity=".75"/>
+ <path d="M38 86V60Q60 36 82 60V86z" fill="#0d0a0a"/><path d="M40 86V61Q50 48 59 44V86zM81 61Q70 48 61 44V86H80z" fill="#5a3a1f" stroke="#1b1412" stroke-width="1.5"/><g fill="#d4a84a"><circle cx="46" cy="66" r="1.5"/><circle cx="46" cy="74" r="1.5"/><circle cx="54" cy="66" r="1.5"/><circle cx="54" cy="74" r="1.5"/><circle cx="66" cy="66" r="1.5"/><circle cx="66" cy="74" r="1.5"/><circle cx="74" cy="66" r="1.5"/><circle cx="74" cy="74" r="1.5"/></g><path d="M40 70h20M62 70h18" stroke="#1b1412" stroke-width="2.2"/><circle cx="57" cy="64" r="2.2" fill="none" stroke="#d4a84a" stroke-width="1.4"/><circle cx="63" cy="64" r="2.2" fill="none" stroke="#d4a84a" stroke-width="1.4"/>
+ <rect x="20" y="22" width="80" height="21" fill="#e8e2d4"/><g fill="#1b1412"><rect x="28" y="28" width="9" height="8"/><rect x="45" y="28" width="9" height="8"/><rect x="66" y="28" width="9" height="8"/><rect x="83" y="28" width="9" height="8"/></g><path d="M8 24Q60 10 112 24L104 30H16z" fill="#2a2d33"/><rect x="10" y="22.5" width="100" height="2.4" fill="${ac}"/><rect x="38" y="6" width="44" height="14" fill="#e8e2d4"/><rect x="55" y="9" width="10" height="8" fill="#1b1412"/><path d="M28 7Q60-4 92 7L86 13H34z" fill="#2a2d33"/><rect x="29" y="6" width="62" height="2" fill="${ac}"/><circle cx="60" cy="3" r="2.6" fill="#d4a84a"/>
+ <rect x="8" y="10" width="2" height="34" fill="#4a2f1d"/><path d="M10 10h15v12H10z" fill="${ac}"/><rect x="110" y="10" width="2" height="34" fill="#4a2f1d"/><path d="M95 10h15v12H95z" fill="${ac}"/></svg>`}
+const ZGSV=`<path d="M2 62L24 22l10 14 8-12 20 38z" fill="#8a9c7e"/><path d="M2 62L24 22l10 14 8-12 20 38z" fill="none" stroke="#e9dccb" stroke-width="1.8"/><path d="M24 22l-6 14 7-3 5 13-9 4" fill="none" stroke="#c9d1b8" stroke-width="1" opacity=".5"/><path d="M38 30l9 14-9-3-7 6z" fill="#5f7355"/><path d="M4 62h56" stroke="#2a3326" stroke-width="3"/><rect x="18" y="14" width="14" height="9" fill="#8d949b" stroke="#4a4f57"/><rect x="19" y="8" width="12" height="7" fill="#e8e2d4" stroke="#1b1412" stroke-width=".8"/><rect x="23" y="10" width="4" height="3.5" fill="#1b1412"/><path d="M15 9Q25 2 35 9L33 11H17z" fill="#2a2d33"/><path d="M20 4Q25 0 30 4L29 6H21z" fill="#2a2d33"/><circle cx="25" cy="2.5" r="1.2" fill="#d4a84a"/><rect x="36" y="4" width="1.4" height="12" fill="#4a2f1d"/><path d="M37.4 4h8v5h-8z" fill="#b3121f"/><g fill="#244a2e" stroke="#0f2415" stroke-width=".6"><path d="M8 58l4-12 4 12z"/><path d="M13 58l4-14 4 14z"/><path d="M44 58l4-13 4 13z"/><path d="M50 58l4-11 4 11z"/></g><path d="M25 23Q20 40 30 50Q40 56 36 62" fill="none" stroke="#c9b48a" stroke-width="2" stroke-dasharray="3 2"/>`;
+const ZGICON=`<svg class="ic" viewBox="0 0 64 64" aria-hidden="true">${ZGSV}</svg>`;
+const iconHtml=id=>ICONS[id]||BI[id][0];
+const GUIDE=[
+ {t:'蓋一座知行所',d:'到「城內」,點一塊空地,選「知行所」。它能縮短所有施工時間,也是其他建築的前置條件。',ok:()=>S.bld.gov>=1,go:'in',need:()=>'gov'},
+ {t:'升級一塊資源田',d:'到「城外」,點任何一塊資源田,升到 1 級。資源是一切發展的基礎;施工需要時間,等待的時候可以先逛逛別的頁面。',ok:()=>S.fld.some(x=>x>=1),go:'out'},
+ {t:'蓋藏屋敷和米藏',d:'藏屋敷存放木材、泥土、鐵塊,米藏存放糧食。倉庫放滿了,資源就不會再增加。',ok:()=>S.bld.wh>=1&&S.bld.gr>=1,go:'in',need:()=>S.bld.wh>=1?'gr':'wh'},
+ {t:'把知行所升到 3 級',d:'知行所等級越高,所有施工越快。足輕營也需要知行所 3 級。',ok:()=>S.bld.gov>=3,go:'in'},
+ {t:'蓋軍奉行',d:'有了軍奉行才能派兵出征,它也是足輕營的前置條件。',ok:()=>S.bld.war>=1,go:'in',need:()=>'war'},
+ {t:'蓋足輕營,訓練 10 名士兵',d:'點足輕營,輸入數量按「訓練」(點兵種名稱可以看詳細說明)。士兵會一直吃糧,留意畫面上方「耗糧 / 糧食總產量」。',ok:()=>S.bld.infb>=1&&S.stat.trained>=10,go:'in',need:()=>S.bld.infb>=1?null:'infb'},
+ {t:'蓋埋藏所',d:'埋藏所能藏起一部分資源,被其他玩家掠奪時搶不走。',ok:()=>S.bld.cave>=1,go:'in',need:()=>'cave'},
+ {t:'出兵掠奪一座營寨',d:'到「地圖」,點營寨,按「前往軍奉行出兵」。贏了可以搶到資源,但部隊要走回來才入庫。',ok:()=>S.stat.raids>=1,go:'map'},
+ {t:'蓋城牆',d:'點城內上方的城牆標籤,蓋出環繞城內的城牆,提高守軍防禦。',ok:()=>S.bld.wall>=1,go:'in'},
+ {t:'到「任務」領取獎勵',d:'完成的任務可以領取資源或金幣。',ok:()=>S.qd.length>0&&QS.every(q=>S.qd.includes(q.id)||!q.ok()),go:'quest'}];
+const gi=()=>GUIDE.findIndex(g=>!g.ok()),gneed=()=>{if(GOFF||!S||S.col)return null;const i=gi();return i<0?null:(GUIDE[i].need?GUIDE[i].need():null)};
+function guideBar(){if(GOFF||!S||S.col)return'';const i=gi();if(i<0)return'';const g=GUIDE[i];
+ return `<div class="guide"><b>📜 新手引導 ${i+1}/${GUIDE.length}</b>:${g.t}<br><span>${g.d}</span><br><button data-a="gogo" data-v="${g.go}">前往</button> <a data-a="goff">略過引導</a></div>`}
+function guideList(){const i=gi();return GUIDE.map((g,k)=>`<div>${g.ok()?'✔':(k===i?'▶':'○')} ${g.t}</div>`).join('')+(GOFF?'<p><a data-a="gon">重新開啟引導提示</a></p>':'')}
+const WELCOME='<h3>歡迎來到戰國!</h3><p>你有一座小城池,城內有 21 塊空地。</p><ul><li>畫面上方會有「新手引導」,一步一步告訴你下一步做什麼。</li><li>先蓋「知行所」,再升級資源田、蓋藏屋敷與米藏。</li><li>右側的「新手引導」面板可以看全部步驟,也可以關掉提示。</li></ul>';
 function vIn(){
+ const hn=gneed();
  const sc=SLP.map(([x,y],i)=>{const c=S.slots[i];
-  if(!c)return `<div class="it plot" style="left:${x}%;top:${y}%" title="空地(點擊選擇要蓋的建築)" data-a="bld" data-slot="${i}"><div class="em">⬜</div><b class="lb" style="background:#7b6b4e">空</b></div>`;
-  const b=B.find(z=>z.id==c.b),[ic,lb]=BI[c.b];
+  if(!c)return `<div class="it plot${hn?' hint':''}" style="left:${x}%;top:${y}%" title="空地(點擊選擇要蓋的建築)" data-a="bld" data-slot="${i}"><div class="em">⬜</div><b class="lb" style="background:#7b6b4e">空</b></div>`;
+  const b=B.find(z=>z.id==c.b),lb=BI[c.b][1],ic=iconHtml(c.b);
   return `<div class="it ${c.l<1?'dim':''}" style="left:${x}%;top:${y}%" title="${bn(b)} 等級${c.l}${c.l<1?'(施工中)':''}" data-a="bld" data-slot="${i}"><div class="em">${ic}</div><b class="lb">${lb}</b>${c.l>0?`<b class="lv sm">${c.l}</b>`:''}</div>`}).join('');
  const w=B.find(z=>z.id=='wall'),WL=S.bld.wall,kind={'木柵':'wood','土壘漆壁':'brick','石垣':'stone'}[bn(w)]||'stone',t=Math.min(18,6+Math.round(WL*.6)),tw=Math.min(34,16+Math.round(WL*.9));
  const at=`data-a="bld" data-slot="wall" title="${bn(w)} 等級${WL}"`;
@@ -183,9 +334,9 @@ function vIn(){
  <div class="wl v" ${at} style="left:4%;top:4%;width:${t}px;height:80%"></div>
  <div class="wl v" ${at} style="left:96%;top:4%;width:${t}px;height:80%;transform:translateX(-${t}px)"></div>
  ${[[4,4],[96,4],[4,84],[96,84]].map(([x,y])=>`<div class="tw" ${at} style="left:${x}%;top:${y}%;width:${tw}px;height:${tw}px;transform:translate(-50%,-50%)"></div>`).join('')}
- <div class="gate" ${at}>🚪</div>`;
+ <div class="gate" ${at}>${gateSvg(kind,Math.min(116,84+Math.round(WL*1.4)))}</div>`;
  const lab=`<span class="wlab"><b class="lv" ${at}>${bn(w)} ${WL<1?'(未建)':'Lv '+WL}</b></span>`;
- return `${ttl()}<p class="mut">城內有 ${NSLOTS} 塊建地,點空地選擇要蓋什麼(已用 ${S.slots.filter(Boolean).length}/${NSLOTS})。點圍牆可以建造或升級${bn(w)}。</p><div class="fr sc sc-in ${kind}">${wall}${lab}${sc}</div>${qtab()}`}
+ return `${ttl()}<p class="mut">城內有 ${NSLOTS} 塊建地,點空地選擇要蓋什麼(已用 ${S.slots.filter(Boolean).length}/${NSLOTS})。點圍牆可以建造或升級${bn(w)}。</p><div class="fr sc sc-in ${kind}">${wall}${lab}${sc}</div>${qtab()}${ttab()}`}
 function vF(){const i=fv,t=FT[i],L=S.fld[i];
  return `<div class="ttl">${FN[t]}<small>(等級 ${L})</small></div><p>${['生產木材。','生產泥土。','生產鐵塊。','生產糧食,養活村民與軍隊。'][t]}</p><table class="tb"><tr><th>目前產量</th><th>下一級產量</th></tr><tr><td>${prod(L)}/時</td><td>${prod(L+1)}/時</td></tr></table>`+(L>=20?'<p>已達最高等級</p>':`<table class="tb"><tr><th>升級成本</th><th>施工時間</th></tr><tr><td>${costH(costF(i))}</td><td>⏱ ${tm(durF(i))}</td></tr></table><p><button data-a="f" data-i="${i}">升級到等級 ${L+1}</button></p>`)+qtab()+back('out')}
 function eff(b,L){const n=Math.min(b.m,L+1),id=b.id;
@@ -195,17 +346,96 @@ function eff(b,L){const n=Math.min(b.m,L+1),id=b.id;
  if(id=='smi'||id=='arm')return `${id=='smi'?'攻擊':'防禦'}加成 +${1.5*L}% → +${1.5*n}%`;
  if(['mill','lum','kiln','smel'].includes(id))return `產量 +${5*L}% → +${5*n}%`;
  if(id=='wall')return `守軍防禦 +${W[S.fac][L]}% → +${W[S.fac][n]}%`;
- if(id=='infb'||id=='cavb')return L?`訓練時間 ×${pw(.9,L-1).toFixed(2)} → ×${pw(.9,n-1).toFixed(2)}`:'';
+ if(id=='pal')return `守軍防禦 +${L}% → +${n}%`;
+ if(id=='pub')return `建築耐久 +${10*L}% → +${10*n}%(敵方攻城器械要多花力氣)`;
+ if(id=='acc')return `商人運載量 +${10*L}% → +${10*n}%`;
+ if(id=='cnl')return `可佔領營寨 ${L>=20?3:L>=15?2:L>=10?1:0} → ${n>=20?3:n>=15?2:n>=10?1:0} 座(10/15/20 級)`;
+ if(id=='trs')return `名物收藏位置 ${Math.floor(L/10)} → ${Math.floor(n/10)}`;
+ if(id=='emb')return `${L>=3?'可建立聯盟':'3 級才能建立聯盟'};聯盟人數上限 ${Math.max(6,2*L)} → ${Math.max(6,2*n)} 人(以盟主的奏者番等級計算)`;
+ if(id=='mkt')return `商人 ${L} → ${n} 名(每名載運 ${Math.round(G.MERC[S.fac]*(1+.1*S.bld.acc))})`;
+ if(id=='res')return `擴張名額:${L>=20?2:L>=10?1:0} → ${n>=20?2:n>=10?1:0}個(10 級 1 個、20 級 2 個)`;
+ if(id=='war')return n>=20?'可指定 2 處攻城目標':n>=10?'可指定 1 處攻城目標':`${10-n} 級後可指定攻城目標`;
+ if(id=='acad'){const u=us().filter(x=>x.lv==n);return u.length?`${n} 級解鎖:${u.map(x=>x.n).join('、')}`:`目前 ${L} 級;下一個解鎖在 ${Math.min(...us().map(x=>x.lv).filter(v=>v>L).concat([99]))} 級`}
+ if(id=='infb'||id=='cavb'||id=='wsh'||id=='pal'||id=='res')return L?`訓練時間 ×${pw(.9,L-1).toFixed(2)} → ×${pw(.9,n-1).toFixed(2)}`:'';
  return ''}
+const acadTab=()=>{const U=us(),lv=[...new Set(U.map(u=>u.lv))].sort((x,y)=>x-y);return '<h4 class="sh">兵種解鎖</h4><table class="tb"><tr><th>兵學塾等級</th><th>可訓練的兵種</th></tr>'+lv.map(l=>`<tr><td>${l?l+' 級':'(不需研究)'} ${S.bld.acad>=l?'<span class="ok">✔</span>':''}</td><td>${U.filter(u=>u.lv==l).map(u=>u.n+(u.soon?'(尚未開放)':'')).join('、')}</td></tr>`).join('')+'</table>'};
 const cmds=()=>'<h4 class="sh">內政指令</h4><table class="tb">'+CM.filter(c=>!c.wei||S.fac=='wei').map(c=>{const e=S.cd[c.id]||0,cd=e-S.t;return `<tr><td><b>${c.n}</b></td><td>${c.d}</td><td><button data-a="cmd" data-id="${c.id}">${cd>0?`冷卻 <span data-cd="${e}">${tm(cd)}</span>`:'下達'}</button></td></tr>`}).join('')+'</table><p class="mut">內政指令是前面討論中的設計,不是原作資料。</p>';
-function trainer(b){const o=S.tr[b.id];
- return `<h4 class="sh">訓練</h4>`+(o?`<p>訓練中:${us()[o.u].n} ×${o.n},下一名 <span data-cd="${o.next}">${tm(o.next-S.t)}</span></p>`:'')+`<table class="tb"><tr><th>兵種</th><th>能力</th><th>成本 / 時間</th><th>數量</th></tr>`+us().map((u,k)=>u.b!=b.id?'':`<tr><td><b>${u.n}</b><br>現有 ${S.u[k]}</td><td>攻 ${Math.round(u.a*ab())} 步防 ${Math.round(u.di*db())} 騎防 ${Math.round(u.dc*db())}<br>速 ${u.s} 載 ${u.c} 糧 ${u.up}</td><td>${costH(u.r)}<br>⏱ ${tm(u.t*pw(.9,Math.max(0,S.bld[b.id]-1)))}/名</td><td><input id="n${k}" type="number" min="1" value="1"> <a data-a="fill" data-k="${k}">(最多)</a><br><button data-a="tr" data-k="${k}">訓練</button></td></tr>`).join('')+'</table>'}
-function sender(){const t=TGT||nearestCamp();
- return `<h4 class="sh">出兵</h4><p>目標座標 x <input id="tx" type="number" value="${t[0]}"> y <input id="ty" type="number" value="${t[1]}"> <small class="mut">(可在地圖上點選目標)</small></p><p class="mut">目標是營寨:攻不破守軍就全軍覆沒;打贏的話守軍會損兵、庫存會減少,營寨被打過約 12 遊戲小時後重新集結(每位玩家各自計算)。目標是玩家的村莊:依雙方戰力結算,雙方都會損兵。勝利後依各兵種攜帶量搬回資源,部隊返回後才入庫。</p><table class="tb"><tr><th>兵種</th><th>現有</th><th>派出</th></tr>`+us().map((u,k)=>`<tr><td>${u.n}</td><td>${S.u[k]}</td><td><input id="s${k}" type="number" min="0" max="${S.u[k]}" value="${S.u[k]}"></td></tr>`).join('')+`</table><p><button data-a="raid">出兵掠奪</button></p>`+mvt()}
-function vBuildMenu(){const i=bs;let h=`<div class="ttl">選擇要蓋的建築<small>(第 ${i+1} 塊空地)</small></div><div class="g">`;
+function ttab(only){const rows=[];for(const b of TRB){if(only&&b!==only)continue;let end=0;S.tr[b].forEach((o,i)=>{end=i===0?o.next+(o.n-1)*o.per:end+o.n*o.per;rows.push([b,i,o,end])})}
+ if(!rows.length)return'';
+ return `<table class="tb"><tr><th>取消</th><th>訓練</th><th>數量</th><th>狀態</th><th>全部完成</th></tr>`+rows.map(([b,i,o,end])=>`<tr><td><a data-a="trc" data-b="${b}" data-i="${i}" class="x" title="取消這批,尚未完成的部分全額退還">✖</a></td><td>${B.find(x=>x.id==b).n}:${us()[o.u].n}</td><td>×${o.n}</td><td>${i==0?`下一名 <span data-cd="${o.next}">${tm(o.next-S.t)}</span>`:'等待中'}</td><td><span data-cd="${end}">${tm(end-S.t)}</span></td></tr>`).join('')+'</table>'}
+const udetail=k=>{const u=us()[k];return `<tr><td colspan="4" style="text-align:left;background:var(--tb)"><b>${u.n}</b>(${fa().n})<br>${u.desc||'(沒有說明)'}<br><span class="mut">攻擊 ${u.a}・步防 ${u.di}・騎防 ${u.dc}・速度 ${u.s} 格/時・攜帶 ${u.c}・耗糧 ${u.up}/時・基本訓練時間 ${tm(u.t)}</span></td></tr>`};
+function trainer(b){
+ const rows=us().map((u,k)=>({u,k})).filter(x=>x.u.b==b.id||(b.id=='res'&&x.u.b=='pal'));
+ const lockOf=u=>(u.k=='set'||u.k=='adm')&&G.expSlots()<1?`<span class="bad">需要${B.find(z=>z.id=='pal').n} 10 級</span><br><small class="mut">10 級才有擴張名額(目前 ${S.bld.pal} 級)</small>`:u.lv>S.bld.acad?`<span class="bad">需要${B.find(z=>z.id=='acad').n} ${u.lv} 級</span><br><small class="mut">目前 ${S.bld.acad} 級</small>`:'';
+ return `<h4 class="sh">訓練</h4><p class="mut">可以連續排隊(最多 ${TRAIN_QMAX} 批),每按一次「訓練」就加到佇列最後,前一批訓練完才會開始下一批。要訓練哪些兵種,由${B.find(z=>z.id=='acad').n}的等級決定。</p>`+ttab(b.id)+`<table class="tb"><tr><th>兵種</th><th>能力</th><th>成本 / 時間</th><th>數量</th></tr>`+rows.map(({u,k})=>{const lk=lockOf(u);return `<tr${lk?' style="opacity:.8"':''}><td><a data-a="udesc" data-k="${k}" title="點一下看詳細說明"><b>${u.n}</b></a><br>現有 ${S.u[k]}</td><td>攻 ${Math.round(u.a*ab())} 步防 ${Math.round(u.di*db())} 騎防 ${Math.round(u.dc*db())}<br>速 ${u.s} 載 ${u.c} 糧 ${u.up}</td><td>${costH(u.r)}<br>⏱ ${tm(u.t*pw(.9,Math.max(0,S.bld[b.id]-1)))}/名</td>`+(lk?`<td>${lk}</td>`:`<td><input id="n${k}" type="number" min="1" value="${TRV[k]||1}"> <a data-a="fill" data-k="${k}">(最多)</a><br><button data-a="tr" data-k="${k}">訓練</button></td>`)+`</tr>${UOPEN===k?udetail(k):''}`}).join('')+'</table>'}
+const heroBox=()=>{const h=S.hero;if(!h)return '';return `<h4 class="sh">英雄</h4><p><label><input type="checkbox" id="hero" ${h.st=='home'?'':'disabled'}> 英雄「${esc(h.n)}」帶隊(營寨與玩家城池都可以)</label> <small class="mut">${h.st=='home'?`攻 +${G.heroAtk(h)}・速 ${G.heroSpd(h)}・載 +${G.heroCarry(h)}`:h.st=='away'?'英雄出征中':'英雄已陣亡,需要復活'}</small></p>`};
+const expandBox=()=>{const hs=us().some(u=>u.k=='set'&&S.u[us().indexOf(u)]>=3),free=G.slotsFree();return `<h4 class="sh">擴張</h4><p class="mut">擴張名額 ${free}/${G.expSlots()}(${S.col?B.find(z=>z.id=='res').n+' 10/20 級各有 1/2 個':B.find(z=>z.id=='pal').n+' 10/15/20 級各有 1/2/3 個'};開分城或佔領城池各用 1 個,出征期間先預留。開分城還要這座城威望達 ${G.KID_PREST.join('/')},目前 ${prest()})。</p><p><button data-a="raid" data-kind="found" ${hs&&free>0?'':'disabled'} title="需要 3 名開墾代官與 1 個擴張名額">派 3 名開墾代官到上面的座標開分城</button> <small class="mut">目標必須是空地(不是營寨、不是別人的城)。分城資源很少,有 ${PROTECT_DAYS} 天新手保護,金幣是全帳號共用的,任務由本丸管理。</small></p><p class="mut">佔領城池:在上面的座標填別人的分城,派出一般軍隊並加上行政官(用「出兵掠奪」)。打贏後存活的行政官每名使忠誠度下降約 20~30,降到 0 城池就歸你(行政官會消耗掉)。本丸無法被佔領。</p>`};
+const TRV={}; // 練兵數量欄暫存,畫面重繪也不會被洗掉
+const SENDV={}; // 派出欄位:預設 0,輸入的數字暫存,畫面重繪也不會被洗掉
+function sender(){const t=TGT||nearestCamp(),U=us(),hasCat=U.some((u,k)=>u.k=='cat'&&S.u[k]>0),hasSc=U.some((u,k)=>u.k=='scout'&&S.u[k]>0),wl=S.bld.war,ntg=wl>=20?2:wl>=10?1:0;
+ const tgSel=!hasCat?'':`<h4 class="sh">攻城目標</h4>`+(ntg?`<p class="mut">${B.find(z=>z.id=='war').n} ${wl} 級:可以指定 ${ntg} 處目標建築(只對玩家的城池有效;沒有指定就隨機轟擊一處)。破門槌則會自動撞擊城牆。</p><p>`+Array.from({length:ntg},(_,i)=>`目標 ${i+1} <select id="tg${i}"><option value="">(不指定)</option>${B.filter(z=>z.id!='wall').map(z=>`<option value="${z.id}">${B.find(y=>y.id==z.id).n}</option>`).join('')}</select> `).join('')+'</p>':`<p class="mut">${B.find(z=>z.id=='war').n}達到 10 級才能指定目標建築(目前 ${wl} 級),現在大筒類器械會隨機轟擊一處建築。破門槌會自動撞擊城牆。</p>`);
+ return `<h4 class="sh">出兵</h4><p>目標座標 x <input id="tx" type="number" value="${t[0]}"> y <input id="ty" type="number" value="${t[1]}"> <small class="mut">(可在地圖上點選目標)</small></p><p class="mut">目標是營寨:攻不破守軍就全軍覆沒;打贏的話守軍會損兵、庫存會減少,營寨被打過約 12 遊戲小時後重新集結(每位玩家各自計算)。目標是玩家的城池:部隊抵達的那一刻才會開戰(對方會先收到來襲警報),依雙方當時的戰力結算,雙方都會損兵;戰況會用飛鴿傳書寫成戰報寄給雙方。勝利後依各兵種攜帶量搬回資源,部隊返回後才入庫。</p><table class="tb"><tr><th>兵種</th><th>現有</th><th>派出</th></tr>`+U.map((u,k)=>u.soon?'':`<tr><td>${u.n}${u.k=='scout'?' <small class="mut">(偵察)</small>':u.k=='ram'?' <small class="mut">(拆城牆)</small>':u.k=='cat'?' <small class="mut">(轟建築)</small>':u.k=='adm'?' <small class="mut">(策反城池)</small>':u.k=='set'?' <small class="mut">(只能開分城)</small>':''}</td><td>${S.u[k]}</td><td><input id="s${k}" type="number" min="0" max="${S.u[k]}" value="${Math.min(S.u[k],SENDV[k]||0)}"> <a data-a="sall" data-k="${k}">全派</a></td></tr>`).join('')+`</table>${tgSel}<p><button data-a="raid">出兵掠奪/偵查</button> <button data-a="raid" data-kind="reinf" ${ME?'':'disabled title="需要登入"'}>增援駐防</button></p><p class="mut">「增援駐防」:把上面填的兵派去自己的另一座城,或同一個聯盟盟友的城(座標填那座城),抵達後一起守城。只有一般戰鬥兵種可以駐防,駐防的兵吃駐地的糧;隨時可以召回,盟友也可以請他們回去。</p>${heroBox()}${expandBox()}<p class="mut">「出兵掠奪/偵查」:只派偵察兵就是偵查(成功會用飛鴿傳書寄回對方的資源、守軍與建築;對方如果也有偵察兵,你的偵察兵會折損,對方也會得知);只要混了其他兵種就是掠奪,偵察兵也會一起參戰。</p>`+garrBox()+mvt()}
+const garrBox=()=>{let h='';const here=CUR||(ME&&ME.id)||'';
+ const ufs=(fac,u)=>u.map((x,k)=>x?`${UN[fac][k].n}×${x}`:'').filter(Boolean).join('、');
+ if(S.gar&&S.gar.length)h+=`<h4 class="sh">駐防在這座城的友軍</h4><table class="tb"><tr><th>來自</th><th>兵力</th><th></th></tr>`+S.gar.map(g=>`<tr><td>${esc(g.n)}</td><td><b>${sumA(g.u)}</b> 人<br><small class="mut">${ufs(g.fac,g.u)}</small></td><td><button data-a="garr" data-k="${esc(here)}" data-gid="${esc(g.gid)}">請他們回去</button></td></tr>`).join('')+'</table><p class="mut">駐防的友軍會一起守城,吃這座城的糧,戰鬥中也會有損失。</p>';
+ if(S.out&&S.out.length)h+=`<h4 class="sh">我派去駐防的部隊</h4><table class="tb"><tr><th>駐防在</th><th>兵力</th><th></th></tr>`+S.out.map(o=>`<tr><td>${esc(o.name)}</td><td><b>${sumA(o.u)}</b> 人<br><small class="mut">${ufs(S.fac,o.u)}</small></td><td><button data-a="garr" data-k="${esc(o.k)}" data-gid="${esc(o.gid)}">召回</button></td></tr>`).join('')+'</table>';
+ return h};
+function demolishBox(){const can=S.bld.gov>=DEMOLISH_GOV;
+ return `<h4 class="sh">拆除</h4>`+(can?`<p class="mut">每次拆除一級(不退還資源),需要約建造時間一半的時間,期間會占用施工佇列。拆到 0 級,這塊地就會清空,可以重新蓋別的建築。</p><p><button data-a="dem" data-slot="${bs}">${DM===bs?'再按一次確認:拆除一級':'拆除一級'}</button></p>`:`<p class="mut">${B.find(x=>x.id=='gov').n}達到 ${DEMOLISH_GOV} 級以上才能拆除建築。</p>`)}
+function vBuildMenu(){const i=bs;let h=`<div class="ttl">選擇要蓋的建築<small>(第 ${i+1} 塊空地)</small></div><div class="g bm">`;
  for(const b of B){if(b.id==='wall')continue;const e=canBuildNew(b),ok=reqOk(b);
-  h+=`<div class="cd"><span class="e">${BI[b.id][0]}</span><b>${bn(b)}</b><p>${b.d}</p>`+(e?`<p class="bad">${e}</p>`:ok?`<div>${costH(costB(b,0))}</div><p>⏱ ${tm(durB(b,0))}</p><button data-a="b" data-slot="${i}" data-id="${b.id}">建造</button>`:`<p class="bad">需要 ${reqT(b)}</p>`)+'</div>'}
+  h+=`<div class="cd${gneed()===b.id?' hl':''}"><span class="e">${iconHtml(b.id)}</span><b>${bn(b)}</b><p>${b.d}</p>`+(e?`<p class="bad">${e}</p>`:ok?`<div>${costH(costB(b,0))}</div><p>⏱ ${tm(durB(b,0))}</p><button data-a="b" data-slot="${i}" data-id="${b.id}">建造</button>`:`<p class="bad">需要 ${reqT(b)}</p>`)+'</div>'}
  return h+'</div>'+qtab()+back('in')}
+let MK={offers:null};
+async function loadMarket(){if(!ME)return;try{const r=await api('/api/market');if(r.ok&&r.j){MK.offers=r.j.offers;dirty=1}}catch(e){}}
+// 英雄圖示:兜(頭盔)+前立(角飾),顏色跟著勢力走
+const heroSvg=(sz,col)=>{col=col||(S&&CASTLE_COL[S.fac])||'#d4142f';return `<svg viewBox="0 0 64 64" width="${sz}" height="${sz}" style="display:block"><path d="M10 40Q10 14 32 12Q54 14 54 40Z" fill="#2a2d33" stroke="#0c0d10" stroke-width="1.5"/><path d="M12 38Q12 18 32 15Q52 18 52 38" fill="none" stroke="#6b717c" stroke-width="1.6"/><path d="M6 44Q10 36 20 40L22 48Q12 50 6 44Z M58 44Q54 36 44 40L42 48Q52 50 58 44Z" fill="#3a3e46" stroke="#0c0d10" stroke-width="1.2"/><path d="M32 12L26 2Q32 6 32 12Z M32 12L38 2Q32 6 32 12Z" fill="${col}" stroke="#0c0d10" stroke-width="1"/><path d="M32 13L32 4" stroke="${col}" stroke-width="2.4"/><path d="M14 40H50L47 56Q32 62 17 56Z" fill="#8a2a20" stroke="#0c0d10" stroke-width="1.5"/><path d="M20 44H44" stroke="#e8c97a" stroke-width="2"/><circle cx="32" cy="27" r="4.2" fill="#e8c97a" stroke="#0c0d10" stroke-width="1"/><path d="M23 49Q32 53 41 49" fill="none" stroke="#0c0d10" stroke-width="1.6"/></svg>`};
+const isCnl=()=>bs!=null&&bs!=='wall'&&!!S.slots[bs]&&S.slots[bs].b=='cnl';
+const heroCard=h=>h?`<div class="herocard"><div class="hicon"><img src="/assets/hero_${S.fac}.webp" alt="${esc(h.n)}"></div><div><div class="hname">${esc(h.n)} <small>Lv ${h.lv}/20</small></div><div class="hbar" title="經驗 ${h.xp}/${G.heroNeed(h.lv)}"><i style="width:${Math.min(100,Math.round(100*h.xp/G.heroNeed(h.lv)))}%"></i></div><div class="mut">經驗 ${h.xp}/${G.heroNeed(h.lv)}・${h.st=='home'?'在城裡':h.st=='away'?'出征中':'<span class="bad">陣亡</span>'}</div><div class="hchips"><span>⚔ 攻 ${G.heroAtk(h)}</span><span>🛡 防 ${G.heroDef(h)}</span><span>🐎 速 ${G.heroSpd(h)}</span><span>🎒 載 +${G.heroCarry(h)}</span></div><div class="mut" style="margin-top:6px">屬性點:<b>${h.pts}</b>(已加 攻 ${h.a}・防 ${h.d}・速 ${h.s}・載 ${h.c})</div>${h.pts?`<div style="margin-top:4px">分配 攻<input id="hp0" type="number" min="0" value="0" style="width:50px"> 防<input id="hp1" type="number" min="0" value="0" style="width:50px"> 速<input id="hp2" type="number" min="0" value="0" style="width:50px"> 載<input id="hp3" type="number" min="0" value="0" style="width:50px"> <button data-a="hpt">確定</button></div>`:''}</div></div>`:`<div class="herocard"><div class="hicon off"><img src="/assets/hero_${S.fac}.webp" alt=""></div><div><div class="hname">尚未有英雄</div><p class="mut">把城裡的一名士兵提拔為英雄,他會帶隊攻打營寨與玩家城池、升級並替城池加防禦。</p></div></div>`;
+const heroTab=()=>{const h=S.hero,U=us();let t=`<h4 class="sh">英雄</h4>${heroCard(h)}`;
+ if(!h){const opts=U.map((u,k)=>({u,k})).filter(x=>!x.u.k&&S.u[x.k]>0);
+  t+=`<p class="mut">把城裡的一名士兵提拔為英雄(費用是該兵種成本的 20 倍)。英雄會帶領軍隊攻打營寨,獲得經驗升級;升級可分配屬性點。英雄在城裡時,還會替城池增加防禦。</p>`+(opts.length?`<p>提拔 <select id="hk">${opts.map(x=>`<option value="${x.k}">${x.u.n}(現有 ${S.u[x.k]};成本 ${x.u.r.map(v=>v*20).join('/')})</option>`).join('')}</select> <button data-a="hero">提拔為英雄</button></p>`:'<p class="mut">城裡目前沒有可以提拔的一般兵種。</p>')}
+ else{t+=`<p class="mut">攻擊力出征時會加進軍隊;城內防禦在英雄待在城裡時生效。</p>`;
+  if(h.st=='dead')t+=`<p><button data-a="hrev">復活(每種資源 ${400*h.lv})</button></p>`;
+  }
+ const oc=Object.entries(S.occ||{});t+=`<h4 class="sh">佔領的營寨 ${oc.length}/${G.occSlots()}</h4><p class="mut">評定眾 10/15/20 級可佔領 1/2/3 座。營寨要在這座城 15×15 範圍內(上下左右各 7 格);每座城各自計算名額。由英雄帶兵出征(軍奉行出兵頁勾選「英雄帶隊」)全滅守軍後,存活的部隊就留下當駐軍。駐軍的糧食由出兵的城負擔;每座營寨讓這座城每種資源產量 +(營寨階級+1)×2%(階級 0~5 就是 +2%~+12%,多座相加)。營寨被占領後不會有守軍重生,要自己守,也可能被別人搶走。「召回」只撤回駐軍(佔領還在,可再派兵),「放棄」才會讓營寨變回無主。</p>`+(oc.length?'<table class="tb"><tr><th>營寨</th><th>座標</th><th>產量加成</th><th>駐軍</th><th></th></tr>'+oc.map(([k,o])=>{const [x,y]=k.split(',').map(Number),n=npcAt(x,y),out=(S.out||[]).filter(e=>e.k=='camp:'+k),us2=out.map(e=>e.u.reduce((a,b)=>a+b,0)).reduce((a,b)=>a+b,0);return `<tr><td>${n?n.n:'營寨'}</td><td>${x}|${y}</td><td>+${2*((o.tier||0)+1)}%</td><td>${us2||'空'}</td><td>${out.map(e=>`<a data-a="garr" data-k="camp:${k}" data-gid="${e.gid}">召回</a>`).join(' ')} <a data-a="campx" data-x="${x}" data-y="${y}" class="x">放棄</a></td></tr>`}).join('')+'</table>':'')
+ return t};
+const artIc=id=>`<img class="aic" src="/assets/art_${id}.webp" alt="">`;
+const artFmt=h=>G.ART.reduce((t,a)=>t.split('「'+a.n+'」').join(artIc(a.id)+'「'+a.n+'」'),h);
+const artTab=()=>{const sl=G.artSlots();return `<h4 class="sh">名物 ${S.art.length}/${sl}</h4><p class="mut">藏寶閣每 10 級可收藏 1 件名物。英雄帶兵打贏營寨有機會帶回名物(越遠的營寨越好的東西);藏寶閣沒有空位就拿不回來。攻城器械(大筒類)若把對方的藏寶閣砸低,放不下的名物會被攻方搶走;你自己的藏寶閣也要小心被砸。</p>`+(S.art.length?'<table class="tb"><tr><th>名物</th><th>效果</th><th></th></tr>'+S.art.map(id=>{const a=G.ARTM[id];return `<tr><td style="white-space:nowrap">${artIc(id).replace('class="aic"','class="aic big"')}<br><b>${a.n}</b></td><td>${a.d}</td><td><a data-a="artdrop" data-id="${id}" class="x" title="丟棄">✖</a></td></tr>`}).join('')+'</table>':'<p class="mut">目前沒有名物。</p>')};
+let AL=null,ALt=0;
+async function loadAlly(){if(!ME)return;ALt=Date.now();try{const r=await api('/api/ally');if(r.ok&&r.j&&r.j.ok!==false){AL=r.j;dirty=1}}catch(e){}}
+async function allyDo(a){const r=await api('/api/ally',a,'POST');if(r.j){if(r.j.msg)toast(r.j.msg);if(r.j.ok)AL=r.j;dirty=1}else toast('操作失敗,請稍後再試')}
+function embTab(){
+ if(!ME)return '<p class="mut">聯盟需要登入後使用。</p>';
+ if(AL==null){loadAlly();return '<p class="mut">載入中…</p>'}
+ if(Date.now()-ALt>15000)loadAlly(); // 等級可能剛升上去,定期重新向伺服器確認
+ const a=AL.ally;let h='<h4 class="sh">聯盟</h4>';
+ if(!a){
+  h+=`<p class="mut">你還沒有加入聯盟。奏者番 ${AL.need.join} 級可接受邀請,${AL.need.create} 級可建立聯盟(你所有城池中最高 ${AL.lv} 級)。要加入別人的聯盟,可以寄信給盟主請他邀請你。</p>`;
+  h+=AL.invites.length?'<table class="tb"><tr><th>邀請你的聯盟</th><th>邀請人</th><th></th></tr>'+AL.invites.map(i=>`<tr><td>[${esc(i.tag)}] ${esc(i.name)}</td><td>${esc(i.by)}</td><td><button data-a="al" data-t="accept" data-id="${esc(i.id)}">接受</button> <button data-a="al" data-t="decline" data-id="${esc(i.id)}">拒絕</button></td></tr>`).join('')+'</table>':'<p class="mut">目前沒有收到邀請。</p>';
+  h+=AL.lv>=AL.need.create?`<h4 class="sh">建立聯盟</h4><p>標籤 <input id="altag" maxlength="4" size="5" placeholder="2~4字"> 名稱 <input id="alname" maxlength="16" size="14" placeholder="聯盟名稱"> <button data-a="al" data-t="create">建立</button></p>`:`<p class="mut">奏者番升到 ${AL.need.create} 級才能建立聯盟。</p>`}
+ else{
+  h+=`<p><b>[${esc(a.tag)}] ${esc(a.name)}</b>　成員 ${a.m.length}/${a.cap}${a.lead?'　<span class="ok">你是盟主</span>':''}</p><table class="tb"><tr><th>成員</th><th>身分</th><th></th></tr>`+a.m.map(m=>`<tr><td>${esc(m.n)}${m.me?' (你)':''}</td><td>${m.lead?'盟主':'盟友'}</td><td>${a.lead&&!m.me?`<button data-a="al" data-t="kick" data-o="${esc(m.o)}">移出</button>`:''}</td></tr>`).join('')+'</table>';
+  if(a.lead)h+=`<h4 class="sh">邀請</h4><p>對方城池座標 x <input id="alx" type="number"> y <input id="aly" type="number"> <button data-a="al" data-t="invite">邀請</button></p>`+(a.inv.length?'<p class="mut">等待回覆:'+a.inv.map(i=>`${esc(i.n)} <a data-a="al" data-t="uninvite" data-o="${esc(i.o)}">(取消)</a>`).join('、')+'</p>':'');
+  h+=`<h4 class="sh">盟內信件</h4><p>主旨 <input id="alms" maxlength="40" size="20"><br><textarea id="almb" rows="3" style="width:90%" maxlength="800" placeholder="內容會寄給所有盟友"></textarea><br><button data-a="al" data-t="msg">發給全體盟友</button></p><p><button data-a="al" data-t="leave">退出聯盟</button> ${a.lead?'<button data-a="al" data-t="disband">解散聯盟</button>':''}</p>`}
+ return h}
+const RSEL=(id,v)=>`<select id="${id}">${RN.map((n,i)=>`<option value="${i}" ${i==v?'selected':''}>${RI[i]}${n}</option>`).join('')}</select>`;
+function mktTab(){
+ if(!ME)return '<p class="mut">市場需要登入後使用。</p>';
+ if(MK.offers==null)loadMarket();
+ const mcap=G.merCap(),fr=G.merFree(),here=home();
+ let h=`<h4 class="sh">商人</h4><p>空閒 <b>${fr}</b>/${S.bld.mkt} 名・每名載運 ${mcap}・速度 ${G.MSPEED} 格/時${S.bld.acc?`(勘定所 ${S.bld.acc} 級:載運量 +${10*S.bld.acc}%)`:''}。商人往返期間不能再用;運到的資源超出倉庫容量的部分會損失。</p>`;
+ if(S.ships.length)h+='<table class="tb"><tr><th>目的地</th><th>貨物</th><th>商人</th><th>商隊動向</th></tr>'+S.ships.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.r.map((v,i)=>v?RI[i]+v:'').join(' ')}</td><td>${x.n}</td><td>${S.t<x.go?`送貨中,<span data-cd="${x.go}">${tm(x.go-S.t)}</span> 後抵達`:`返回中,<span data-cd="${x.ret}">${tm(x.ret-S.t)}</span> 後回到城裡`}</td></tr>`).join('')+'</table>';
+ const others=CITIES.filter(c=>c.k!=CUR);
+ h+=`<h4 class="sh">運送資源</h4><p>目標座標 x <input id="sx" type="number" value="${SHIPT?SHIPT[0]:others[0]?others[0].x:''}"> y <input id="sy" type="number" value="${SHIPT?SHIPT[1]:others[0]?others[0].y:''}"> ${others.map(c=>`<a data-a="mktgo" data-x="${c.x}" data-y="${c.y}">${esc(c.n)}</a>`).join(' ')}<small class="mut"> (自己的其他城池或其他玩家的城池,也可以在地圖上查座標)</small></p><p>${[0,1,2,3].map(i=>`${RI[i]}<input id="m${i}" type="number" min="0" value="0" style="width:80px"> `).join('')}<button data-a="ship">派商人運送</button></p>`;
+ h+=`<h4 class="sh">市場掛單</h4><p class="mut">提供的資源會先從倉庫扣除放進市場,有人接受後由雙方商隊互相送達;取消掛單會退回。兌換比例最多 1:3,每座城最多同時 5 筆。</p><p>我提供 ${RSEL('og',0)} <input id="oga" type="number" min="1" value="1000" style="width:90px">　想要 ${RSEL('ow',1)} <input id="owa" type="number" min="1" value="1000" style="width:90px"> <button data-a="offer">掛單</button></p>`;
+ h+=`<h4 class="sh">市場行情 <a data-a="mkload" class="mut" style="font-size:12px">(重新整理)</a></h4>`+(MK.offers==null?'<p class="mut">載入中…</p>':!MK.offers.length?'<p class="mut">目前沒有任何掛單。</p>':'<table class="tb"><tr><th>賣家</th><th>提供</th><th>想要</th><th>距離</th><th></th></tr>'+MK.offers.map(o=>`<tr><td>${o.mine?'<b>我</b>':esc(o.n)}<br><small class="mut">(${o.x}|${o.y})</small></td><td>${RI[o.gi]}${o.ga}</td><td>${RI[o.wi]}${o.wa}</td><td>${distTo(o.x,o.y).toFixed(1)} 格</td><td>${o.mine?`<button data-a="ocancel" data-id="${o.id}">取消</button>`:`<button data-a="accept" data-id="${o.id}">接受</button>`}</td></tr>`).join('')+'</table>');
+ return h}
+const palTab=()=>`<h4 class="sh">擴張與城池</h4><p>擴張名額:<b>${G.slotsFree()}</b> 個可用(上限 ${G.expSlots()}:${S.col?'二之丸御殿 10/20 級各 1/2 個':'本丸御殿 10/15/20 級各 1/2/3 個'};這座城已開 ${S.kids||0} 座分城)。${S.col?`<br>這是分城,忠誠度 <b>${Math.floor(S.loy==null?100:S.loy)}</b>/100(每遊戲小時回復 ${(1+.1*S.bld.pal).toFixed(1)} 點)。忠誠度降到 0,城池會被行政官說服而易主。`:'<br>本丸無法被行政官佔領。'}</p><p class="mut">整個帳號只有一座本丸御殿(蓋在本丸,10/15/20 級給 1/2/3 個名額);每座分城只能蓋二之丸御殿,10/20 級給那座分城自己 1/2 個名額。開分城另外要求「準備開城的那座城」自己的威望達到 10000/20000/25000(第 1/2/3 座分城)。訓練開墾代官(每個名額 3 名)後,到軍奉行的出兵頁面指定空地開分城;訓練行政官後,配合軍隊攻打別人的分城。</p>`+(CITIES.length>1?'<table class="tb"><tr><th>城池</th><th>座標</th><th>忠誠度</th></tr>'+CITIES.map(c=>`<tr><td><a data-a="city" data-k="${esc(c.k)}">${cnOf(c)}</a></td><td>${c.x}|${c.y}</td><td>${c.col?c.loy:'—'}</td></tr>`).join('')+'</table>':'');
+// 建築內頁:把每個區塊(標題 + 內容)包成深色卡片
+function cardize(h){const i=h.indexOf('</div>')+6,top=h.slice(0,i),parts=h.slice(i).split('<h4 class="sh">');
+ return top+parts.map((x,k)=>k==0?(x.trim()?`<div class="pc">${x}</div>`:''):`<div class="pc"><h4 class="sh">${x}</div>`).join('')}
 function vB(){if(bs==null)return vIn();
  if(bs!=='wall'&&!S.slots[bs])return vBuildMenu();
  const cell=bs==='wall'?{b:'wall',l:S.bld.wall}:S.slots[bs],b=B.find(x=>x.id==cell.b),L=cell.l,mx=L>=b.m;
@@ -214,24 +444,42 @@ function vB(){if(bs==null)return vIn();
  if(L>0||bs==='wall')h+=`<p><b>${eff(b,L)}</b></p>`;
  if(MULTI.includes(b.id)&&S.slots.filter(x=>x&&x.b==b.id).length>1)h+=`<p class="mut">村裡共有 ${S.slots.filter(x=>x&&x.b==b.id).length} 座${b.n},效果會加總。</p>`;
  h+=mx?'<p>已達最高等級</p>':`<table class="tb"><tr><th>${L?'升級到':'建造'}等級 ${L+1} 的成本</th><th>施工時間</th></tr><tr><td>${costH(costB(b,L))}</td><td>⏱ ${tm(durB(b,L))}</td></tr></table>`+(reqOk(b)?`<p><button data-a="b" data-slot="${bs}">${L?'升級到等級 '+(L+1):'建造'}</button></p>`:`<p class="bad">需要 ${reqT(b)}</p>`);
- if(b.id=='gov')h+=cmds();else if(b.id=='infb'||b.id=='cavb')h+=trainer(b);else if(b.id=='war')h+=sender();
- return h+qtab()+back('in')}
+ if(b.id=='acad')h+=acadTab();
+ if(b.id=='pal'||b.id=='res')h+=palTab();
+ if(b.id=='mkt')h+=mktTab();
+ if(b.id=='emb')h+=embTab();
+ if(b.id=='cnl')h+=heroTab();
+ if(b.id=='trs')h+=artTab();
+ if(b.id=='gov')h+=cmds();else if(['infb','cavb','wsh','pal','res'].includes(b.id))h+=trainer(b);else if(b.id=='war')h+=sender();
+ return cardize(h+(bs!=='wall'&&b.id!=='gov'?demolishBox():''))+qtab()+back('in')}
 function vMap(){const [cx,cy]=mc,W2=36,H2=18,ox=300,oy=165,P=(dx,dy)=>[ox+(dx+dy)*W2,oy+(dx-dy)*H2];
  const cells=[];for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++)cells.push([dx,dy]);cells.sort((a,b)=>(a[0]-a[1])-(b[0]-b[1]));
- let g=`<polygon points="${ox},${oy-126} ${ox+252},${oy} ${ox},${oy+126} ${ox-252},${oy}" fill="#5e3a17" transform="translate(0,10)"/><polygon points="${ox},${oy-126} ${ox+252},${oy} ${ox},${oy+126} ${ox-252},${oy}" fill="#9fd66b"/>`;
- for(const [dx,dy] of cells){const ax=cx+dx,ay=cy+dy,[X,Y]=P(dx,dy),n=npcAt(ax,ay),vl=VIL.get(ax+','+ay),me=ax==home().x&&ay==home().y,s=sel&&sel[0]==ax&&sel[1]==ay;
-  g+=`<g data-a="tile" data-x="${ax}" data-y="${ay}"><polygon points="${X},${Y-H2} ${X+W2},${Y} ${X},${Y+H2} ${X-W2},${Y}" fill="${me?'#c9f294':vl?'#ead9a6':'#b3e47c'}" stroke="${s?'#fff':me?'#f0b400':'#6faa3c'}" stroke-width="${s||me?3:1}"/><text x="${X}" y="${Y+6}" text-anchor="middle" font-size="17">${me?'🏯':vl?'🏘️':n?n.e:ter(ax,ay)}</text>${vl&&!me?`<text x="${X}" y="${Y+15}" text-anchor="middle" font-size="9" fill="#7a2d0f">${FAC[vl.f]||''}</text>`:''}</g>`}
+ let g=`<polygon points="${ox},${oy-126} ${ox+252},${oy} ${ox},${oy+126} ${ox-252},${oy}" fill="#2a1208" transform="translate(0,10)"/><polygon points="${ox},${oy-126} ${ox+252},${oy} ${ox},${oy+126} ${ox-252},${oy}" fill="#46663a"/>`;
+ for(const [dx,dy] of cells){const ax=cx+dx,ay=cy+dy,[X,Y]=P(dx,dy),n=npcAt(ax,ay),vl=VIL.get(ax+','+ay),me=ax==home().x&&ay==home().y,mine=!me&&((vl&&vl.mine)||CITIES.some(c=>c.x==ax&&c.y==ay)||(n&&(CAMPS.get(ax+','+ay)||{}).mine)),s=sel&&sel[0]==ax&&sel[1]==ay;
+  g+=`<g data-a="tile" data-x="${ax}" data-y="${ay}"><polygon points="${X},${Y-H2} ${X+W2},${Y} ${X},${Y+H2} ${X-W2},${Y}" fill="${me?'#7fae5a':vl?'#a08a52':'#587a41'}" stroke="${s?'#fff':me?'#f0b400':mine?'#d9a520':'#3b5a2c'}" stroke-width="${s||me||mine?3:1}"/><text x="${X}" y="${Y+6}" text-anchor="middle" font-size="17">${me||vl?'':n?'':ter(ax,ay)}</text>${me||vl?`<g transform="translate(${X-17},${Y-25}) scale(.53)">${castleSv(CASTLE_COL[me?S.fac:vl.f]||'#888')}</g>`:''}${n&&CAMPSV[n.n]&&!me&&!vl?`<g transform="translate(${X-16},${Y-22}) scale(.5)">${ICONS_EXTRA[CAMPSV[n.n]]}</g>`:''}${n&&n.zg&&!me&&!vl?`<g transform="translate(${X-17},${Y-21}) scale(.53)">${ZGSV}</g>`:''}${vl&&!me?`<text x="${X}" y="${Y+15}" text-anchor="middle" font-size="9" fill="#ffe3b0">${vl.a?'['+esc(vl.a)+']':''}${vl.col?'分':''}${FAC[vl.f]||''}</text>`:''}</g>`}
  for(let i=-3;i<=3;i++){g+=`<text x="${ox+(i-4.2)*W2}" y="${oy+(i+4.2)*H2}" text-anchor="end" font-size="11" fill="currentColor">${cx+i}</text><text x="${ox+(-4.2+i)*W2}" y="${oy+(-4.2-i)*H2}" text-anchor="end" font-size="11" fill="currentColor">${cy+i}</text>`}
- g+=[['⬉',60,70,-4,0],['⬈',540,70,0,4],['⬋',60,290,0,-4],['⬊',540,290,4,0]].map(([c,x,y,dx,dy])=>`<text data-a="mp" data-dx="${dx}" data-dy="${dy}" x="${x}" y="${y}" font-size="38" fill="#4caf20" text-anchor="middle" style="cursor:pointer">${c}</text>`).join('');
+ g+=[['⬉',60,70,-1,0],['⬈',540,70,0,1],['⬋',60,290,0,-1],['⬊',540,290,1,0]].map(([c,x,y,dx,dy])=>`<text data-a="mp" data-dx="${dx}" data-dy="${dy}" x="${x}" y="${y}" font-size="38" fill="#4caf20" text-anchor="middle" style="cursor:pointer">${c}</text>`).join('');
  let info='';
  if(sel){const p=npcAt(sel[0],sel[1]),vl=VIL.get(sel[0]+','+sel[1]),me=sel[0]==home().x&&sel[1]==home().y;
-  if(me)info=`<p><b>${esc(NICK)}的村庄</b>(${home().x}|${home().y})</p>`;
-  else if(vl)info=`<p><b>${esc(vl.n)}</b>(${sel[0]}|${sel[1]}) · ${FAC[vl.f]||''}家 · 威望 ${vl.p}<br>距離 ${distTo(sel[0],sel[1]).toFixed(1)} 格</p><p class="mut">可以出兵掠奪(新手保護期 ${PROTECT_DAYS} 個遊戲日內不能被攻擊)。</p><button data-a="tgo">前往軍奉行出兵</button>`;
-  else if(!p)info=`<p class="mut">(${sel[0]}|${sel[1]}) 荒地,暫無可做之事。</p>`;
-  else if(p.zg)info=`<p><b>${p.n}</b>(${sel[0]}|${sel[1]}):竹中半兵衛隱居之處。行三顧之禮後可請他出仕(全資源產量 +15%)。已拜訪 ${S.zg}/3 次。</p>${S.zg>=3?'<p class="ok">竹中半兵衛已經出仕。</p>':`<p>禮物 ${costH([300*(S.zg+1),300*(S.zg+1),300*(S.zg+1),300*(S.zg+1)])}</p><button data-a="visit">第 ${S.zg+1} 次拜訪</button>`}`;
-  else{const ci=G.campInfo(sel[0],sel[1]),gl=Object.entries(ci.g).filter(([k,v])=>v>0).map(([k,v])=>`${k}×${v}`).join('、');
-   info=`<p><b>${p.n}</b>(${sel[0]}|${sel[1]})<br>守軍:${gl||'無'}<br>防禦合計約 ${fmt(ci.def)} · 戰利品庫存(每種資源)${ci.st.map(v=>Math.max(0,Math.floor(v))).join('/')} · 距離 ${distTo(sel[0],sel[1]).toFixed(1)} 格${ci.respawnIn!=null?`<br>被攻擊過,約 <span data-cd="${S.t+ci.respawnIn}">${tm(ci.respawnIn)}</span> 後重新集結`:''}</p>${ci.empty?'<p class="mut">這座營寨已被清空,等重新集結後才能再打。</p>':'<button data-a="tgo">前往軍奉行出兵</button>'}`}}
- return `<div class="ttl">地圖 <b>(${cx}|${cy})</b></div><div class="map-w"><svg viewBox="0 0 600 340" width="100%" role="img" aria-label="地圖">${g}</svg></div><p>x <input id="mx" type="number" value="${cx}"> y <input id="my" type="number" value="${cy}"> <button data-a="mgo">OK</button> <a data-a="mhome">回到村莊</a></p>${info}`}
+  if(me)info=`<p>${fcastle(CASTLE_COL[S.fac])} <b>${cityName()}</b>(${home().x}|${home().y})${CITIES.length>1?'(目前管理中)':''}</p>`;
+  else if((vl&&vl.mine)||CITIES.some(c=>c.x==sel[0]&&c.y==sel[1])){const c=CITIES.find(c=>c.x==sel[0]&&c.y==sel[1]);info=`<p>${fcastle(CASTLE_COL[(c||vl).f]||'#888')} <b>你的${c?esc(c.n):'城池'}</b>(${sel[0]}|${sel[1]})${c&&c.col?` · 忠誠度 ${c.loy}`:''}<br>距離 ${distTo(sel[0],sel[1]).toFixed(1)} 格</p>${c?`<button data-a="city" data-k="${esc(c.k)}">切換到這座城</button> <button data-a="tgo" ${ME?'':'disabled title="需要登入"'}>增援駐防</button> <button data-a="shipto" data-x="${sel[0]}" data-y="${sel[1]}">運送資源</button>`:''}`}
+  else if(vl)info=`<p>${fcastle(CASTLE_COL[vl.f]||'#888')} ${vl.a?'<span class="mut">['+esc(vl.a)+']</span> ':''}<b>${esc(vl.n)}</b>${vl.col?'的分城':''}(${sel[0]}|${sel[1]}) · ${FAC[vl.f]||''}家 · 威望 ${vl.p}<br>距離 ${distTo(sel[0],sel[1]).toFixed(1)} 格</p><p class="mut">可以出兵掠奪${vl.b&&protectedAt(vl.b,Date.now()+CLK)?`(新手保護期 ${PROTECT_DAYS} 天內不能被攻擊,對方還剩約 ${Math.ceil((vl.b+PROTECT_DAYS*864e5-Date.now()-CLK)/36e5)} 小時)`:''}。部隊抵達時才會開戰,對方會先收到來襲警報。</p><button data-a="tgo">出兵掠奪/偵查/增援駐防</button> <button data-a="shipto" data-x="${sel[0]}" data-y="${sel[1]}">運送資源</button> <button data-a="mailto" data-x="${sel[0]}" data-y="${sel[1]}">✉ 寄信給他</button>`;
+  else if(!p)info=`<p class="mut">(${sel[0]}|${sel[1]}) 荒地。</p>`+(ME&&G.expSlots()>0?`<p>可以派 3 名開墾代官到這裡開分城(擴張名額 ${G.slotsFree()}/${G.expSlots()},距離 ${distTo(sel[0],sel[1]).toFixed(1)} 格)。</p><button data-a="tgo">前往軍奉行開分城</button>`:'')
+  else if(p.zg)info=`<p>${ZGICON} <b>${p.n}</b>(${sel[0]}|${sel[1]}):竹中半兵衛隱居之處。行三顧之禮後可請他出仕(全資源產量 +15%)。已拜訪 ${S.zg}/3 次。</p>${S.zg>=3?'<p class="ok">竹中半兵衛已經出仕。</p>':`<p>禮物 ${costH([300*(S.zg+1),300*(S.zg+1),300*(S.zg+1),300*(S.zg+1)])}</p><button data-a="visit">第 ${S.zg+1} 次拜訪</button>`}`;
+  else info=campInfoHtml(p,sel[0],sel[1])}
+ return `<div class="ttl">地圖 <b>(${cx}|${cy})</b></div><div class="map-w"><svg viewBox="0 0 600 340" width="100%" role="img" aria-label="地圖">${g}</svg></div><div style="display:flex;justify-content:flex-end;margin:-6px 0 4px"><svg viewBox="0 0 120 84" width="120" height="84" role="group" aria-label="一次移動 7 格"><title>一次移動 7 格</title><text data-a="mp" data-dx="-7" data-dy="0" x="30" y="34" font-size="38" fill="#4caf20" text-anchor="middle" style="cursor:pointer">⬉</text><text data-a="mp" data-dx="0" data-dy="7" x="90" y="34" font-size="38" fill="#4caf20" text-anchor="middle" style="cursor:pointer">⬈</text><text data-a="mp" data-dx="0" data-dy="-7" x="30" y="76" font-size="38" fill="#4caf20" text-anchor="middle" style="cursor:pointer">⬋</text><text data-a="mp" data-dx="7" data-dy="0" x="90" y="76" font-size="38" fill="#4caf20" text-anchor="middle" style="cursor:pointer">⬊</text><text x="60" y="60" font-size="13" fill="currentColor" text-anchor="middle">×7</text></svg></div><p class="mut">城池顏色:<b style="color:#ff5a6e">■ 織田</b>　<b style="color:#5aa5ff">■ 德川</b>　<b style="color:#f0c24a">■ 豐臣</b>　・金色外框是你的城池</p><p>x <input id="mx" type="number" value="${cx}"> y <input id="my" type="number" value="${cy}"> <button data-a="mgo">OK</button> <a data-a="mhome">回到城池</a></p>${info}`}
+function campInfoHtml(p,x,y){
+ const ic=CAMPSV[p.n]?SV(ICONS_EXTRA[CAMPSV[p.n]])+' ':'',c=CAMPS.get(x+','+y),dist=distTo(x,y).toFixed(1),head=`<p>${ic}<b>${p.n}</b>(${x}|${y}) · 距離 ${dist} 格`;
+ const rng=`<p class="mut">佔領範圍:以你每座城為中心的 15×15(上下左右各 7 格),每座城用自己評定眾的名額。營寨資源與重生時間全服共用;打下來要自己派兵駐守,也可以被別人搶走。${ME?'':''}</p>`;
+ if(!c){if(!ME){const ci=G.campInfo(x,y),gl=Object.entries(ci.g).filter(([k,v])=>v>0).map(([k,v])=>`${k}×${v}`).join('、');return head+`<br>守軍:${gl||'無'}<br>防禦合計約 ${fmt(ci.def)}</p><button data-a="tgo">前往軍奉行出兵</button>`}return head+'<br>讀取營寨狀況中…</p>'}
+ const btn=`<button data-a="tgo">出兵掠奪/偵查</button>`;
+ if(c.occ){
+  const gl=(c.gs||[]).map(g=>{const U=G.UN[g.fac]||[];return g.u.map((v,k)=>v?`${(U[k]||{}).n||'兵'}×${v}`:'').filter(Boolean).join('、')}).filter(Boolean).join(';');
+  const own=c.mine,y15=2*(c.ti+1)+'%';
+  return head+`<br>${own?'<span class="ok">由你的英雄佔領</span>':`由 <b>${esc(c.on||'?')}</b> 佔領`} · 佔領後這座城每種資源產量 +${y15}<br>駐軍:${gl||'無(空營寨,任何人派兵都能直接接手)'}<br>駐軍防禦約 ${fmt(c.def)}</p>`+(own?'<p class="mut">要增援駐軍:到軍奉行對這座營寨出兵,部隊會自動留下駐守。要撤回或放棄,到評定眾頁面的「佔領的營寨」。</p>':'')+btn+rng;
+ }
+ const gl=Object.entries(c.g||{}).filter(([k,v])=>v>0).map(([k,v])=>`${k}×${v}`).join('、');
+ return head+`<br>守軍:${gl||'無'}<br>防禦合計約 ${fmt(c.def)} · 戰利品庫存(每種資源)${(c.st||[]).map(v=>Math.max(0,Math.floor(v))).join('/')}${c.left?`<br>被攻擊過,約 ${tm(Math.ceil(c.left/1000*SPEED))} 後重新集結`:''}</p>`+(c.empty?'<p class="mut">這座營寨已被清空,等重新集結後才能再打。</p>':btn)+`<p class="mut">攻打營寨一定要英雄帶隊。</p>`+rng};
 const balPrev=()=>{try{return '預覽:'+G.balanceTargets(SH.r.map(x=>Math.max(0,x))).map((v,i)=>RI[i]+v).join(' ')}catch(e){return ''}};
 function updBal(){const el=$('#balprev');if(el)el.textContent=balPrev()}
 function vShop(){const room=[0,1,2,3].map(i=>Math.max(0,Math.floor((cap(i)-S.res[i])/GOLD_RATE)));
@@ -242,57 +490,127 @@ function vShop(){const room=[0,1,2,3].map(i=>Math.max(0,Math.floor((cap(i)-S.res
 <p>${RN.map((n,i)=>`${RI[i]}<input id="r${i}" type="number" min="0" max="1000" value="${SH.r[i]}" style="width:56px" aria-label="${n}比例">`).join(' ')} <button data-a="bal">平倉</button></p>
 <p>快速設定:<a data-a="balp" data-p="1,1,1,1">平均</a> | ${RN.map((n,i)=>`<a data-a="balp" data-p="${[0,1,2,3].map(k=>k==i?1:0).join(',')}">全部${n}</a>`).join(' | ')} | <a data-a="balp" data-p="2,2,1,1">建築型(木泥為主)</a> | <a data-a="balp" data-p="1,1,2,2">軍事型(鐵糧為主)</a></p>
 <p id="balprev" class="mut">${balPrev()}</p>`}
-function ranks(){
- if(ME){const h=home();return ((RKD&&RKD.rows)||[]).map((r,i)=>({i:i+1,h:'—',p:esc(r.n)+'('+(FAC[r.f]||'')+')',v:r.p,c:1,l:'—',e:'—',me:r.x==h.x&&r.y==h.y}))}
- const a=[...RK,{h:'—',p:esc(NICK)+'(你)',v:prest(),c:1,l:1,e:0,me:1}].sort((x,y)=>y.v-x.v);return a.map((r,i)=>({...r,i:i+1}))}
-function vRank(){const a=ranks(),mp=Math.max(0,Math.ceil(a.length/10)-1);rp=Math.max(0,Math.min(rp,mp));
- return `<div class="ttl" style="justify-content:center">英 雄 榜</div><p class="tabs" style="text-align:center"><b>玩家</b> | ${['城池','聯盟','進攻','防禦','武將','寶鼎','總覽'].map(t=>`<a data-a="soon">${t}</a>`).join(' | ')}</p><p style="text-align:right"><a data-a="soon" data-m="威望來自資源田、建築的等級與軍隊規模">威望如何獲得?</a></p><table class="tb"><tr><th>排名</th><th>武將</th><th>玩家</th><th>威望</th><th>城池</th><th>等級</th><th>經驗值</th></tr>`+(ME&&!RKD?'<tr><td colspan="7">載入中…</td></tr>':'')+a.slice(rp*10,rp*10+10).map(r=>`<tr class="${r.me?'me':''}"><td>${r.i}</td><td class="hero">${r.h}</td><td>${r.p}</td><td>${r.v}</td><td>${r.c}</td><td>${r.l}</td><td>${r.e}</td></tr>`).join('')+`</table><p class="pg"><a data-a="rk" data-p="0">首頁</a> <a data-a="rk" data-p="${rp-1}">上一頁</a> <a data-a="rk" data-p="${rp+1}">下一頁</a> <a data-a="rk" data-p="${mp}">尾頁</a><br>排名: <input id="rkn" type="number"> 或是,名字: <input id="rkm" type="text"> <button data-a="rks">查找</button></p>`}
-function vQuest(){return `<div class="ttl">任務</div><table class="tb"><tr><th>任務</th><th>獎勵</th><th></th></tr>`+QS.map(q=>{const dn=S.qd.includes(q.id),ok=q.ok();return `<tr><td>${q.n}</td><td>${q.g?'🪙'+q.g+' 金幣':q.r.map((x,i)=>RI[i]+x).join(' ')}</td><td>${dn?'<span class="mut">已領取</span>':ok?`<button data-a="claim" data-id="${q.id}">領取</button>`:'<span class="mut">未完成</span>'}</td></tr>`}).join('')+'</table>'}
-const vRep=()=>`<div class="ttl">報告</div>`+(S.rep.length?`<table class="tb"><tr><th>時間</th><th>內容</th></tr>${S.rep.map(r=>`<tr><td>${dstr(r.t)}</td><td style="text-align:left">${r.m}</td></tr>`).join('')}</table>`:'<p class="mut">目前沒有報告。</p>');
-function vMail(){const tabs=[['in','收件箱'],['new','撰寫'],['out','已發送'],['sys','系統消息']].map(([k,n])=>mt==k?`<b>${n}</b>`:`<a data-a="mt" data-t="${k}">${n}</a>`).join(' | ');
- let b='';
- if(mt=='in')b=`<p>寄件人:<b>系統</b></p><p>主 題:<b>歡迎來到戰國!</b></p><p>你的村莊在 (${home().x}|${home().y}),請先升級資源田、建造藏屋敷與米藏,再訓練軍隊。埋藏所可以藏起資源,避免被其他玩家搶走。</p>`;
- else if(mt=='new')b='<p>收件人:<input type="text" disabled></p><p>主 題:<input type="text" disabled></p><p class="mut">單機版沒有其他玩家,無法寄信。</p>';
- else if(mt=='out')b='<p class="mut">沒有已發送的信件。</p>';
- else b=S.log.slice(0,10).map(l=>`<div><span class="mut">${dstr(l.t)}</span> ${l.m}</div>`).join('');
- return `<div class="ttl">飛鴿傳書</div><p style="text-align:center">${tabs}</p><div class="scroll"><div class="paper">${b}</div></div><p style="text-align:center"><button data-a="soon">回復</button> <button data-a="soon">刪除</button> <button data-a="nav" data-v="out">返回</button></p>`}
-const NAV=[['out','外城','⛰️'],['in','內城','🏯'],['map','地圖','🗺️'],['rank','排行榜','📜'],['quest','任務','🏆'],['rep','報告','⚔️'],['mail','飛鴿傳書','🕊️'],['x','意見箱','💬'],['x','跨服戰','🚩']];
+function cityAge(){const bs=(CITIES||[]).map(c=>c.b).filter(Boolean),b0=bs.length?Math.min(...bs):(S.born||Date.now()),ms=Math.max(0,Date.now()-b0),d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5);return `${d} 天 ${h} 小時`}
+let rkt=0;
+const RKT=['玩家','城池','聯盟','進攻','防禦','武將','寶鼎'];
+function rkRows(){
+ const me=ME?ME.id:null;let P=(RKD&&RKD.players)||[];
+ if(!ME){const pw=G.powers(),h=S.hero;P=[{o:'me',n:NICK,f:S.fac,a:'',x:home().x,y:home().y,c:1,p:prest(),at:pw.at,df:pw.df,ar:(S.art||[]).length,hn:h?h.n:'',hl:h?h.lv:0,hx:h?h.xp:0}]}
+ const nm=r=>(r.a?'['+esc(r.a)+'] ':'')+esc(r.n)+'('+(FAC[r.f]||'')+')',mine=r=>r.o===me||r.o==='me',mk=(list,head,cell)=>({head,rows:list.map((r,i)=>({i:i+1,cells:cell(r),me:mine(r),x:r.x,y:r.y,t:cell(r).join(' ').replace(/<[^>]*>/g,'')}))});
+ const by=k=>[...P].sort((a,b)=>b[k]-a[k]||b.p-a.p);
+ if(rkt==0)return mk(P,['排名','武將','玩家','威望','城池','等級','經驗值'],r=>[r.hn||'—',nm(r),r.p,r.c,r.hl||'—',r.hl?r.hx:'—']);
+ if(rkt==1){const CR=((RKD&&RKD.rows)||(!ME?[{x:home().x,y:home().y,n:NICK,f:S.fac,a:'',p:prest(),m:S.col?0:1,cn:S.cname||''}]:[])).slice().sort((a,b)=>b.p-a.p),mineC=r=>r.x===home().x&&r.y===home().y||CITIES.some(c=>c.x==r.x&&c.y==r.y);
+  return {head:['排名','玩家','城池名稱','威望'],rows:CR.map((r,i)=>({i:i+1,cells:[nm(r),r.m===0?esc(r.cn||'分城'):esc(r.n)+'的主城',r.p],me:mineC(r),x:r.x,y:r.y,t:r.n+' '+(r.cn||'')}))}}
+ if(rkt==2){const g={};for(const r of P)if(r.a){const e=g[r.a]||(g[r.a]={a:r.a,an:'',m:0,p:0});e.m++;e.p+=r.p;if(r.an)e.an=r.an}const L=Object.values(g).sort((a,b)=>b.p-a.p);
+  return {head:['排名','聯盟','成員(榜上)','總威望'],rows:L.map((e,i)=>({i:i+1,cells:['['+esc(e.a)+']'+(e.an?' '+esc(e.an):''),e.m,e.p],me:!!(AL&&AL.ally&&AL.ally.tag===e.a),t:'['+e.a+'] '+(e.an||'')}))}}
+ if(rkt==3)return mk(by('at'),['排名','玩家','總攻擊力'],r=>[nm(r),fmt(r.at)]);
+ if(rkt==4)return mk(by('df'),['排名','玩家','總防禦力'],r=>[nm(r),fmt(r.df)]);
+ if(rkt==5)return mk([...P].filter(r=>r.hl>0).sort((a,b)=>b.hl-a.hl||b.hx-a.hx),['排名','武將','玩家','等級','經驗值'],r=>[r.hn,nm(r),r.hl,r.hx]);
+ return mk(by('ar'),['排名','玩家','名物數量'],r=>[nm(r),r.ar])}
+function vRank(){const R=rkRows(),a=R.rows,mp=Math.max(0,Math.ceil(a.length/20)-1);rp=Math.max(0,Math.min(rp,mp));
+ return `<div class="ttl" style="justify-content:center">英 雄 榜</div><p class="tabs" style="text-align:center">${RKT.map((t,i)=>i==rkt?`<b>${t}</b>`:`<a data-a="rkt" data-i="${i}">${t}</a>`).join(' | ')}</p><p style="text-align:right"><a data-a="soon" data-m="威望 = 資源田等級合計×6 + 各種建築最高等級合計×12 + 兵力(含出征中)×2。玩家榜把同一位玩家的所有城池合併計算。榜單只收威望前 300 名玩家。">威望如何獲得?</a></p><table class="tb"><tr>${R.head.map(h=>`<th>${h}</th>`).join('')}</tr>`+(ME&&!RKD?`<tr><td colspan="${R.head.length}">載入中…</td></tr>`:'')+a.slice(rp*20,rp*20+20).map(r=>`<tr class="${r.me?'me':''}"><td>${r.i}</td>${r.cells.map((c,k)=>`<td${rkt==0&&k==0?' class="hero"':''}>${c}${(rkt==0&&k==1||rkt==1&&k==0||rkt==3&&k==0||rkt==4&&k==0||rkt==5&&k==1||rkt==6&&k==0)&&r.x!=null&&!r.me?` <a data-a="mailto" data-x="${r.x}" data-y="${r.y}" title="寄信">✉</a>`:''}</td>`).join('')}</tr>`).join('')+`</table><p class="pg"><a data-a="rk" data-p="0">首頁</a> <a data-a="rk" data-p="${rp-1}">上一頁</a> <a data-a="rk" data-p="${rp+1}">下一頁</a> <a data-a="rk" data-p="${mp}">尾頁</a><br>排名: <input id="rkn" type="number"> 或是,名字: <input id="rkm" type="text"> <button data-a="rks">查找</button></p>`}
+const dailyBox=()=>{if(S.col)return '<p class="mut">每日任務由本丸管理,請切換回本丸。</p>';G.setNow(Date.now()+CLK);G.dailyRoll();const q=G.dailyInfo();if(!q)return '';
+ return `<h4 class="sh">📅 每日任務 <small class="mut">(台灣時間每天 00:00 更新;沒完成也會換新的)</small></h4><table class="tb"><tr><th>任務</th><th>進度</th><th>獎勵</th><th></th></tr><tr><td>${q.n}</td><td>${q.have}/${q.v}</td><td>🪙${q.g} 金幣</td><td>${q.done?'<span class="mut">已領取</span>':q.ok?'<button data-a="claimd">領取</button>':'<span class="mut">未完成</span>'}</td></tr></table>`};
+// ====== 聊天(公頻/盟頻/密頻)======
+let CHD={pub:[],ally:[],priv:[],hasAlly:false},CHS=[0,0,0],CHBUSY=0;
+const hm=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())};
+function chatHtml(){
+ if(ct==3)return S.log.slice(0,30).reverse().map(l=>`<div><span class="t">(${dstr(l.t)})</span> <b class="bad">【系統訊息】</b>${l.m}</div>`).join('')||'<div class="mut">沒有系統訊息</div>';
+ if(!ME)return '<div class="mut">登入後才能聊天</div>';
+ if(ct==0)return CHD.pub.map(m=>`<div><span class="t">${hm(m.t)}</span> ${m.a?'<small class="mut">['+esc(m.a)+']</small>':''}<b>${esc(m.n)}</b>:${esc(m.m)}</div>`).join('')||'<div class="mut">公頻還沒有人說話</div>';
+ if(ct==1)return !CHD.hasAlly?'<div class="mut">尚未加入聯盟,不能使用盟頻</div>':(CHD.ally||[]).map(m=>`<div><span class="t">${hm(m.t)}</span> <b>${esc(m.n)}</b>:${esc(m.m)}</div>`).join('')||'<div class="mut">盟頻還沒有人說話</div>';
+ return CHD.priv.map(m=>{const me=m.f==ME.id;return `<div><span class="t">${hm(m.t)}</span> ${me?`你 → <a data-a="chto" data-n="${esc(m.tn)}">${esc(m.tn)}</a>`:`<a data-a="chto" data-n="${esc(m.fn)}">${esc(m.fn)}</a> → 你`}:${esc(m.m)}</div>`}).join('')||'<div class="mut">沒有密語。在下面輸入對方暱稱就能傳給他</div>'}
+const chatBox=()=>!ME||ct==3||(ct==1&&!CHD.hasAlly)?'':`<div class="chbox">${ct==2?'<input id="cht" type="text" maxlength="30" placeholder="對方暱稱" style="width:100%;margin-bottom:2px">':''}<div style="display:flex;gap:3px"><input id="chm" type="text" maxlength="100" placeholder="${['公頻','盟頻','密語'][ct]}(最多 100 字)" style="flex:1;width:auto"><button data-a="chsend">送出</button></div></div>`;
+async function chatPoll(){if(!ME||AUTHLOST||document.hidden)return;try{const r=await api('/api/chat?s='+CHS.join(','));if(!(r.ok&&r.j&&r.j.pub))return;const j=r.j;const mg=(a,b)=>{const ids=new Set(a.map(x=>x.id));return [...a,...b.filter(x=>!ids.has(x.id))].slice(-100)};
+  const before=CHD.pub.length+CHD.priv.length+((CHD.ally||[]).length);CHD.pub=mg(CHD.pub,j.pub);CHD.priv=mg(CHD.priv,j.priv).slice(-50);CHD.hasAlly=j.hasAlly;if(j.ally)CHD.ally=mg(CHD.ally||[],j.ally);if(!j.hasAlly)CHD.ally=[];
+  CHS=[(CHD.pub.slice(-1)[0]||{t:0}).t,((CHD.ally||[]).slice(-1)[0]||{t:0}).t,(CHD.priv.slice(-1)[0]||{t:0}).t];
+  if(CHD.pub.length+CHD.priv.length+((CHD.ally||[]).length)!==before||j.hasAlly!==undefined)dirty=1}catch(e){}}
+async function chatSend(){if(CHBUSY)return;const m=($('#chm')||{}).value||'',to=($('#cht')||{}).value||'';if(!m.trim())return toast('請輸入內容');CHBUSY=1;
+ try{const r=await api('/api/chat',{ch:['pub','ally','priv'][ct],to,m});if(r.ok&&r.j&&r.j.ok){delete FV.chm;await chatPoll()}else toast((r.j&&r.j.msg)||'送出失敗')}catch(e){toast('送出失敗,請稍後再試')}CHBUSY=0;dirty=1}
+// ====== 意見箱 ======
+let FBMSG='';
+const vFb=()=>`<div class="ttl">意見箱</div><div class="paper"><p>遇到問題、想到好點子都可以寫在這裡,管理者會看到。</p>`+(ME?`<p>主旨 <input id="fbs" type="text" maxlength="40" style="width:80%"> <small class="mut">(最多 40 字)</small></p><p>內容<br><textarea id="fbb" rows="8" maxlength="500" style="width:100%"></textarea><br><small class="mut">最多 500 字;每小時最多送出 3 則。</small></p><p><button data-a="fbsend">送出意見</button> <span class="${FBMSG.startsWith('意見已')?'ok':'bad'}">${esc(FBMSG)}</span></p>`:'<p class="mut">登入後才能使用意見箱。</p>')+'</div>';
+async function fbSend(){const s2=($('#fbs')||{}).value||'',b=($('#fbb')||{}).value||'';if(!s2.trim()||!b.trim()){FBMSG='請填寫主旨與內容';dirty=1;return}
+ try{const r=await api('/api/feedback',{s:s2,b});FBMSG=(r.j&&r.j.msg)||'送出失敗';if(r.ok&&r.j&&r.j.ok){delete FV.fbs;delete FV.fbb;const a=$('#fbs'),c=$('#fbb');if(a)a.value='';if(c)c.value=''}}catch(e){FBMSG='送出失敗,請稍後再試'}dirty=1}
+function vQuest(){return `<div class="ttl">任務</div>${dailyBox()}<h4 class="sh">成長任務</h4><table class="tb"><tr><th>任務</th><th>獎勵</th><th></th></tr>`+QS.map(q=>{const dn=S.qd.includes(q.id),ok=q.ok();return `<tr><td>${q.n}</td><td>${q.g?'🪙'+q.g+' 金幣':q.r.map((x,i)=>RI[i]+x).join(' ')}</td><td>${dn?'<span class="mut">已領取</span>':ok?`<button data-a="claim" data-id="${q.id}">領取</button>`:'<span class="mut">未完成</span>'}</td></tr>`}).join('')+'</table>'}
+const vFaq=()=>`<div class="ttl">常見問題</div><div class="scroll"><div class="paper">${faqHtml()}</div></div>`;
+const vRep=()=>`<div class="ttl">報告</div>`+(S.rep.length?pgBar('rep',S.rep.length)+`<table class="tb"><tr><th>時間</th><th>內容</th></tr>${pgSl('rep',S.rep).map(r=>`<tr><td>${dstr(r.t)}</td><td style="text-align:left">${artFmt(r.m)}</td></tr>`).join('')}</table>`+pgBar('rep',S.rep.length):'<p class="mut">目前沒有報告。</p>');
+const mtime=t=>{const d=new Date(t);return pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())};
+const mfind=()=>{if(!mo)return null;const m=(mo.box=='in'?MAIL.inbox:MAIL.sent).find(x=>x.id==mo.id);return m?{...m,box:mo.box}:null};
+function vMail(){const tabs=[['in','收件箱'+(MAIL.unread?` (${MAIL.unread})`:'')],['new','撰寫'],['out','已發送'],['sys','系統消息']].map(([k,n])=>(mt==k||(mt=='read'&&mo&&((k=='in'&&mo.box=='in')||(k=='out'&&mo.box=='out'))))?`<b>${n}</b>`:`<a data-a="mt" data-t="${k}">${n}</a>`).join(' | ');
+ let b='',btns='';
+ const list=(arr,box)=>arr.length?pgBar(box,arr.length)+`<table class="tb"><tr><th></th><th>${box=='in'?'寄件人':'收件人'}</th><th>主旨</th><th>時間</th></tr>`+pgSl(box,arr).map(m=>{const p=box=='in'?m.from:m.to;return `<tr><td>${box=='in'&&!m.r?'●':''}</td><td>${esc(p.n)}${p.x!=null?`<br><small class="mut">(${p.x}|${p.y})</small>`:''}</td><td style="text-align:left"><a data-a="mread" data-box="${box}" data-id="${m.id}">${box=='in'&&!m.r?`<b>${esc(m.s)}</b>`:esc(m.s)}</a></td><td>${mtime(m.t)}</td></tr>`}).join('')+'</table>'+pgBar(box,arr.length):'<p class="mut">沒有信件。</p>';
+ if(mt=='sys')b=pgBar('sys',S.log.length)+pgSl('sys',S.log).map(l=>`<div><span class="mut">${dstr(l.t)}</span> ${l.m}</div>`).join('')+pgBar('sys',S.log.length);
+ else if(!ME)b='<p class="mut">飛鴿傳書需要登入才能使用(單機試玩沒有其他玩家)。</p>';
+ else if(mt=='read'){const m=mfind();
+  if(!m)b='<p class="mut">找不到這封信。</p>';
+  else{const p=m.box=='in'?m.from:m.to;b=`<p>${m.box=='in'?'寄件人':'收件人'}:<b>${esc(p.n)}</b>${p.x!=null?`(${p.x}|${p.y})`:''}</p><p>主 題:<b>${esc(m.s)}</b></p><p class="mut">${mtime(m.t)}</p><div style="white-space:pre-wrap">${artFmt(esc(m.b))}</div>`;
+   btns=(m.box=='in'&&!m.sys?`<button data-a="mreply">回覆</button> `:'')+`<button data-a="mdel">刪除</button> <button data-a="mt" data-t="${m.box}">返回</button>`}}
+ else if(mt=='new')b=`<p>收件人城池座標 x <input id="mlx" type="number" value="${esc(CMP.x)}"> y <input id="mly" type="number" value="${esc(CMP.y)}"> <small class="mut">${(()=>{const v=VIL.get(CMP.x+','+CMP.y);return v?'→ '+esc(v.n):'(在地圖上點別人的城池,或排行榜按 ✉,可以自動帶入)'})()}</small></p><p>主 題:<input id="mls" type="text" maxlength="40" style="width:240px" value="${esc(CMP.s)}"></p><p><textarea id="mlb" rows="6" maxlength="1000" style="width:100%;background:#fdf1d4;color:#3a2410;border:1px solid var(--bd)" placeholder="信件內容(最多 1000 字)">${esc(CMP.b)}</textarea></p>`,btns='<button data-a="msend">寄出</button>';
+ else if(mt=='out')b=list(MAIL.sent,'out');
+ else b=`<p class="mut">📜 歡迎來到戰國!你的城池在 (${home().x}|${home().y})。可以寫信給其他玩家,收件人用他的城池座標指定。</p>`+list(MAIL.inbox,'in');
+ return `<div class="ttl">飛鴿傳書</div><p style="text-align:center">${tabs}</p><div class="scroll"><div class="paper">${b}</div></div><p style="text-align:center">${btns}</p>`}
+async function loadMail(){if(!ME)return;try{const r=await api('/api/mail');if(r.ok&&r.j&&r.j.inbox){MAIL={inbox:r.j.inbox,sent:r.j.sent,unread:r.j.unread,loaded:true};dirty=1}}catch(e){}}
+async function pollMail(){if(!ME)return;try{const r=await api('/api/mail?count=1');if(r.ok&&r.j&&typeof r.j.unread=='number'&&r.j.unread!==MAIL.unread){MAIL.unread=r.j.unread;dirty=1}}catch(e){}}
+const PG={rep:0,in:0,out:0,sys:0},PGN=10;
+const pgBar=(k,n)=>{const m=Math.max(1,Math.ceil(n/PGN));PG[k]=Math.max(0,Math.min(PG[k],m-1));if(m<2)return'';const p=PG[k];return `<p style="text-align:center">${p>0?`<a data-a="pg" data-k="${k}" data-p="${p-1}">上一頁</a>`:'<span class="mut">上一頁</span>'} ${p+1} / ${m} ${p<m-1?`<a data-a="pg" data-k="${k}" data-p="${p+1}">下一頁</a>`:'<span class="mut">下一頁</span>'}</p>`};
+const pgSl=(k,a)=>a.slice(PG[k]*PGN,PG[k]*PGN+PGN);
+const NAV=[['out','城外','⛰️'],['in','城內','🏯'],['map','地圖','🗺️'],['rank','排行榜','📜'],['hero','英雄','HEROICON'],['quest','任務','🏆'],['rep','報告','⚔️'],['mail','飛鴿傳書','🕊️'],['fb','意見箱','💬'],['x','跨服戰','🚩']];
+const FAQ=[["不上線時資源是否依然生產？","是，離線狀況下各資源（木材、泥土、鐵塊、糧食）依然照生產速率持續產出。"],["下線後在建的建築是否持續？","是，離線前排入建造或研究佇列的任務會持續進行直到完成，速度不變。"],["如何提升建築、拆除與研究速度？","升級「知行所」，最高 20 級可縮短 50% 建造時間。3級可解鎖城內建築拆除功能（每次拆除 1 級）。"],["如何增加資源容量？","升級「藏屋敷」與「米藏」，最高 20 級（單個容量 10 萬），超出的話可於 20 級後加建新倉庫或米藏。"],["是否可以修改暱稱與密碼？","暱稱及密碼可透過「客服中心」進行重設。"],["如何攻打別人？","進入「軍奉行」點擊出兵，輸入座標或在地圖點擊目標。"],["如何在敵人來襲時隱藏資源？","建造「埋藏所」，1 級每種資源隱藏 300 單位，最高 10 級（可再加建新地窖）。【勢力特色】：豐臣家地窖容量 2 倍。"],["如何擁有自己的士兵？","建造足輕營或馬廻組訓練。高級兵種需先在「兵學塾」完成解鎖研究。"],["耗糧如何計算？","耗糧包含本村建築人口與軍隊，不包含被俘虜的敵方士兵。"],["如何運輸與交易資源？","透過「樂市樂座」進行運輸（建議直接輸入座標最可靠）或買賣交易。"],["如何加入或創建聯盟？","「奏者番」1 級可接受邀請入盟，3 級可建立自己的聯盟。建議可發信件向盟主或官員申請。"],["如何擁有自己的英雄？","在「評定眾」中可將已有士兵提拔為英雄，英雄升級後可分配 5 個屬性點。"],["如何提高士兵攻防素質？","防禦在「具足屋」升級，攻擊在「刀鍛冶所」升級。"],["城牆防禦加成如何計算？","木柵靈活多變但耐久低（最高 70%）；石垣耐久極高但加成低（最高 50%）；土壘漆壁均衡（最高 60%）。"],["如何開分城或佔領別人城池？","本丸御殿在 10、15、20 級可各開一分村；二之丸御殿在 10、20 級可開分村。開分村需要 3 個「開墾代官」。佔領他人城池需研究行政官，在對方無行宮時派行政官普通攻擊直至忠誠歸零。"],["如何增加文明度？","建造「禮儀所」，10 級前小型活動（400文明度/次），10 級後大型活動（1600文明度/次）。"],["如何增加商人運輸量？","商人的基礎運載量：織田為 500、德川為 1000、豐臣為 750。建造「勘定所」每升 1 級運載量提高 10%（需樂市樂座 20 級後解鎖）。"],["如何佔領野外營寨？","評定眾達到 10、15、20 級時可佔領 1/2/3 座。營寨要在你某座城的 15×15 範圍內(上下左右各 7 格),由英雄帶領全滅守軍後佔領,存活部隊留下駐守(糧食由出兵的城負擔)。營寨資源與狀態全服共用,被佔領的營寨別人也能打下來;「召回」只撤回駐軍,「放棄」才會讓營寨變回無主。"],["如何擁有寶物（名物）？","在家中建造 10 級「藏寶閣」，由英雄帶領全滅中立兵或攻擊玩家（需砸毀對方藏寶閣）即可搶奪。寶物附帶各種加成（如巨木旗 +25%、聖靈珠 +50% 等）。"],["刀鍛冶所與具足屋攻防加成計算？","每升 1 級增加基礎值的 1.5%。例如攻擊等級 10 的鄉士足輕攻擊力 = 40 * (1 + 1.5% * 10) = 46。"]];
+const faqHtml=()=>FAQ.map((x,i)=>`<details class="faq" data-d="faq${i}" ${op['faq'+i]?'open':''}><summary>${i+1}. ${esc(x[0])}</summary><div class="fa">${esc(x[1])}</div></details>`).join('')+'<p><a data-a="help">遊戲指南</a></p>';
 function sidebar(){const det=(id,sm,body)=>`<details data-d="${id}" ${op[id]?'open':''}><summary>${sm}</summary><div class="dbody">${body}</div></details>`;
  const cl=QS.filter(q=>!S.qd.includes(q.id)&&q.ok()).length;
- const msgs=ct==0?S.log.slice(0,30).reverse().map(l=>`<div><span class="t">(${dstr(l.t)})</span> <b class="bad">【系統訊息】</b>${l.m}</div>`).join(''):`<div class="mut">${ct==1?'尚未加入聯盟':'沒有密語'}</div>`;
- return det('acc','賬號狀態: 正常',`玩家:${NICK}<br>勢力:${fa().n}`)+det('city','城池清單',`|- ${NICK}的村庄(${home().x},${home().y}) <span class="flag s">${fa().s}</span>`)+det('goods',`商品清單 🎁:${fmt(S.gold)}`,'金幣用來立即完成施工(2 金幣/次),每遊戲小時 +1。')+det('task',`任務清單${cl?` <b class="bad">(${cl})</b>`:''}`,'<a data-a="nav" data-v="quest">前往任務頁面</a>')+det('faq','常見問題','<a data-a="help">遊戲指南</a>')
- +`<div class="ct">${['公頻','盟頻','密頻'].map((n,i)=>`<span data-a="ct" data-i="${i}" class="${ct==i?'on':''}">${n}</span>`).join('')}</div><div id="chat">${msgs}</div>`}
+ const msgs=chatHtml();
+ return det('acc','賬號狀態: 正常',`玩家:${esc(NICK)}<br>勢力:${fa().n}<br>已加入戰國時代 <b>${cityAge()}</b>`)+det('city',`城池清單${CITIES.length>1?' ('+CITIES.length+')':''}`,CITIES.length>1?CITIES.map(c=>`<div>|- <a data-a="city" data-k="${esc(c.k)}" ${c.k==CUR?'style="font-weight:bold"':''}>${cnOf(c)}(${c.x},${c.y})</a> <span class="flag s" style="background:${CASTLE_COL[c.f]}">${F[c.f].s}</span>${c.col?` <small class="mut">忠誠${c.loy}</small>`:''}</div>`).join(''):`|- ${cityName()}(${home().x},${home().y}) <span class="flag s" style="background:${CASTLE_COL[S.fac]}">${fa().s}</span>`)+det('goods',`商品清單 🎁:${fmt(S.gold)}`,'金幣是你整個帳號共用的(存在本丸),每座城都能用:立即完成施工(2 金幣/次)、買資源、平倉。每遊戲小時 +1(本丸產出)。')+det('guide',`新手引導 ${GUIDE.filter(g=>g.ok()).length}/${GUIDE.length}`,guideList())+det('task',`任務清單${cl?` <b class="bad">(${cl})</b>`:''}`,'<a data-a="nav" data-v="quest">前往任務頁面</a>')+det('faq','常見問題','<a data-a="nav" data-v="faq">前往常見問題頁面</a>')
+ +`<div class="ct">${['公頻','盟頻','密頻','系統'].map((n,i)=>`<span data-a="ct" data-i="${i}" class="${ct==i?'on':''}">${n}</span>`).join('')}</div><div id="chat">${msgs}</div>${chatBox()}`}
+try{document.getElementById('lgi').innerHTML=ICONS.arm}catch(e){}
 function render(){
- $('#nav').innerHTML=NAV.map(([v,n,ic])=>`<button data-a="${v=='x'?'soon':'nav'}" data-v="${v}" class="${view==v||(v=='out'&&view=='f')||(v=='in'&&view=='b')?'on':''}"><i>${ic}</i>${n}</button>`).join('');
- const V={shop:vShop,out:vOut,in:vIn,f:vF,b:vB,map:vMap,rank:vRank,quest:vQuest,rep:vRep,mail:vMail};
- $('#main').innerHTML=V[view]();$('#side').innerHTML=sidebar();const c=$('#chat');if(c)c.scrollTop=c.scrollHeight;dirty=0}
+ $('#nav').innerHTML=NAV.map(([v,n,ic])=>`<button data-a="${v=='x'?'soon':v=='hero'?'herogo':'nav'}" data-v="${v}" class="${view==v||(v=='out'&&view=='f')||(v=='in'&&view=='b'&&!isCnl())||(v=='hero'&&view=='b'&&isCnl())?'on':''}"><i>${ic=='HEROICON'?heroSvg(30):ic}</i>${n}${v=='mail'&&MAIL.unread?` <b class="bad">(${MAIL.unread})</b>`:''}</button>`).join('');
+ const V={shop:vShop,out:vOut,in:vIn,f:vF,b:vB,map:vMap,rank:vRank,quest:vQuest,rep:vRep,mail:vMail,faq:vFaq,fb:vFb};
+ $('#main').innerHTML=incBar()+guideBar()+V[view]();$('#side').innerHTML=sidebar();fvRestore();const c=$('#chat');if(c)c.scrollTop=c.scrollHeight;dirty=0}
 
 async function api(p,b,m,k){const r=await fetch(p,{method:m||(b?'POST':'GET'),headers:b?{'Content-Type':'application/json'}:{},body:b?JSON.stringify(b):undefined,credentials:'same-origin',keepalive:!!k});let j=null;try{j=await r.json()}catch(e){}return{ok:r.ok&&(!j||j.ok!==false),s:r.status,j}}
-function authUI(reg,msg){const m=$('#modal');m.style.display='flex';
- m.innerHTML=`<div class="box"><h3>${reg?'註冊':'登入'}</h3>${msg?`<p class="bad">${msg}</p>`:''}<p>電子郵件 <input id="ae" type="text" style="width:220px"></p><p>密碼 <input id="ap" type="password" style="width:220px"></p>${reg?'<p>暱稱 <input id="an" type="text"></p>':''}<p><button data-a="${reg?'dosign':'dolog'}">${reg?'註冊':'登入'}</button> <a data-a="authsw" data-r="${reg?0:1}">${reg?'已有帳號?登入':'沒有帳號?註冊'}</a></p></div>`}
+function authUI(reg,msg){const m=$('#modal');m.className='au';m.style.display='flex';
+ m.innerHTML=`<div class="bl"></div><div class="po"></div><div class="box"><h3>${reg?'註冊':'登入'}</h3>${msg?`<p class="bad">${msg}</p>`:''}<p>電子郵件 <input id="ae" type="text" style="width:220px"></p><p>密碼 <input id="ap" type="password" style="width:220px"></p>${reg?'<p>暱稱 <input id="an" type="text"></p>':''}<p><button data-a="${reg?'dosign':'dolog'}">${reg?'註冊':'登入'}</button> <a data-a="authsw" data-r="${reg?0:1}">${reg?'已有帳號?登入':'沒有帳號?註冊'}</a></p></div>`}
 async function doLogin(){const r=await api('/api/login',{email:$('#ae').value.trim(),password:$('#ap').value});if(!r.ok)return authUI(false,'登入失敗:'+((r.j&&r.j.error)||'請確認帳號密碼'));await finish()}
 async function doSign(){const email=$('#ae').value.trim(),password=$('#ap').value,nickname=$('#an').value.trim();const r=await api('/api/signup',{email,password,nickname});
  if(!r.ok)return authUI(true,'註冊失敗:'+((r.j&&r.j.error)||'請稍後再試'));
  const l=await api('/api/login',{email,password});if(!l.ok)return authUI(false,'註冊完成。若需要信箱驗證,請先到信箱點擊驗證連結,再回來登入');await finish()}
-async function finish(){const r=await api('/api/me');if(r.ok&&r.j&&r.j.id){ME=r.j;$('#modal').style.display='none';$('#who').textContent=ME.email;start()}else authUI(false,'無法確認登入狀態')}
-async function doLogout(){if(!ME)return toast('目前是訪客模式(沒有連上後端)');try{await chain}catch(e){}await api('/api/logout',{});location.reload()}
+async function finish(){const r=await api('/api/me');if(r.ok&&r.j&&r.j.id){ME=r.j;AUTHLOST=false;$('#modal').style.display='none';$('#who').textContent=ME.email;await start();flush()}else authUI(false,'無法確認登入狀態')}
+async function doLogout(){if(!ME)return toast('目前是訪客模式(沒有連上後端)');await drain();await api('/api/logout',{});location.reload()}
 
-let REV=0,pend=0,chain=Promise.resolve();
+let REV=0,OUT=[],flushing=false,AUTHLOST=false;
 const tnow=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
-const setCloud=t=>{$('#cloud').textContent=t?' ☁ '+t:''};
+const setCloud=t=>{const el=$('#cloud');el.textContent=t?' ☁ '+t:'';el.title=t?'點一下立即同步':''};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function adopt(st,t0){S=G.fix(st);speed=SPEED;const lag=(Date.now()-t0)/1000;if(lag>0)G.adv(lag*speed,{quiet:true});syncMc();dirty=1}
-function queueSend(a){pend++;chain=chain.then(()=>send(a)).catch(()=>{}).then(()=>{pend--})}
-async function send(a){const t0=Date.now();
- try{const r=await api('/api/act',{action:a,rev:REV},'POST',1),j=r.j||{};
-  if(j.state&&j.rev!=null){REV=j.rev;if(pend<=1||!r.ok)adopt(j.state,t0)}
-  else if(r.s==409)await pull(true);
-  if(r.ok){setCloud('已同步 '+tnow());if(j.msg)toast(j.msg)}else{if(j.msg)toast(j.msg);if(!j.state&&r.s!=409)setCloud('同步失敗')}
- }catch(e){setCloud('離線')}}
-async function pull(force){if(!ME||(pend&&!force))return;const t0=Date.now();
- try{const r=await api('/api/save');if(r.ok&&r.j){REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);setCloud('已同步 '+tnow())}}}catch(e){setCloud('離線')}}
+function relogin(){AUTHLOST=true;setCloud('登入已過期,請重新登入');authUI(false,'登入已過期(閒置太久了),請重新登入。你剛才的操作會在登入後自動補送。')}
+// 帶自動續期的請求:401 時先打 /api/me(伺服器會換新登入),再試一次
+async function apiAuth(p,b,m,k){let r=await api(p,b,m,k);if(r.s==401){await api('/api/me').catch(()=>{});r=await api(p,b,m,k)}return r}
+function queueSend(a){OUT.push(a);setCloud('同步中…');flush()}
+async function flush(){if(flushing||!ME||AUTHLOST)return;flushing=true;
+ try{while(OUT.length){const a=OUT[0],r=await send(a);if(r==='again')continue;if(r==='retry'){setCloud('同步失敗,稍後自動重試');break}OUT.shift()}}finally{flushing=false}
+ if(!OUT.length&&!AUTHLOST)setCloud('已同步 '+tnow())}
+async function drain(){for(let i=0;i<40&&(OUT.length||flushing);i++){if(!flushing)flush();await sleep(250)}}
+let again409=0;
+async function send(a){const t0=Date.now();let r;
+ try{r=await apiAuth('/api/act',{action:a,rev:REV,c:CUR||undefined},'POST',1)}catch(e){setCloud('離線,稍後重試');return'retry'}
+ const j=r.j||{};
+ if(r.s==401){relogin();return'retry'}
+ if(r.s>=500||r.s==0)return'retry';
+ noteSrv(j);
+ if(r.s==403&&j.gone){toast(j.msg||'這座城池已不屬於你');CUR=null;REV=0;OUT.length=0;await pull(true);return'drop'}
+ if(r.ok){again409=0;if(j.state&&j.rev!=null){REV=j.rev;if(OUT.length<=1&&(!j.c||!CUR||j.c==CUR))adopt(j.state,t0)}if(j.msg)toast(j.msg);return'ok'}
+ if(r.s==409){if(j.rev!=null)REV=j.rev;if(++again409<=3){await sleep(100+Math.random()*300);return'again'}again409=0;await pull(true);return'drop'}
+ if(j.state&&j.rev!=null){REV=j.rev;adopt(j.state,t0)}
+ if(j.msg)toast(j.msg);return'drop'}
+async function pull(force){if(!ME||AUTHLOST||((OUT.length||flushing)&&!force))return;const t0=Date.now();
+ try{const r=await apiAuth('/api/save'+(CUR?'?c='+encodeURIComponent(CUR):''));if(r.s==401)return relogin();if(r.ok&&r.j){noteSrv(r.j);if(r.j.c)CUR=r.j.c;REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);if(!OUT.length)setCloud('已同步 '+tnow())}}}catch(e){setCloud('離線,稍後重試')}}
 
-function doA(a,after){const r=G.perform(a);if(!r.ok){toast(r.msg||'無法執行');return false}if(r.msg)toast(r.msg);if(after)after();dirty=1;if(ME)queueSend(a);else save();return true}
-function newGame(f){S=G.init(f);if(ME)speed=SPEED;view='out';bv=null;curPos='';syncMc();sel=null;TGT=null;VIL.clear();$('#modal').style.display='none';dirty=1;if(ME)queueSend({t:'init',fac:f});else save();render()}
+async function goCity(k){if(!ME||!S||!k||k===CUR)return;await drain();if(OUT.length||flushing){toast('還有操作正在同步,請稍後再切換');return}
+ CUR=k;view='out';bv=null;bs=null;sel=null;TGT=null;VIL.clear();curPos='';await pull(true);syncMc();drawRes();dirty=1;render();toast('已切換到:'+cityName().replace(/&[a-z]+;/g,''))}
+function doA(a,after){G.setNow(Date.now()+CLK);const r=G.perform(a);if(!r.ok){toast(r.msg||'無法執行');return false}if(r.msg)toast(r.msg);if(after)after();dirty=1;if(ME)queueSend(a);else save();return true}
+function newGame(f){setTimeout(()=>modal(WELCOME),50);S=G.init(f);if(ME)speed=SPEED;view='out';bv=null;curPos='';syncMc();sel=null;TGT=null;VIL.clear();$('#modal').style.display='none';dirty=1;if(ME)queueSend({t:'init',fac:f});else save();render()}
 function act(d){
  if(d.a=='pick')return newGame(d.f);
  if(d.a=='close'){$('#modal').style.display='none';return}
@@ -300,50 +618,98 @@ function act(d){
  if(d.a=='dolog')return doLogin();
  if(d.a=='dosign')return doSign();
  if(d.a=='logout')return doLogout();
+ if(d.a=='syncnow'){if(!ME)return;if(AUTHLOST)return relogin();setCloud('同步中…');flush();pull(true);return}
  if(d.a=='soon')return toast(d.m||'尚未開放');
+ if(d.a=='city')return goCity(d.k);
+ if(d.a=='hero'){doA({t:'hero',k:+$('#hk').value});return}
+ if(d.a=='hpt'){doA({t:'heropt',d:[0,1,2,3].map(i=>Math.max(0,Math.floor(+$('#hp'+i).value||0)))});return}
+ if(d.a=='hrev'){doA({t:'herorev'});return}
+ if(d.a=='artdrop'){if(act.cf!=='art'+d.id){act.cf='art'+d.id;toast('再按一次確認丟棄');setTimeout(()=>{if(act.cf==='art'+d.id)act.cf=null},4000);return}act.cf=null;doA({t:'artdrop',id:d.id});return}
+ if(d.a=='mkload'){loadMarket();return}
+ if(d.a=='al'){const t=d.t,v=i=>($(i)?$(i).value:'');const body={t,id:d.id,o:d.o};
+  if(t=='create'){body.tag=v('#altag').trim();body.name=v('#alname').trim()}
+  else if(t=='invite'){body.x=+v('#alx');body.y=+v('#aly')}
+  else if(t=='msg'){body.s=v('#alms');body.b=v('#almb')}
+  else if(t=='leave'||t=='disband'||t=='kick'){const ck=t+(d.o||'');if(act.cf!==ck){act.cf=ck;toast('再按一次確認'+(t=='leave'?'退出':t=='kick'?'移出':'解散'));setTimeout(()=>{if(act.cf===ck)act.cf=null},4000);return}act.cf=null}
+  allyDo(body);return}
+ if(d.a=='mktgo'){$('#sx').value=d.x;$('#sy').value=d.y;return}
  if(d.a=='help')return modal(HELP);
  if(d.a=='set'){modal(`<h3>遊戲設定</h3>`+(ME?`<p class="mut">線上模式的時間流速由伺服器決定(目前 ×${SPEED})。</p>`:`<p>時間流速 <select id="spd">${[[1,'×1(真實)'],[10,'×10'],[60,'×60'],[300,'×300']].map(([v,n])=>`<option value="${v}" ${v==speed?'selected':''}>${n}</option>`).join('')}</select></p><p class="mut">資源與施工在關閉頁面後仍會繼續,重新開啟時補算(最多 24 小時)。</p>`)+`<p><button data-a="reset">重新開始</button></p>`);return}
  if(d.a=='reset'){if(!act.rc){act.rc=1;toast('再按一次「重新開始」確認清除進度');setTimeout(()=>act.rc=0,4000);return}act.rc=0;
-  (async()=>{try{localStorage.removeItem(KEY)}catch(e){}
-   if(ME){try{await chain;let r=await api('/api/act',{action:{t:'reset'},rev:REV});if(r.s==409&&r.j&&r.j.rev!=null){REV=r.j.rev;await api('/api/act',{action:{t:'reset'},rev:REV})}}catch(e){}REV=0;setCloud('')}
+  (async()=>{try{localStorage.removeItem(KEY);localStorage.removeItem(KEY+'_goff')}catch(e){}GOFF=false;
+   if(ME){try{await drain();if(CUR&&CUR!==ME.id){CUR=ME.id;await pull(true)}let r=await api('/api/act',{action:{t:'reset'},rev:REV,c:CUR||undefined});if(r.s==409&&r.j&&r.j.rev!=null){REV=r.j.rev;await api('/api/act',{action:{t:'reset'},rev:REV,c:CUR||undefined})}}catch(e){}REV=0;CUR=null;CITIES=[];setCloud('')}
    S=null;$('#rb').innerHTML=$('#side').innerHTML=$('#main').innerHTML=$('#nav').innerHTML='';pick()})();return}
  if(!S)return;
- if(d.a=='nav'){view=d.v;bv=null;bs=null;dirty=1}
+ if(d.a=='nav'){view=d.v;bv=null;bs=null;dirty=1;if(view=='mail'){mt=ME?mt:'in';loadMail()}}
+ else if(d.a=='pg'){PG[d.k]=+d.p;dirty=1}
  else if(d.a=='fld'){fv=+d.i;view='f';dirty=1}
+ else if(d.a=='herogo'){const sl=S.slots.findIndex(c=>c&&c.b=='cnl'&&c.l>=1);if(sl<0)toast(`需要先蓋${B.find(z=>z.id=='cnl').n}才能有英雄`);else{bs=sl;view='b';dirty=1}}
  else if(d.a=='bld'){bs=d.slot==='wall'?'wall':+d.slot;view='b';dirty=1}
  else if(d.a=='f')doA({t:'f',i:+d.i},()=>{view='out'});
  else if(d.a=='b')doA({t:'b',slot:d.slot==='wall'?'wall':+d.slot,id:d.id},()=>{view='in'});
  else if(d.a=='rushall')doA({t:'rushall'});
  else if(d.a=='cancel')doA({t:'cancel',l:d.l});
- else if(d.a=='fill'){const u=us()[+d.k];$('#n'+d.k).value=Math.floor(Math.min(...u.r.map((x,i)=>S.res[i]/x)))}
- else if(d.a=='tr')doA({t:'tr',k:+d.k,n:Math.floor(+$('#n'+d.k).value||0)});
+ else if(d.a=='fill'){const u=us()[+d.k];const v=Math.floor(Math.min(...u.r.map((x,i)=>S.res[i]/x)));$('#n'+d.k).value=v;TRV[+d.k]=Math.max(1,v);FV['n'+d.k]=String(v)}
+ else if(d.a=='tr'){delete TRV[+d.k];doA({t:'tr',k:+d.k,n:Math.floor(+$('#n'+d.k).value||0)})}
  else if(d.a=='cmd')doA({t:'cmd',id:d.id});
+ else if(d.a=='trc')doA({t:'trcancel',b:d.b,i:+d.i});
  else if(d.a=='visit')doA({t:'visit'});
  else if(d.a=='claim')doA({t:'claim',id:d.id});
- else if(d.a=='raid'){const tx=Math.floor(+$('#tx').value),ty=Math.floor(+$('#ty').value),send=us().map((_,k)=>Math.floor(+$('#s'+k).value||0));
-  if(npcAt(tx,ty))doA({t:'raid',tx,ty,send});
+ else if(d.a=='claimd')doA({t:'claimd'});
+ else if(d.a=='raid'){const tx=Math.floor(+$('#tx').value),ty=Math.floor(+$('#ty').value),send=us().map((_,k)=>{const e=$('#s'+k);return e?Math.floor(+e.value||0):0}),kind=d.kind=='found'?'found':d.kind=='reinf'?'reinf':(()=>{const U=us();return send.some(x=>x>0)&&send.every((x,k)=>!x||U[k].k=='scout')?'scout':''})(),tg=[0,1].map(i=>{const e=$('#tg'+i);return e&&e.value?e.value:''}).filter(Boolean);
+  if(kind!='found')for(const k in SENDV)delete SENDV[k];
+  if(kind=='found'){if(!ME)return toast('開分城需要登入');const fs=us().map(u=>u.k=='set'?3:0);queueSend({t:'raidp',tx,ty,send:fs,kind});toast('開墾代官出發…')}
+  else if(kind=='reinf'){if(!ME)return toast('增援需要登入');queueSend({t:'raidp',tx,ty,send,kind});toast('增援部隊出發…')}
+  else if(npcAt(tx,ty)&&!ME)doA({t:'raid',tx,ty,send,kind,hero:!kind&&!!($('#hero')&&$('#hero').checked)});
   else if(!ME)toast('該座標沒有可攻擊的目標(玩家對戰需要登入)');
-  else{queueSend({t:'raidp',tx,ty,send});toast('出兵中…')}}
+  else{queueSend({t:'raidp',tx,ty,send,kind,tg,hero:!kind&&!!($('#hero')&&$('#hero').checked)});toast(kind?'偵察兵出發…':'出兵中…')}}
+ else if(d.a=='shipto'){const sl=slotOf('mkt');if(sl<0){toast('需要先建造市場');return}SHIPT=[+d.x,+d.y];bs=sl;view='b';dirty=1}
+ else if(d.a=='campx'){if(!confirm('放棄這座營寨?駐軍會全部回城,營寨變回無主。'))return;queueSend({t:'campx',x:+d.x,y:+d.y});toast('放棄中…')}
+ else if(d.a=='garr'){queueSend({t:'garrp',k:d.k,gid:d.gid});toast('部隊調動中…')}
+ else if(d.a=='ship'){const r=[0,1,2,3].map(i=>Math.max(0,Math.floor(+$('#m'+i).value||0)));queueSend({t:'shipp',tx:Math.floor(+$('#sx').value),ty:Math.floor(+$('#sy').value),r});toast('商人出發中…')}
+ else if(d.a=='offer'){queueSend({t:'offerp',gi:+$('#og').value,ga:Math.floor(+$('#oga').value||0),wi:+$('#ow').value,wa:Math.floor(+$('#owa').value||0)});setTimeout(loadMarket,2500)}
+ else if(d.a=='accept'){queueSend({t:'acceptp',id:d.id});setTimeout(loadMarket,2500)}
+ else if(d.a=='ocancel'){queueSend({t:'offerx',id:d.id});setTimeout(loadMarket,2500)}
+ else if(d.a=='recall'){
+  if(d.aid){if(!ME)return;queueSend({t:'recallp',aid:d.aid});toast('撤軍中…')}
+  else doA({t:'recall',i:+d.i,tx:+d.x,ty:+d.y})}
+ else if(d.a=='dem'){const sl=+d.slot;if(DM!==sl){DM=sl;toast('再按一次確認:拆除一級,不退還資源');setTimeout(()=>{if(DM===sl){DM=null;dirty=1;render()}},4000);dirty=1}else{DM=null;doA({t:'demolish',slot:sl},()=>{view='in'})}}
+ else if(d.a=='gogo'){view=d.v;bv=null;bs=null;dirty=1}
+ else if(d.a=='goff'){GOFF=true;try{localStorage.setItem(KEY+'_goff','1')}catch(e){}toast('已略過引導,可以在右側「新手引導」面板重新開啟');dirty=1}
+ else if(d.a=='gon'){GOFF=false;try{localStorage.removeItem(KEY+'_goff')}catch(e){}dirty=1}
+ else if(d.a=='udesc'){UOPEN=UOPEN===+d.k?null:+d.k;dirty=1}
  else if(d.a=='tile'){sel=[+d.x,+d.y];TGT=sel;dirty=1}
  else if(d.a=='tgo'){const sl=slotOf('war');if(sl<0){toast('需要先建造軍奉行');return}bs=sl;view='b';dirty=1}
  else if(d.a=='mp'){mc=[mc[0]+ +d.dx,mc[1]+ +d.dy];dirty=1}
  else if(d.a=='mgo'){mc=[Math.floor(+$('#mx').value||0),Math.floor(+$('#my').value||0)];dirty=1}
+ else if(d.a=='sall'){const e=$('#s'+d.k);if(e){e.value=e.max;fvSave({target:e})}}
  else if(d.a=='mhome'){mc=[home().x,home().y];dirty=1}
  else if(d.a=='buy')doA({t:'buy',res:SH.res,gold:Math.floor(+$('#bgd').value||0)});
  else if(d.a=='bal')doA({t:'balance',r:[0,1,2,3].map(i=>Math.floor(+$('#r'+i).value||0))});
  else if(d.a=='balp'){SH.r=d.p.split(',').map(Number);dirty=1}
  else if(d.a=='rk'){rp=+d.p;dirty=1}
- else if(d.a=='rks'){const a=ranks(),n=Math.floor(+$('#rkn').value||0),m=($('#rkm').value||'').trim();let i=n>0?n-1:m?a.findIndex(r=>r.p.includes(m)||r.h.includes(m)):-1;if(i<0)return toast('找不到');rp=Math.floor(i/10);dirty=1}
- else if(d.a=='mt'){mt=d.t;dirty=1}
+ else if(d.a=='rks'){const a=rkRows().rows,n=Math.floor(+$('#rkn').value||0),q=($('#rkm').value||'').trim();let i=n>0?n-1:q?a.findIndex(r=>r.t.includes(q)):-1;if(i<0||i>=a.length)return toast('找不到');rp=Math.floor(i/20);dirty=1}
+ else if(d.a=='rkt'){rkt=+d.i;rp=0;dirty=1}
+ else if(d.a=='mt'){mt=d.t;mo=null;dirty=1;if(mt=='in'||mt=='out')loadMail()}
+ else if(d.a=='mread'){mt='read';mo={box:d.box,id:d.id};dirty=1;if(d.box=='in'){const m=MAIL.inbox.find(x=>x.id==d.id);if(m&&!m.r){m.r=true;MAIL.unread=Math.max(0,MAIL.unread-1);api('/api/mail',{t:'read',id:d.id}).catch(()=>{})}}}
+ else if(d.a=='mreply'){const m=mfind();if(m&&!m.sys){CMP={x:String(m.from.x),y:String(m.from.y),s:/^Re:/.test(m.s)?m.s:'Re: '+m.s,b:''};mt='new';mo=null;dirty=1}}
+ else if(d.a=='mdel'){const m=mfind();if(m){const box=m.box;(async()=>{try{await api('/api/mail',{t:'del',box:box=='in'?'inbox':'sent',id:m.id});}catch(e){}await loadMail();mt=box;mo=null;dirty=1;render()})()}}
+ else if(d.a=='mailto'){CMP={x:String(d.x),y:String(d.y),s:'',b:''};view='mail';mt='new';mo=null;dirty=1}
+ else if(d.a=='msend'){const x=Math.floor(+$('#mlx').value),y=Math.floor(+$('#mly').value),sj=$('#mls').value,bd=$('#mlb').value;CMP={x:String(x),y:String(y),s:sj,b:bd};
+  if(!bd.trim())return toast('信件內容不能是空的');
+  (async()=>{try{const r=await api('/api/mail',{t:'send',tx:x,ty:y,s:sj,b:bd});if(r.ok){toast((r.j&&r.j.msg)||'已寄出');CMP={x:'',y:'',s:'',b:''};mt='out';await loadMail()}else toast((r.j&&r.j.msg)||'寄信失敗');}catch(e){toast('寄信失敗,請稍後再試')}dirty=1;render()})()}
  else if(d.a=='ct'){ct=+d.i;dirty=1}
+ else if(d.a=='chsend')chatSend();
+ else if(d.a=='chto'){ct=2;dirty=1;render();const e=$('#cht');if(e){e.value=d.n;FV.cht=d.n;const m=$('#chm');if(m)m.focus()}}
+ else if(d.a=='fbsend')fbSend();
  if(view=='map'&&['nav','mp','mgo','mhome'].includes(d.a))loadWorld();
  if(view=='rank'&&d.a=='nav')loadRank();
  if(dirty)render()}
 
-async function start(){KEY='sg_village_v3'+(ME?'_'+ME.id:'');
+async function start(){KEY='sg_village_v3'+(ME?'_'+ME.id:'');try{GOFF=localStorage.getItem(KEY+'_goff')==='1'}catch(e){}
  if(ME){NICK=ME.nick||'主公';speed=SPEED;const t0=Date.now();
-  try{const r=await api('/api/save');if(r.ok&&r.j){REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);setCloud('已載入雲端進度')}}else setCloud('同步失敗')}catch(e){setCloud('離線')}
-  if(S){drawRes();render()}else pick();return}
+  try{const r=await api('/api/save');if(r.ok&&r.j){noteSrv(r.j);if(r.j.c)CUR=r.j.c;REV=r.j.rev||0;if(r.j.state){adopt(r.j.state,t0);setCloud('已載入雲端進度')}}else setCloud('同步失敗')}catch(e){setCloud('離線')}
+  if(S){drawRes();render();pollMail()}else pick();return}
  if(load()){drawRes();render()}else pick()}
 
 async function boot(){let note='';
@@ -356,18 +722,31 @@ async function boot(){let note='';
  else if(r&&r.s==401)authUI(false,note?note+',請登入':'')
  else start()}
 
-document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b)act(b.dataset)});
-document.addEventListener('change',e=>{if(e.target.id=='spd'){speed=+e.target.value;if(S&&!ME)save()}if(e.target.id=='brs')SH.res=+e.target.value});
-document.addEventListener('input',e=>{const id=e.target.id;if(id=='bgd')SH.gold=Math.max(1,Math.floor(+e.target.value||1));else if(/^r[0-3]$/.test(id)){SH.r[+id[1]]=Math.max(0,Math.floor(+e.target.value||0));updBal()}});
+// 輸入欄暫存:畫面每次重繪都會重建欄位,所以把使用者填的值記下來,重繪後補回去
+const FV={},FVX=new Set(['csw','spd','brs','bgd']),FVCLR=new Set(['nav','fld','bld','mp','mgo','mhome','raid','ship','offer','tr','b','f','hero','heropt','herorev']);
+const fvSave=e=>{const t=e.target,id=t&&t.id;if(!id||FVX.has(id)||!/^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName))return;FV[id]=t.type=='checkbox'?t.checked:t.value};
+const fvRestore=()=>{for(const id in FV){const el=document.getElementById(id);if(!el||el===document.activeElement)continue;if(el.type=='checkbox')el.checked=!!FV[id];else if(el.tagName!='SELECT'||[...el.options].some(o=>o.value==FV[id]))el.value=FV[id]}};
+document.addEventListener('input',fvSave,true);document.addEventListener('change',fvSave,true);
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b){if(FVCLR.has(b.dataset.a))for(const k in FV)delete FV[k];act(b.dataset)}});
+document.addEventListener('change',e=>{if(e.target.id=='csw')goCity(e.target.value);if(e.target.id=='spd'){speed=+e.target.value;if(S&&!ME)save()}if(e.target.id=='brs')SH.res=+e.target.value});
+document.addEventListener('input',e=>{const id=e.target.id;if(/^n\d+$/.test(id))TRV[+id.slice(1)]=Math.max(1,Math.floor(+e.target.value||1));else if(/^s\d+$/.test(id))SENDV[+id.slice(1)]=Math.max(0,Math.floor(+e.target.value||0));else if(id=='bgd')SH.gold=Math.max(1,Math.floor(+e.target.value||1));else if(id=='mlx')CMP.x=e.target.value;else if(id=='mly')CMP.y=e.target.value;else if(id=='mls')CMP.s=e.target.value;else if(id=='mlb')CMP.b=e.target.value;else if(/^r[0-3]$/.test(id)){SH.r[+id[1]]=Math.max(0,Math.floor(+e.target.value||0));updBal()}});
 document.addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.d)op[d.dataset.d]=d.open},true);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible')pull()});
-const busy=()=>['INPUT','SELECT'].includes(document.activeElement.tagName);
-setInterval(()=>{if(!S)return;const n=Date.now(),dt=(n-last)/1000*speed;last=n;G.adv(dt,{quiet:dt/speed>300});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'){flush();pull()}});
+addEventListener('online',()=>{flush();pull(true)});
+const busy=()=>['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName);
+setInterval(()=>{if(!S)return;const n=Date.now(),dt=(n-last)/1000*speed;last=n;G.adv(dt,{quiet:dt/speed>300});G.setNow(Date.now()+CLK);G.dailyRoll();
  const sg=(S.log[0]?S.log[0].t+S.log[0].m:'')+S.u.join(',')+JSON.stringify(S.q)+JSON.stringify(S.tr);if(sg!==sig){sig=sg;dirty=1}
- drawRes();updCd();if(dirty&&!busy())render()},250);
+ drawRes();updCd();
+ if(ME&&Date.now()-lastRes>8000){const nowS=Date.now()+CLK;if(INC.some(e=>e.arrAt<=nowS)||S.mv.some(m=>m.pending&&m.sentAt&&nowS>=m.sentAt+m.dur/SPEED*1000)){lastRes=Date.now();pull(true)}}
+ if(dirty&&!busy())render()},250);
 setInterval(()=>{if(S){if(!ME)save();if(!busy())render()}},4000);
-setInterval(()=>{if(ME&&S&&!pend)pull();if(ME&&S&&view=='map')loadWorld()},60000);
-addEventListener('beforeunload',()=>{if(S&&!ME)save()});
+setInterval(()=>{if(ME)chatPoll()},8000);
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='chm'){e.preventDefault();chatSend()}});
+setTimeout(()=>{if(ME)chatPoll()},3000);
+setInterval(()=>{if(ME&&S){flush();pollMail();pull();if(view=='map')loadWorld()}},60000);
+setInterval(()=>{if(ME&&S&&OUT.length&&!flushing&&!AUTHLOST)flush()},8000);
+setInterval(()=>{if(ME&&S&&!document.hidden&&(view=='in'||view=='out')&&!OUT.length&&!flushing&&!AUTHLOST)pull()},10000); // 建築/資源田頁:每 10 秒向伺服器對一次(建築相關狀態)
+addEventListener('beforeunload',e=>{if(S&&!ME)save();if(ME&&(OUT.length||flushing)){e.preventDefault();e.returnValue=''}});
 
 boot();
 </script>
