@@ -121,6 +121,15 @@ img.aic.big{width:72px;height:72px;margin:4px 0;border-radius:8px}img.aic{width:
 @media(max-width:700px){#modal.au .po{background-size:cover}}
 #modal.au .box{position:relative;width:min(340px,88vw);margin:0 auto 4vh;background:rgba(20,8,10,.78);color:#f6e7c8;text-align:center;border-color:#c9a24b;border-radius:6px}
 #modal.au .box input{width:200px}
+#c .bm,.bm{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:10px 0}
+.pc{border:2px solid var(--bd);background:linear-gradient(#1c1012,#100a0b);border-radius:8px;padding:10px 14px;margin:10px 0;line-height:1.55}
+.pc>p:first-child{margin-top:0}.pc>*:last-child{margin-bottom:0}
+.pc .sh{margin:0 0 8px;padding-bottom:5px;font-size:16px;color:var(--lk);border-bottom:1px solid rgba(154,122,70,.45)}
+.pc table.tb{max-width:none}.pc .bad{color:#ffb4a6}
+.bm .cd{border:2px solid var(--bd);background:linear-gradient(#1c1012,#100a0b);border-radius:8px;padding:10px 12px;font-size:14px;line-height:1.5;display:flex;flex-direction:column;gap:4px}
+.bm .cd b{font-size:16px;color:var(--lk)}.bm .cd p{margin:2px 0}.bm .cd>p:first-of-type{color:#e6d8c2}
+.bm .cd .bad{color:#ffb4a6;background:rgba(160,30,20,.25);border-radius:5px;padding:3px 7px}
+.bm .cd button{align-self:flex-start;margin-top:4px}
 #modal .g{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:8px 0}
 #modal .cd{border:2px solid var(--bd);background:var(--pn);padding:8px}
 .map-w{max-width:620px}
@@ -210,7 +219,7 @@ function vOut(){
   return t==3?`<div ${at}><div class="crop"><b class="lv">${L}</b></div></div>`:`<div ${at}><div class="em">${['🌲🌲',CLAYI,'🪨🪨'][t]}</div><b class="lv">${L}</b></div>`}).join('');
  const pr=[0,1,2,3].map(i=>`<div>${RI[i]} ${RN[i]}: <b>${Math.floor(i==3?rate(3)-upkeep():rate(i))}</b></div>`).join('');
  const upg=id=>['f','b'].some(l=>S.q[l]&&S.q[l].id===id&&!S.q[l].dm),lampOn={'兵':S.mv.length>0,'步':!!(S.tr.infb||[]).length,'騎':!!(S.tr.cavb||[]).length,'樂':(S.ships||[]).some(x=>x.ret>S.t),'學':upg('acad'),'攻':upg('smi'),'防':upg('arm')},lampT={'兵':'有部隊在外行軍','步':'足輕營訓練中','騎':'馬廻組訓練中','樂':'商人運送資源中','學':'兵學塾升級中','攻':'刀鍛冶所升級中','防':'具足屋升級中'},lamps=Object.keys(lampOn).map(c=>`<span class="lamp ${lampOn[c]?'on':''}" title="${lampT[c]}">${c}</span>`).join('');
- const away=G.awayUnits(),ar=(S.u.map((n,k)=>n?`<div>${n} ${us()[k].n}</div>`:'').join('')||'<div class="mut">無</div>')+(away.some(x=>x)?`<div class="mut">出征中:${away.map((n,k)=>n?n+' '+us()[k].n:'').filter(Boolean).join('、')}</div>`:'')+((S.gar||[]).length?`<div class="mut">駐防的友軍:</div>`+S.gar.map(g=>`<div class="mut">　${esc(g.n)}:${g.u.map((n,k)=>n?n+' '+((UN[g.fac]||[])[k]||{n:'兵'}).n:'').filter(Boolean).join('、')}</div>`).join(''):'');
+ const away=G.awayUnits(),ar=(S.u.map((n,k)=>n?`<div>${n} ${us()[k].n}</div>`:'').join('')||'<div class="mut">無</div>')+(away.some(x=>x)?`<div class="mut">出征中:${away.map((n,k)=>n?n+' '+us()[k].n:'').filter(Boolean).join('、')}</div>`:'')+((S.out||[]).length?`<div class="mut">駐守在外:</div>`+S.out.map(o=>`<div class="mut">　${esc(o.name||(String(o.k||'').startsWith('camp:')?'營寨':'城池'))}(${o.x}|${o.y}):${(o.u||[]).map((n,k)=>n?n+' '+((us()[k]||{}).n||'兵'):'').filter(Boolean).join('、')}</div>`).join(''):'')+((S.gar||[]).length?`<div class="mut">駐防的友軍:</div>`+S.gar.map(g=>`<div class="mut">　${esc(g.n)}:${g.u.map((n,k)=>n?n+' '+((UN[g.fac]||[])[k]||{n:'兵'}).n:'').filter(Boolean).join('、')}</div>`).join(''):'');
  return `${ttl()}<div class="cols"><div class="fr sc sc-out"><svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%"><path d="M0 46 Q30 52 48 44 T100 40" stroke="#7fd6cf" stroke-width="1.6" fill="none" opacity=".7"/><path d="M52 46 Q54 70 100 80" stroke="#7fd6cf" stroke-width="1.6" fill="none" opacity=".7"/></svg>${sc}<div class="it" style="left:47%;top:30%;font-size:58px" data-a="nav" data-v="in" title="城內(點一下進城)">${fcastle(CASTLE_COL[S.fac])}</div></div><div class="info"><h4 class="sh">生產力</h4>${pr}<h4 class="sh">建築指示燈</h4><div>${lamps}</div><h4 class="sh">軍隊</h4>${ar}</div></div>${qtab()}${ttab()}${mvt()}`}
 const SLP=[[10,12],[26,12],[42,12],[58,12],[74,12],[90,12],[18,30],[34,30],[50,30],[66,30],[82,30],[18,48],[34,48],[50,48],[66,48],[82,48],[18,66],[34,66],[50,66],[66,66],[82,66]];
 const BI={gov:['🏯','知'],wh:['🏠','藏'],gr:['🛖','米'],cave:['🕳️','埋'],war:['⛩️','軍'],infb:['⛺','足'],acad:['🏫','學'],smi:['🗡️','刀'],arm:['🥋','具'],cavb:['🐎','馬'],mill:['⚙️','精'],lum:['🪵','材'],kiln:['🏺','瓦'],smel:['🔥','鍊'],cnl:['📜','評'],wsh:['🛠️','工'],acc:['💰','勘'],pal:['🏯','本'],mkt:['🏪','市'],emb:['🚩','奏'],res:['🏯','二'],trs:['💎','寶'],pub:['🏗️','普'],wall:['🚪','牆']};
@@ -373,7 +382,7 @@ const garrBox=()=>{let h='';const here=CUR||(ME&&ME.id)||'';
  return h};
 function demolishBox(){const can=S.bld.gov>=DEMOLISH_GOV;
  return `<h4 class="sh">拆除</h4>`+(can?`<p class="mut">每次拆除一級(不退還資源),需要約建造時間一半的時間,期間會占用施工佇列。拆到 0 級,這塊地就會清空,可以重新蓋別的建築。</p><p><button data-a="dem" data-slot="${bs}">${DM===bs?'再按一次確認:拆除一級':'拆除一級'}</button></p>`:`<p class="mut">${B.find(x=>x.id=='gov').n}達到 ${DEMOLISH_GOV} 級以上才能拆除建築。</p>`)}
-function vBuildMenu(){const i=bs;let h=`<div class="ttl">選擇要蓋的建築<small>(第 ${i+1} 塊空地)</small></div><div class="g">`;
+function vBuildMenu(){const i=bs;let h=`<div class="ttl">選擇要蓋的建築<small>(第 ${i+1} 塊空地)</small></div><div class="g bm">`;
  for(const b of B){if(b.id==='wall')continue;const e=canBuildNew(b),ok=reqOk(b);
   h+=`<div class="cd${gneed()===b.id?' hl':''}"><span class="e">${iconHtml(b.id)}</span><b>${bn(b)}</b><p>${b.d}</p>`+(e?`<p class="bad">${e}</p>`:ok?`<div>${costH(costB(b,0))}</div><p>⏱ ${tm(durB(b,0))}</p><button data-a="b" data-slot="${i}" data-id="${b.id}">建造</button>`:`<p class="bad">需要 ${reqT(b)}</p>`)+'</div>'}
  return h+'</div>'+qtab()+back('in')}
@@ -424,6 +433,9 @@ function mktTab(){
  h+=`<h4 class="sh">市場行情 <a data-a="mkload" class="mut" style="font-size:12px">(重新整理)</a></h4>`+(MK.offers==null?'<p class="mut">載入中…</p>':!MK.offers.length?'<p class="mut">目前沒有任何掛單。</p>':'<table class="tb"><tr><th>賣家</th><th>提供</th><th>想要</th><th>距離</th><th></th></tr>'+MK.offers.map(o=>`<tr><td>${o.mine?'<b>我</b>':esc(o.n)}<br><small class="mut">(${o.x}|${o.y})</small></td><td>${RI[o.gi]}${o.ga}</td><td>${RI[o.wi]}${o.wa}</td><td>${distTo(o.x,o.y).toFixed(1)} 格</td><td>${o.mine?`<button data-a="ocancel" data-id="${o.id}">取消</button>`:`<button data-a="accept" data-id="${o.id}">接受</button>`}</td></tr>`).join('')+'</table>');
  return h}
 const palTab=()=>`<h4 class="sh">擴張與城池</h4><p>擴張名額:<b>${G.slotsFree()}</b> 個可用(上限 ${G.expSlots()}:${S.col?'二之丸御殿 10/20 級各 1/2 個':'本丸御殿 10/15/20 級各 1/2/3 個'};這座城已開 ${S.kids||0} 座分城)。${S.col?`<br>這是分城,忠誠度 <b>${Math.floor(S.loy==null?100:S.loy)}</b>/100(每遊戲小時回復 ${(1+.1*S.bld.pal).toFixed(1)} 點)。忠誠度降到 0,城池會被行政官說服而易主。`:'<br>本丸無法被行政官佔領。'}</p><p class="mut">整個帳號只有一座本丸御殿(蓋在本丸,10/15/20 級給 1/2/3 個名額);每座分城只能蓋二之丸御殿,10/20 級給那座分城自己 1/2 個名額。開分城另外要求「準備開城的那座城」自己的威望達到 10000/20000/25000(第 1/2/3 座分城)。訓練開墾代官(每個名額 3 名)後,到軍奉行的出兵頁面指定空地開分城;訓練行政官後,配合軍隊攻打別人的分城。</p>`+(CITIES.length>1?'<table class="tb"><tr><th>城池</th><th>座標</th><th>忠誠度</th></tr>'+CITIES.map(c=>`<tr><td><a data-a="city" data-k="${esc(c.k)}">${cnOf(c)}</a></td><td>${c.x}|${c.y}</td><td>${c.col?c.loy:'—'}</td></tr>`).join('')+'</table>':'');
+// 建築內頁:把每個區塊(標題 + 內容)包成深色卡片
+function cardize(h){const i=h.indexOf('</div>')+6,top=h.slice(0,i),parts=h.slice(i).split('<h4 class="sh">');
+ return top+parts.map((x,k)=>k==0?(x.trim()?`<div class="pc">${x}</div>`:''):`<div class="pc"><h4 class="sh">${x}</div>`).join('')}
 function vB(){if(bs==null)return vIn();
  if(bs!=='wall'&&!S.slots[bs])return vBuildMenu();
  const cell=bs==='wall'?{b:'wall',l:S.bld.wall}:S.slots[bs],b=B.find(x=>x.id==cell.b),L=cell.l,mx=L>=b.m;
@@ -439,7 +451,7 @@ function vB(){if(bs==null)return vIn();
  if(b.id=='cnl')h+=heroTab();
  if(b.id=='trs')h+=artTab();
  if(b.id=='gov')h+=cmds();else if(['infb','cavb','wsh','pal','res'].includes(b.id))h+=trainer(b);else if(b.id=='war')h+=sender();
- return h+qtab()+(bs!=='wall'&&b.id!=='gov'?demolishBox():'')+back('in')}
+ return cardize(h+(bs!=='wall'&&b.id!=='gov'?demolishBox():''))+qtab()+back('in')}
 function vMap(){const [cx,cy]=mc,W2=36,H2=18,ox=300,oy=165,P=(dx,dy)=>[ox+(dx+dy)*W2,oy+(dx-dy)*H2];
  const cells=[];for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++)cells.push([dx,dy]);cells.sort((a,b)=>(a[0]-a[1])-(b[0]-b[1]));
  let g=`<polygon points="${ox},${oy-126} ${ox+252},${oy} ${ox},${oy+126} ${ox-252},${oy}" fill="#2a1208" transform="translate(0,10)"/><polygon points="${ox},${oy-126} ${ox+252},${oy} ${ox},${oy+126} ${ox-252},${oy}" fill="#46663a"/>`;
@@ -494,8 +506,8 @@ function rkRows(){
  if(rkt==4)return mk(by('df'),['排名','玩家','總防禦力'],r=>[nm(r),fmt(r.df)]);
  if(rkt==5)return mk([...P].filter(r=>r.hl>0).sort((a,b)=>b.hl-a.hl||b.hx-a.hx),['排名','武將','玩家','等級','經驗值'],r=>[r.hn,nm(r),r.hl,r.hx]);
  return mk(by('ar'),['排名','玩家','名物數量'],r=>[nm(r),r.ar])}
-function vRank(){const R=rkRows(),a=R.rows,mp=Math.max(0,Math.ceil(a.length/10)-1);rp=Math.max(0,Math.min(rp,mp));
- return `<div class="ttl" style="justify-content:center">英 雄 榜</div><p class="tabs" style="text-align:center">${RKT.map((t,i)=>i==rkt?`<b>${t}</b>`:`<a data-a="rkt" data-i="${i}">${t}</a>`).join(' | ')}</p><p style="text-align:right"><a data-a="soon" data-m="威望 = 資源田等級合計×6 + 各種建築最高等級合計×12 + 兵力(含出征中)×2。玩家榜把同一位玩家的所有城池合併計算。榜單只收威望前 300 名玩家。">威望如何獲得?</a></p><table class="tb"><tr>${R.head.map(h=>`<th>${h}</th>`).join('')}</tr>`+(ME&&!RKD?`<tr><td colspan="${R.head.length}">載入中…</td></tr>`:'')+a.slice(rp*10,rp*10+10).map(r=>`<tr class="${r.me?'me':''}"><td>${r.i}</td>${r.cells.map((c,k)=>`<td${rkt==0&&k==0?' class="hero"':''}>${c}${(rkt==0&&k==1||rkt==1&&k==0||rkt==3&&k==0||rkt==4&&k==0||rkt==5&&k==1||rkt==6&&k==0)&&r.x!=null&&!r.me?` <a data-a="mailto" data-x="${r.x}" data-y="${r.y}" title="寄信">✉</a>`:''}</td>`).join('')}</tr>`).join('')+`</table><p class="pg"><a data-a="rk" data-p="0">首頁</a> <a data-a="rk" data-p="${rp-1}">上一頁</a> <a data-a="rk" data-p="${rp+1}">下一頁</a> <a data-a="rk" data-p="${mp}">尾頁</a><br>排名: <input id="rkn" type="number"> 或是,名字: <input id="rkm" type="text"> <button data-a="rks">查找</button></p>`}
+function vRank(){const R=rkRows(),a=R.rows,mp=Math.max(0,Math.ceil(a.length/20)-1);rp=Math.max(0,Math.min(rp,mp));
+ return `<div class="ttl" style="justify-content:center">英 雄 榜</div><p class="tabs" style="text-align:center">${RKT.map((t,i)=>i==rkt?`<b>${t}</b>`:`<a data-a="rkt" data-i="${i}">${t}</a>`).join(' | ')}</p><p style="text-align:right"><a data-a="soon" data-m="威望 = 資源田等級合計×6 + 各種建築最高等級合計×12 + 兵力(含出征中)×2。玩家榜把同一位玩家的所有城池合併計算。榜單只收威望前 300 名玩家。">威望如何獲得?</a></p><table class="tb"><tr>${R.head.map(h=>`<th>${h}</th>`).join('')}</tr>`+(ME&&!RKD?`<tr><td colspan="${R.head.length}">載入中…</td></tr>`:'')+a.slice(rp*20,rp*20+20).map(r=>`<tr class="${r.me?'me':''}"><td>${r.i}</td>${r.cells.map((c,k)=>`<td${rkt==0&&k==0?' class="hero"':''}>${c}${(rkt==0&&k==1||rkt==1&&k==0||rkt==3&&k==0||rkt==4&&k==0||rkt==5&&k==1||rkt==6&&k==0)&&r.x!=null&&!r.me?` <a data-a="mailto" data-x="${r.x}" data-y="${r.y}" title="寄信">✉</a>`:''}</td>`).join('')}</tr>`).join('')+`</table><p class="pg"><a data-a="rk" data-p="0">首頁</a> <a data-a="rk" data-p="${rp-1}">上一頁</a> <a data-a="rk" data-p="${rp+1}">下一頁</a> <a data-a="rk" data-p="${mp}">尾頁</a><br>排名: <input id="rkn" type="number"> 或是,名字: <input id="rkm" type="text"> <button data-a="rks">查找</button></p>`}
 const dailyBox=()=>{if(S.col)return '<p class="mut">每日任務由本丸管理,請切換回本丸。</p>';G.setNow(Date.now()+CLK);G.dailyRoll();const q=G.dailyInfo();if(!q)return '';
  return `<h4 class="sh">📅 每日任務 <small class="mut">(台灣時間每天 00:00 更新;沒完成也會換新的)</small></h4><table class="tb"><tr><th>任務</th><th>進度</th><th>獎勵</th><th></th></tr><tr><td>${q.n}</td><td>${q.have}/${q.v}</td><td>🪙${q.g} 金幣</td><td>${q.done?'<span class="mut">已領取</span>':q.ok?'<button data-a="claimd">領取</button>':'<span class="mut">未完成</span>'}</td></tr></table>`};
 // ====== 聊天(公頻/盟頻/密頻)======
@@ -675,7 +687,7 @@ function act(d){
  else if(d.a=='bal')doA({t:'balance',r:[0,1,2,3].map(i=>Math.floor(+$('#r'+i).value||0))});
  else if(d.a=='balp'){SH.r=d.p.split(',').map(Number);dirty=1}
  else if(d.a=='rk'){rp=+d.p;dirty=1}
- else if(d.a=='rks'){const a=rkRows().rows,n=Math.floor(+$('#rkn').value||0),q=($('#rkm').value||'').trim();let i=n>0?n-1:q?a.findIndex(r=>r.t.includes(q)):-1;if(i<0||i>=a.length)return toast('找不到');rp=Math.floor(i/10);dirty=1}
+ else if(d.a=='rks'){const a=rkRows().rows,n=Math.floor(+$('#rkn').value||0),q=($('#rkm').value||'').trim();let i=n>0?n-1:q?a.findIndex(r=>r.t.includes(q)):-1;if(i<0||i>=a.length)return toast('找不到');rp=Math.floor(i/20);dirty=1}
  else if(d.a=='rkt'){rkt=+d.i;rp=0;dirty=1}
  else if(d.a=='mt'){mt=d.t;mo=null;dirty=1;if(mt=='in'||mt=='out')loadMail()}
  else if(d.a=='mread'){mt='read';mo={box:d.box,id:d.id};dirty=1;if(d.box=='in'){const m=MAIL.inbox.find(x=>x.id==d.id);if(m&&!m.r){m.r=true;MAIL.unread=Math.max(0,MAIL.unread-1);api('/api/mail',{t:'read',id:d.id}).catch(()=>{})}}}
