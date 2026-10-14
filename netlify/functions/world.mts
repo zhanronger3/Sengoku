@@ -18,7 +18,9 @@ export default async (req: Request) => {
   const q = new URL(req.url).searchParams;
   const wstore = getStore({ name: "world", consistency: "strong" });
   const villages = await world.queryWindow(wstore, q.get("x0"), q.get("y0"), q.get("x1"), q.get("y1"), user.id);
-  return Response.json({ ok: true, villages, now: Date.now() });
+  const now = Date.now();
+  const camps = await world.queryCamps(wstore, q.get("x0"), q.get("y0"), q.get("x1"), q.get("y1"), user.id, now);
+  return Response.json({ ok: true, villages, camps, now });
 };
 
 export const config = { path: "/api/world" };
