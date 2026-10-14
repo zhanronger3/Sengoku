@@ -35,10 +35,33 @@ function siegeText(sg, dFac) {
   return L.length ? "【攻城】\n" + L.join("\n") : "";
 }
 // 行政官說服家臣:降低忠誠度,歸零時城池易主(res.conq 由 G.pvpBattle 算出)
-function heroText(h, side) {
+// 英雄的戰場畫面(熱血戰記口吻)。o:{win, seed, fac, target, name};同一場戰鬥用 seed 固定句型
+const HERO_STYLE = { wei: ["第六天魔王的旗幟在他身後獵獵作響", "織田的赤色軍旗映紅了戰場"], shu: ["三河武士的忍耐在這一刻化為怒濤", "德川的葵紋旗在硝煙中屹立不搖"], wu: ["猴子出身的氣魄壓過了千軍萬馬", "豐臣的金瓢旗在陣前高高舉起"] };
+function heroText(h, side, o = {}) {
   if (!h) return "";
-  if (side === "att") return h.dead ? `【英雄】${h.n}隨軍出征,卻在亂軍中戰死沙場,需要到評定眾復活。` : `【英雄】${h.n}隨軍出征,身先士卒,獲得 ${h.xp} 點經驗。`;
-  return h.dead ? `【敵將】敵方英雄${h.n}在這場戰鬥中陣亡。` : `【敵將】敵方英雄${h.n}率軍衝在最前面。`;
+  const n = h.n || o.name || "英雄", sd = o.seed || n, t = o.target || "敵陣", fac = (G.F && o.fac && HERO_STYLE[o.fac]) ? o.fac : "wei";
+  const style = pick(HERO_STYLE[fac], sd, "hs");
+  if (side === "att") {
+    if (h.dead) return `【英雄】${pick([
+      `${style}。${n}一馬當先殺入${t}的陣中,長刀所向,敵兵紛紛倒退。然而亂箭如雨,他渾身浴血,仍高呼「衝!」直到力竭倒下。`,
+      `${n}橫刀立馬,獨自擋在潰散的友軍之前。${t}的守軍蜂擁而上,他連斬數人,終因寡不敵眾,戰死沙場。其忠勇,軍中無人不嘆。`,
+      `${style}。${n}親自率領前鋒突擊,卻在${t}的亂軍中中了埋伏,英雄倒在血泊裡,眼神依然望著前方。`,
+    ], sd, "hd")}(需要到評定眾復活)`;
+    if (o.win) return `【英雄】${pick([
+      `${style}。${n}一馬當先,長刀劈開${t}的防線,身後的將士齊聲吶喊,勢如破竹。此戰他獲得 ${h.xp} 點經驗。`,
+      `${n}高舉軍旗,在箭雨中率隊猛衝,連破數道防線,最後親手拔下${t}的守旗,全軍為之沸騰。此戰獲得 ${h.xp} 點經驗。`,
+      `${style}。${n}與守軍的主將正面交鋒,數十回合後一刀將其斬落馬下,${t}的抵抗就此瓦解。此戰獲得 ${h.xp} 點經驗。`,
+    ], sd, "hw")}`;
+    return `【英雄】${pick([
+      `${n}在亂軍中奮力殺出一條血路,護著殘部一步步撤離${t}。雖然兵敗,他的背影依然讓追兵不敢逼近。獲得 ${h.xp} 點經驗。`,
+      `${style}。可惜${t}的守備太過堅固,${n}咬牙下令收兵,親自斷後,保住了最後的火種。獲得 ${h.xp} 點經驗。`,
+    ], sd, "hl")}`;
+  }
+  if (h.dead) return `【敵將】敵方英雄${n}在陣前力戰而亡,他的軍旗倒在城下,敵軍的士氣為之崩潰。`;
+  return `【敵將】${pick([
+    `敵方英雄${n}一馬當先衝在最前面,${o.win ? "雖然最後攻破了防線,守軍也讓他付出了代價。" : "卻被守軍頂住,只能悻悻撤退。"}`,
+    `敵方英雄${n}揮旗督戰,殺聲震天,${o.win ? "這股氣勢讓守軍節節敗退。" : "終究沒能撕開防線。"}`,
+  ], sd, "he")}`;
 }
 function artText(res, side) {
   if (!res || !res.art || !res.art.length) return "";
@@ -120,7 +143,7 @@ function build(res, ctx) {
   const tDef = `【敵方】守軍 ${defN} 人 → 陣亡 ${deadD} 人\n${table(dFac, res.defBefore, res.deadD, true, ["原有", "陣亡"])}`;
   const closerW = pick(CLOSERS_WIN, id, "cw"), closerL = pick(CLOSERS_LOSE, id, "cl");
   const attBody = [
-    setting, defense, battle, clash, strength, siegeText(res.sg, dFac), conqText(res.conq, d, "att"), heroText(res.hero, "att"), artText(res, "att"),
+    setting, defense, battle, clash, strength, siegeText(res.sg, dFac), conqText(res.conq, d, "att"), heroText(res.hero, "att", { win: res.win, seed: id, fac: aFac, target: d }), artText(res, "att"),
     res.win ? `結果:大獲全勝!${a}軍攻破${d}的防線。` : `結果:敗北。${a}軍未能攻下${d}的城池,${survN > 0 ? "殘部正在撤退。" : "全軍覆沒。"}`,
     tAtt, tDef.replace("【敵方】", "【對手】"),
     res.win ? `【戰利品】${lootTxt}(部隊返回後入庫)${cave ? "\n" + cave : ""}\n部隊正在返回中。` : (survN > 0 ? "部隊正在返回中。" : ""),
@@ -128,7 +151,7 @@ function build(res, ctx) {
   ].filter(Boolean).join("\n\n");
   const defBody = [
     `${fmtTime(ctx.arrAt)},${weather}。${a}(${attPos.x}|${attPos.y})的軍勢 ${sentN} 人(${unitsText(aFac, res.sent)})殺到城下。`,
-    defense, battle.replace(attMain, `敵軍的${attMain}`).replace(attCav || "\u0000", `敵軍的${attCav}`), clash.replace(attMain, `敵軍的${attMain}`), strength, siegeText(res.sg, dFac), conqText(res.conq, d, "def"), heroText(res.hero, "def"), artText(res, "def"),
+    defense, battle.replace(attMain, `敵軍的${attMain}`).replace(attCav || "\u0000", `敵軍的${attCav}`), clash.replace(attMain, `敵軍的${attMain}`), strength, siegeText(res.sg, dFac), conqText(res.conq, d, "def"), heroText(res.hero, "def", { win: res.win, seed: id, fac: aFac, target: d }), artText(res, "def"),
     res.win ? `結果:城池失守!守軍不敵,${a}軍搶掠而去。` : `結果:守城成功!${d}軍擊退了${a}的進攻。`,
     tDef.replace("【敵方】", "【我方】"), tAtt.replace("【我方】", "【敵方】"),
     res.win ? `【被搶走的資源】${lootTxt}${cave ? "\n" + cave : ""}` : "【被搶走的資源】無",
@@ -141,4 +164,4 @@ function build(res, ctx) {
     verdict,
   };
 }
-module.exports = { build, buildScout, buildFound, fmtTime };
+module.exports = { heroText, build, buildScout, buildFound, fmtTime };

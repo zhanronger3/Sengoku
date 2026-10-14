@@ -179,7 +179,7 @@ async function findAt(world, x, y) {
 
 async function topRank(world) {
   const r = await world.get("rank", { type: "json" });
-  return ((r && r.a) || []).map(({ x, y, n, f, p, a }) => ({ x, y, n, f, p, a: a || "" }));
+  return ((r && r.a) || []).map(({ x, y, n, f, p, a, m, cn }) => ({ x, y, n, f, p, a: a || "", m: m === 0 ? 0 : 1, cn: cn || "" }));
 }
 
 // 存檔裡記錄「上次公開的資料」,威望變化夠大才重新公開,避免每個操作都寫世界資料
@@ -204,7 +204,7 @@ async function publishState(world, key, st, owner) {
   const o = st.own || owner || key;
   let a = ""; try { a = await tagOf(world, o); } catch {}
   try { await require("./chat-run.cjs").registerNick(world, st.pub.n, o); } catch {}
-  await publish(world, key, { x: st.pos.x, y: st.pos.y, n: st.pub.n, f: st.pub.f, p: st.pub.p, b: st.born || 0, o, m: st.col ? 0 : 1, a });
+  await publish(world, key, { x: st.pos.x, y: st.pos.y, n: st.pub.n, f: st.pub.f, p: st.pub.p, b: st.born || 0, o, m: st.col ? 0 : 1, a, cn: st.col ? String(st.cname || "").slice(0, 20) : "" });
   try { await publishPlayer(world, o, key, st, a); } catch (e) { console.error("publishPlayer failed", e); }
 }
 // 英雄榜(玩家榜):同一位玩家所有城池合併。pl_<帳號> 記每座城的數字,prank 是全部玩家的合併結果

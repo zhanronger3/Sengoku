@@ -35,7 +35,7 @@ const TIERS=[
  {n:'野盜砦',e:'🏕️',g:{野盜:20,野盜頭領:3}},
  {n:'一向一揆砦',e:'🚩',g:{一向一揆門徒:30,一向一揆坊官:5}},
  {n:'南蠻館',e:'⛵',g:{南蠻傭兵:30,竹束防護眾:20,戰犬眾:2}},
- {n:'山賊山城',e:'⛰️',g:{野盜:40,野盜頭領:10,山賊總頭目:6}},
+ {n:'山賊山城',e:'⛰️',g:{野盜:65,野盜頭領:15,山賊總頭目:9}},
  {n:'石山本願寺',e:'🛕',g:{一向一揆門徒:60,一向一揆坊官:10,一向一揆大將:4}},
  {n:'大筒陣地',e:'💣',g:{竹束防護眾:30,重裝大筒車:8}}];
 const ZG={x:4,y:1},CAMP_DENS=0.05,CAMP_BLK=4,CAMP_PER=2;
@@ -125,12 +125,13 @@ const OCC_RANGE=7,HERO_MAXLV=20; // 佔領範圍:以出兵的那座城為中心�
 const heroNeed=lv=>lv*60;
 const heroAtk=h=>50+10*h.lv+15*h.a,heroDef=h=>50+10*h.lv+15*h.d,heroSpd=h=>8+.5*h.s,heroCarry=h=>200+100*h.c;
 const occTier=key=>{const [x,y]=key.split(',').map(Number),n=npcAt(x,y);return n&&n.ti!=null?n.ti:0};
-const occY=()=>Object.values(S.occ||{}).reduce((p,o)=>p+15*((o.tier||0)+1),0); // 每佔領 1 座營寨,每種資源每小時 +15×(階級+1)
+const occP=t=>2*(t+1); // 每佔領 1 座營寨,這座城每種資源產量 +(階級+1)×2%
+const occY=()=>Object.values(S.occ||{}).reduce((p,o)=>p+occP(o.tier||0),0)/100; // 全部營寨的加成(小數,0.12 = +12%)
 const artR=i=>S.art.reduce((p,id)=>{const a=ARTM[id];return p+(a&&(a.r===i||a.r==='all')?(a.r==='all'?.1:.25):0)},0);
 const artA=()=>S.art.reduce((p,id)=>p+((ARTM[id]&&ARTM[id].a)||0),0),artD=()=>S.art.reduce((p,id)=>p+((ARTM[id]&&ARTM[id].df)||0),0);
 const prod=L=>Math.round(6*pw(1.36,L));
-const mult=i=>1+.05*S.bld[['lum','kiln','smel','mill'][i]]+(S.buff>S.t?.25:0)+(S.zg>=3?.15:0)+artR(i);
-const rate=i=>S.fld.reduce((a,L,k)=>a+(FT[k]==i?prod(L):0),0)*mult(i)+occY();
+const mult=i=>1+.05*S.bld[['lum','kiln','smel','mill'][i]]+(S.buff>S.t?.25:0)+(S.zg>=3?.15:0)+artR(i)+occY();
+const rate=i=>S.fld.reduce((a,L,k)=>a+(FT[k]==i?prod(L):0),0)*mult(i);
 const bpop=()=>S.slots.reduce((a,x)=>a+(x&&x.l>=1?x.l*BMAP[x.b].p:0),0);
 const awayUnits=()=>{const t=Array(NU).fill(0);for(const m of S.mv)(m.send||[]).forEach((n,k)=>t[k]+=n||0);return t}; // 出征中(含返程)的兵
 const upkeep=()=>bpop()+S.u.reduce((a,n,i)=>a+n*us()[i].up,0)+awayUnits().reduce((a,n,i)=>a+n*us()[i].up,0)+(S.gar||[]).reduce((a,g)=>a+g.u.reduce((b,n,i)=>b+n*((UN[g.fac]&&UN[g.fac][i]&&UN[g.fac][i].up)||0),0),0)+(S.out||[]).filter(o=>String(o.k||'').startsWith('camp:')).reduce((a,o)=>a+o.u.reduce((b,n,i)=>b+n*(us()[i]?us()[i].up:0),0),0); // 出征中的兵一樣要吃糧;駐防在這裡的友軍也吃這座城的糧;駐守營寨的兵由出發的城出糧
@@ -149,7 +150,7 @@ const ab=()=>1+.015*S.bld.smi+artA(),db=()=>1+.015*S.bld.arm+artD();
 const wb=()=>W[S.fac][S.bld.wall];
 const home=()=>(S&&S.pos)||{x:0,y:0};
 const distTo=(x,y)=>Math.hypot(x-home().x,y-home().y);
-const prest=()=>Math.round(S.fld.reduce((a,b)=>a+b,0)*6+B.reduce((a,b)=>a+S.bld[b.id],0)*12+(S.u.reduce((a,b)=>a+b,0)+awayUnits().reduce((a,b)=>a+b,0))*2); // 出征中的兵也算在威望裡
+const prest=()=>Math.round(S.fld.reduce((a,b)=>a+b,0)*6+B.reduce((a,b)=>a+S.bld[b.id],0)*12+(S.u.reduce((a,b)=>a+b,0)+awayUnits().reduce((a,b)=>a+b,0)+(S.out||[]).reduce((t,o)=>t+(o.u||[]).reduce((x,y)=>x+(y||0),0),0))*2); // 出征中、駐守在外(營寨/別座城)的兵也算在威望裡
 const rnd=k=>{const x=Math.sin(k*12.9898+78.233)*43758.5453;return x-Math.floor(x)}; // 可重現的亂數,伺服器與瀏覽器結果一致
 const fix=s=>{if(!s.stat)s.stat={};for(const k of['trained','raids','fup','bup','sent','ship'])if(s.stat[k]==null)s.stat[k]=0;if(s.rc==null)s.rc=0;if(s.loy==null)s.loy=100;if(s.hero===undefined)s.hero=null;if(!s.occ)s.occ={};if(!Array.isArray(s.gar))s.gar=[];if(!Array.isArray(s.out))s.out=[];if(!Array.isArray(s.art))s.art=[];if(!Array.isArray(s.ships))s.ships=[];if(!s.shipRes)s.shipRes={};if(s.kids==null)s.kids=0;if(!s.atkRes)s.atkRes={};for(const m of(s.mv||[]))if(!m.sent)m.sent=(m.send||[]).slice();if(!s.camps)s.camps={};if(s.occV!==2){s.occV=2;s.occ={};s.camps={};for(const m of(s.mv||[]))if(!m.pv&&!m.ret&&!m.gid&&!m.pending){m.ret=1;m.loot=[0,0,0,0];m.arr=(s.t||0)+(m.dur||60)}} // 營寨改成全服共用:舊的個人佔領全部釋放,出征中的舊行軍折返
  if(!s.tr)s.tr={};for(const b of TRB){const v=s.tr[b];s.tr[b]=Array.isArray(v)?v:(v?[v]:[])}
@@ -191,7 +192,7 @@ function heroWin(h,m,c,D){
  if(defOf(c.g)>0)return; // 守軍還沒被全滅
  const key=c.key,tier=occTier(key);
  if(Math.max(Math.abs(m.tx-S.pos.x),Math.abs(m.ty-S.pos.y))<=OCC_RANGE){
-  if(Object.keys(S.occ).length<occSlots()){S.occ[key]={t:S.t,tier};delete S.camps[key];logm(`英雄${h.n}率軍佔領了${m.name}!每種資源產量每小時 +${15*(tier+1)}`,1)}
+  if(Object.keys(S.occ).length<occSlots()){S.occ[key]={t:S.t,tier};delete S.camps[key];logm(`英雄${h.n}率軍佔領了${m.name}!這座城每種資源產量 +${occP(tier)}%`,1)}
   else logm(`${m.name}的守軍被全滅,但評定眾的佔領名額已滿(${Object.keys(S.occ).length}/${occSlots()}),無法佔領`,1)}
  else logm(`${m.name}的守軍被全滅,但距離超過 ${OCC_RANGE} 格,無法佔領`,1);
  if(hash(m.tx,m.ty,Math.floor(S.t))<.4){
