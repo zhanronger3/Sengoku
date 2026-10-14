@@ -16,7 +16,7 @@ export default async (req: Request) => {
   const user = await getUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
   const wstore = getStore({ name: "world", consistency: "strong" });
-  return Response.json({ ok: true, rows: await world.topRank(wstore), now: Date.now() });
+  return Response.json({ ok: true, rows: await world.topRank(wstore), players: await world.topPlayers(wstore), now: Date.now() });
 };
 
 export const config = { path: "/api/rank" };
