@@ -42,6 +42,9 @@ footer{flex-shrink:0;text-align:center;padding:14px 12px;border-top:1px solid rg
   <div id="msg"></div>
 </div>
 <div id="logbox" class="box" style="display:none"></div>
+<h1 style="margin-top:24px">全服發信</h1>
+<div class="box"><input id="bcsub" type="text" maxlength="40" placeholder="主旨(預設:全服公告)" style="width:100%"><br><textarea id="bctext" rows="4" maxlength="1000" style="width:100%" placeholder="信件內容(最多 1000 字)。會以「系統」寄信給所有玩家的收件箱。"></textarea><br>
+<button id="bcsend">寄給所有玩家</button> <button id="bcload" class="alt">看寄過的信</button> <span id="bcmsg"></span><div id="bclist"></div></div>
 <h1 style="margin-top:24px">玩家意見箱</h1>
 <div class="box"><button id="fbload" class="alt" style="margin-top:0">讀取意見</button> <span id="fbmsg"></span><div id="fblist"></div></div>
 </main>
@@ -60,6 +63,10 @@ $('#log').onclick=async()=>{const m=$('#msg'),box=$('#logbox');m.className='';m.
   try{const r=await call('GET');if(!r.ok){m.className='bad';m.textContent=(r.j&&r.j.msg)||('失敗('+r.s+')');return}m.textContent='';
    box.style.display='';box.innerHTML='<table><tr><th>時間</th><th>玩家</th><th>座標</th><th>金幣</th><th>原因</th></tr>'+r.j.log.slice(0,50).map(e=>`<tr><td>${new Date(e.t).toLocaleString()}</td><td>${esc(e.n||e.uid)}</td><td>${e.x}|${e.y}</td><td>${e.amount}</td><td>${esc(e.reason)}</td></tr>`).join('')+'</table>'}catch(e){m.className='bad';m.textContent='連線失敗'}};
 
+const bcShow=l=>{$('#bclist').innerHTML=l.length?l.map(e=>`<div class="box"><b>${esc(e.s||'')}</b><br>${esc(e.m)}<br><small style="color:var(--mut)">${new Date(e.t).toLocaleString()} · 寄給 ${e.n} 位</small></div>`).join(''):'<p style="color:var(--mut)">目前沒有公告</p>'};
+async function bcDo(b){const m=$('#bcmsg');m.className='';m.textContent='處理中…';try{const r=await call('POST',b);if(r.ok){m.className='ok';m.textContent=r.j.msg||'完成';bcShow(r.j.list||[]);if(b.t==='bcsend'){$('#bctext').value='';$('#bcsub').value=''}}else{m.className='bad';m.textContent=(r.j&&r.j.msg)||'失敗('+r.s+')'}}catch(e){m.className='bad';m.textContent='連線失敗'}}
+$('#bcsend').onclick=()=>{const v=$('#bctext').value.trim();if(!v){$('#bcmsg').textContent='請輸入內容';return}if(confirm('確定寄給所有玩家?寄出後無法收回。'))bcDo({t:'bcsend',s:$('#bcsub').value,m:v})};
+$('#bcload').onclick=()=>bcDo({t:'bclist'});
 const fbRow=e=>`<div class="box" data-id="${esc(e.id)}"><b>${esc(e.s)}</b><br><small style="color:var(--mut)">${esc(e.n)}${e.x!=null?'('+e.x+'|'+e.y+')':''} · ${new Date(e.t).toLocaleString()}</small><div style="white-space:pre-wrap;margin:6px 0">${esc(e.b)}</div><div class="row" style="align-items:center"><input class="fbamt" type="number" min="1" value="5" style="max-width:90px"><button class="fbgold" data-u="${esc(e.u)}" style="margin:0">送金幣給 ${esc(e.n)}</button><button class="fbdel alt" style="margin:0;max-width:80px">刪除</button></div></div>`;
 function fbShow(list){$('#fblist').innerHTML=list.length?list.map(fbRow).join(''):'<p style="color:var(--mut)">目前沒有意見</p>'}
 $('#fbload').onclick=async()=>{const m=$('#fbmsg');m.className='';m.textContent='讀取中…';try{const r=await call('POST',{t:'fblist'});if(!r.ok){m.className='bad';m.textContent=(r.j&&r.j.msg)||('失敗('+r.s+')');return}m.textContent='';fbShow(r.j.list)}catch(e){m.className='bad';m.textContent='連線失敗'}};
