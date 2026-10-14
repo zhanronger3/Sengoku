@@ -40,6 +40,11 @@ function heroText(h, side) {
   if (side === "att") return h.dead ? `【英雄】${h.n}隨軍出征,卻在亂軍中戰死沙場,需要到評定眾復活。` : `【英雄】${h.n}隨軍出征,身先士卒,獲得 ${h.xp} 點經驗。`;
   return h.dead ? `【敵將】敵方英雄${h.n}在這場戰鬥中陣亡。` : `【敵將】敵方英雄${h.n}率軍衝在最前面。`;
 }
+function artText(res, side) {
+  if (!res || !res.art || !res.art.length) return "";
+  const M = require("./game.cjs").ARTM || {}, names = res.art.map((id) => `「${(M[id] || {}).n || id}」`).join("、");
+  return side === "att" ? `【名物】藏寶閣被砸毀,收藏不下的名物落入你手:${names}!` : `【名物】藏寶閣被砸毀,收藏不下的名物被敵軍奪走:${names}!`;
+}
 function conqText(cq, d, side) {
   if (!cq) return "";
   if (cq.cap) return side === "att" ? "【策反】行政官抵達了" + d + "的本丸,但本丸的家臣忠心耿耿,說服不了任何人,行政官平安撤回。" : "【策反】敵方的行政官潛入本丸,但家臣們忠心不二,策反失敗。";
@@ -115,7 +120,7 @@ function build(res, ctx) {
   const tDef = `【敵方】守軍 ${defN} 人 → 陣亡 ${deadD} 人\n${table(dFac, res.defBefore, res.deadD, true, ["原有", "陣亡"])}`;
   const closerW = pick(CLOSERS_WIN, id, "cw"), closerL = pick(CLOSERS_LOSE, id, "cl");
   const attBody = [
-    setting, defense, battle, clash, strength, siegeText(res.sg, dFac), conqText(res.conq, d, "att"), heroText(res.hero, "att"),
+    setting, defense, battle, clash, strength, siegeText(res.sg, dFac), conqText(res.conq, d, "att"), heroText(res.hero, "att"), artText(res, "att"),
     res.win ? `結果:大獲全勝!${a}軍攻破${d}的防線。` : `結果:敗北。${a}軍未能攻下${d}的城池,${survN > 0 ? "殘部正在撤退。" : "全軍覆沒。"}`,
     tAtt, tDef.replace("【敵方】", "【對手】"),
     res.win ? `【戰利品】${lootTxt}(部隊返回後入庫)${cave ? "\n" + cave : ""}\n部隊正在返回中。` : (survN > 0 ? "部隊正在返回中。" : ""),
@@ -123,7 +128,7 @@ function build(res, ctx) {
   ].filter(Boolean).join("\n\n");
   const defBody = [
     `${fmtTime(ctx.arrAt)},${weather}。${a}(${attPos.x}|${attPos.y})的軍勢 ${sentN} 人(${unitsText(aFac, res.sent)})殺到城下。`,
-    defense, battle.replace(attMain, `敵軍的${attMain}`).replace(attCav || "\u0000", `敵軍的${attCav}`), clash.replace(attMain, `敵軍的${attMain}`), strength, siegeText(res.sg, dFac), conqText(res.conq, d, "def"), heroText(res.hero, "def"),
+    defense, battle.replace(attMain, `敵軍的${attMain}`).replace(attCav || "\u0000", `敵軍的${attCav}`), clash.replace(attMain, `敵軍的${attMain}`), strength, siegeText(res.sg, dFac), conqText(res.conq, d, "def"), heroText(res.hero, "def"), artText(res, "def"),
     res.win ? `結果:城池失守!守軍不敵,${a}軍搶掠而去。` : `結果:守城成功!${d}軍擊退了${a}的進攻。`,
     tDef.replace("【敵方】", "【我方】"), tAtt.replace("【我方】", "【敵方】"),
     res.win ? `【被搶走的資源】${lootTxt}${cave ? "\n" + cave : ""}` : "【被搶走的資源】無",

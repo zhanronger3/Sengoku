@@ -21,6 +21,11 @@ async function lock(world, uid, now) {
   return false;
 }
 const unlock = (world, uid) => world.delete("lock_" + uid);
+// 兩位玩家是不是同一個聯盟
+async function allied(world, a, b) {
+  const x = await world.get("alm_" + a, { type: "json" }), y = await world.get("alm_" + b, { type: "json" });
+  return !!(x && y && x.a && x.a === y.a);
+}
 
 // uid = 出兵城池的存檔鍵(本丸就是帳號 id);owner = 帳號 id(多座城池共用同一個鎖、同一個收件匣)
 async function prepare({ saves, world, battle, mail, uid, owner, nick, body, stored, etag, now }) {
@@ -32,7 +37,7 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
   const fail = async (msg) => { await unlock(world, owner).catch(() => {}); return { status: 422, body: { ok: false, msg, state: att, rev, now } }; };
   try {
     const a = body.action;
-    const found = a.kind === "found";
+    const found = a.kind === "found", reinf = a.kind === "reinf";
     const tx = Math.floor(+a.tx), ty = Math.floor(+a.ty);
     if (!Number.isFinite(tx) || !Number.isFinite(ty)) return await fail("座標錯誤");
     let hit = null;
@@ -45,11 +50,17 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
     } else {
       hit = await W.findAt(world, tx, ty);
       if (!hit) return await fail("該座標沒有玩家的城池");
-      if ((hit.rec.o || hit.uid) === owner) return await fail("不能攻擊自己的城池");
+      const hitOwner = hit.rec.o || hit.uid;
       const gotD = await saves.getWithMetadata(hit.uid, { type: "json" });
       if (!gotD || !gotD.data || !gotD.data.state) return await fail("對方還沒開始遊戲");
-      const def = core.settle(clone(gotD.data.state), now);
-      if (G.pvpProtected(def, now)) return await fail("對方仍在新手保護期,暫時不能攻擊");
+      if (reinf) {
+        if (hit.uid === uid) return await fail("不能增援這座城自己");
+        if (hitOwner !== owner && !(await allied(world, owner, hitOwner))) return await fail("只能增援自己的城池,或同一個聯盟盟友的城池");
+      } else {
+        if (hitOwner === owner) return await fail("不能攻擊自己的城池");
+        const def = core.settle(clone(gotD.data.state), now);
+        if (G.pvpProtected(def, now)) return await fail("對方仍在新手保護期,暫時不能攻擊");
+      }
     }
 
     const aid = `${now}-${Math.random().toString(36).slice(2, 8)}`;
@@ -67,7 +78,7 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
       await B.registerAttack({
         battle, mail, now,
         rec: {
-          id: aid, att: { uid, o: owner, n: nick, x: r.pos.x, y: r.pos.y, fac: r.fac, ab: r.ab, hero: r.hero || null },
+          id: aid, att: { uid, o: owner, n: nick, x: r.pos.x, y: r.pos.y, fac: r.fac, ab: r.ab, hero: r.hero || null, ar: r.ar || 0, ah: r.ah || [] },
           def: found ? null : { uid: hit.uid, o: hit.rec.o || hit.uid, n: hit.rec.n, x: hit.rec.x, y: hit.rec.y },
           tx, ty, send: r.send, sentAt: now, arrAt, go: r.go, dur: r.dur, dist: r.dist, kind: r.kind || "", tg: r.tg || [],
         },
@@ -77,6 +88,8 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
     const total = r.send.reduce((p, q) => p + q, 0), mins = Math.max(1, Math.round((arrAt - now) / 60000));
     const msg = found
       ? `已派 3 名開墾代官前往(${tx}|${ty}),約 ${mins} 分鐘後抵達並建立分城`
+      : reinf
+      ? `已派 ${total} 名士兵前往 ${hit.rec.n}(${tx}|${ty}) 增援,約 ${mins} 分鐘後抵達並駐防`
       : `已派${r.kind ? "偵察兵" : "兵"} ${total} 人前往 ${hit.rec.n}(${tx}|${ty}),約 ${mins} 分鐘後抵達;抵達時才會開戰,戰況會用飛鴿傳書通知你`;
     return { status: 200, body: { ok: true, msg, state: att, rev: next, now } };
   } catch (e) {
@@ -116,4 +129,4 @@ async function recall({ saves, world, battle, mail, uid, owner, body, stored, et
   }
 }
 
-module.exports = { prepare, recall, lock, unlock };
+module.exports = { prepare, recall, lock, unlock, allied };

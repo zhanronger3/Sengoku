@@ -26,10 +26,18 @@ const ownerOfDef = (rec) => (rec.def ? rec.def.o || rec.def.uid : null);
 async function registerAttack({ battle, mail, rec, now }) {
   await battle.setJSON(akey(rec.id), { ...rec, state: "pending" }, { onlyIfNew: true });
   if (!rec.def) return; // 開分城:沒有防守方,不需要來襲警報
+  const friendly = rec.kind === "reinf";
+  if (friendly && ownerOfDef(rec) === ownerOfAtt(rec)) return; // 增援自己的城池:不用通知
   await W.casUpdate(battle, ikey(ownerOfDef(rec)), (cur) => ({
-    a: [...((cur && cur.a) || []), { id: rec.id, arrAt: rec.arrAt, n: rec.att.n, x: rec.att.x, y: rec.att.y, tx: rec.def.x, ty: rec.def.y }].sort((p, q) => p.arrAt - q.arrAt),
+    a: [...((cur && cur.a) || []), { id: rec.id, arrAt: rec.arrAt, n: rec.att.n, x: rec.att.x, y: rec.att.y, tx: rec.def.x, ty: rec.def.y, ...(friendly ? { k: "reinf" } : {}) }].sort((p, q) => p.arrAt - q.arrAt),
   }));
   const mins = Math.max(1, Math.round((rec.arrAt - now) / 60000));
+  if (friendly) {
+    await M.systemMail(mail, ownerOfDef(rec), "盟軍增援",
+      `盟友 ${rec.att.n}(${rec.att.x}|${rec.att.y})派兵前來增援你的城池(${rec.def.x}|${rec.def.y}),預計 ${R.fmtTime(rec.arrAt)} 抵達(約 ${mins} 分鐘後)。\n他們抵達後會一起守城,吃這座城的糧;你隨時可以到軍奉行請他們回去。`,
+      now, { id: `atk-${rec.id}-w`, limit: MAIL_LIMIT });
+    return;
+  }
   await M.systemMail(mail, ownerOfDef(rec), "來襲警報",
     `${rec.att.n}(${rec.att.x}|${rec.att.y})的軍勢正向你的城池(${rec.def.x}|${rec.def.y})進軍!\n預計 ${R.fmtTime(rec.arrAt)} 抵達(約 ${mins} 分鐘後)。\n部隊抵達時才會開戰,戰況會用飛鴿傳書通知你。趁現在整備軍隊、升級城牆吧。`,
     now, { id: `atk-${rec.id}-w`, limit: MAIL_LIMIT });
@@ -100,6 +108,43 @@ async function resolveFound({ saves, world, battle, mail, rec, now }) {
   return true;
 }
 
+// 增援抵達:放進目標城池的駐防名單(同一場重複結算只會放一次)
+async function resolveReinf({ saves, world, battle, mail, rec, now }) {
+  const id = rec.id, owner = ownerOfAtt(rec), defOwner = ownerOfDef(rec);
+  let res = null;
+  for (let i = 0; i < 10 && !res; i++) {
+    const g = await saves.getWithMetadata(rec.def.uid, { type: "json" });
+    if (!g || !g.data || !g.data.state) { res = { reinf: 1, ok: false, why: "目標城池已經不存在" }; break; }
+    const st = clone(g.data.state);
+    G.fix(st);
+    if (!A.ownedBy(st, rec.def.uid, defOwner)) { res = { reinf: 1, ok: false, why: "那座城池已經易主" }; break; }
+    if (defOwner !== owner) {
+      const x = await world.get("alm_" + owner, { type: "json" }), y = await world.get("alm_" + defOwner, { type: "json" });
+      if (!(x && y && x.a && x.a === y.a)) { res = { reinf: 1, ok: false, why: "你們已經不是同一個聯盟" }; break; }
+    }
+    core.settleTo(st, rec.arrAt);
+    const r = G.garrApply(st, { gid: id, o: owner, n: rec.att.n, fac: rec.att.fac, k: rec.att.uid, u: rec.send });
+    if (!r.ok) { res = { reinf: 1, ok: false, why: r.why }; break; }
+    if (r.dup) { res = { reinf: 1, ok: true, tk: rec.def.uid }; break; }
+    const w = await saves.setJSON(rec.def.uid, { state: st, rev: g.data.rev + 1, updatedAt: now }, { onlyIfMatch: g.etag });
+    if (!w || w.modified !== false) { res = { reinf: 1, ok: true, tk: rec.def.uid }; break; }
+    await sleep(Math.random() * 6 * (i + 1));
+  }
+  if (!res) {
+    await W.casUpdate(battle, akey(id), (cur) => (cur ? { ...cur, state: "pending" } : undefined));
+    return false;
+  }
+  await applyToAttacker({ saves, rec, id, res, now });
+  const pos = `${rec.def.n}(${rec.def.x}|${rec.def.y})`, n = rec.send.reduce((p, q) => p + q, 0);
+  await M.systemMail(mail, owner, res.ok ? "增援抵達" : "增援失敗",
+    res.ok ? `你派出的 ${n} 名士兵已抵達 ${pos},開始駐防。可以在出發城池的軍奉行把他們召回。` : `你派去 ${pos} 的 ${n} 名士兵無法駐防:${res.why}。部隊正在返回。`,
+    now, { id: `atk-${id}-a`, limit: MAIL_LIMIT });
+  if (res.ok && defOwner !== owner) await M.systemMail(mail, defOwner, "盟軍抵達", `${rec.att.n} 派來的 ${n} 名士兵抵達 ${pos},現在和你的守軍一起守城。`, now, { id: `atk-${id}-d`, limit: MAIL_LIMIT });
+  await W.casUpdate(battle, ikey(defOwner), (cur) => (!cur || !cur.a.some((x) => x.id === id) ? undefined : { a: cur.a.filter((x) => x.id !== id) }));
+  await battle.delete(akey(id));
+  return true;
+}
+
 // 城池易主後的收尾(可重複執行):帳號的城池清單、地圖上的擁有者
 async function transferCity({ saves, world, rec, now }) {
   const key = rec.def.uid, oldO = ownerOfDef(rec), newO = ownerOfAtt(rec);
@@ -126,6 +171,7 @@ async function resolveAttack({ saves, world, battle, mail, id, now }) {
   });
   if (!claimed || !rec) return false;
   if (rec.kind === "found") return resolveFound({ saves, world, battle, mail, rec, now });
+  if (rec.kind === "reinf") return resolveReinf({ saves, world, battle, mail, rec, now });
 
   // 2 對「抵達那一刻」的防守方狀態算出戰果並寫回防守方存檔(寫入成功才算結算完成)
   let res = null;
@@ -140,7 +186,7 @@ async function resolveAttack({ saves, world, battle, mail, id, now }) {
     const ctxA = { id, attNick: rec.att.n, attPos: { x: rec.att.x, y: rec.att.y }, attOwner: ownerOfAtt(rec) };
     let r;
     if (rec.kind === "scout") { r = G.scoutBattle({ fac: rec.att.fac, send: rec.send }, st); G.scoutApplyDef(st, r, ctxA); }
-    else { r = G.pvpBattle({ fac: rec.att.fac, send: rec.send, ab: rec.att.ab, tg: rec.tg || [], seed: seedOf(id), hero: rec.att.hero || null }, st); G.pvpApplyDef(st, r, ctxA); }
+    else { r = G.pvpBattle({ fac: rec.att.fac, send: rec.send, ab: rec.att.ab, tg: rec.tg || [], seed: seedOf(id), hero: rec.att.hero || null, ar: rec.att.ar || 0, ah: rec.att.ah || [] }, st); G.pvpApplyDef(st, r, ctxA); }
     const w = await saves.setJSON(rec.def.uid, { state: st, rev: g.data.rev + 1, updatedAt: now }, { onlyIfMatch: g.etag });
     if (!w || w.modified !== false) { res = r; break; }
     await sleep(Math.random() * 6 * (i + 1));
@@ -192,6 +238,7 @@ async function uncancelAttack({ battle, id }) {
 async function finishCancel({ battle, mail, rec, now }) {
   if (rec.def) {
     await W.casUpdate(battle, ikey(ownerOfDef(rec)), (cur) => (!cur || !cur.a.some((x) => x.id === rec.id) ? undefined : { a: cur.a.filter((x) => x.id !== rec.id) }));
+    if (rec.kind === "reinf" && ownerOfDef(rec) === ownerOfAtt(rec)) { await battle.delete(akey(rec.id)); return; } // 自己城池之間的增援撤回:不用通知
     await M.systemMail(mail, ownerOfDef(rec), "來襲取消",
       `${rec.att.n}(${rec.att.x}|${rec.att.y})的軍勢在半路撤退了,不會抵達你的城池。`,
       now, { id: `atk-${rec.id}-c`, limit: MAIL_LIMIT });

@@ -76,6 +76,13 @@ async function act({ stores, user, body, now }) {
     return attach(res);
   }
 
+  // 召回或遣返駐防在別座城池的增援部隊
+  if (body?.action?.t === "garrp" && stored) {
+    const r = await require("./garr-run.cjs").release({ saves, world: wstore, owner, a: body.action, now });
+    const fresh = await saves.get(key, { type: "json" });
+    return attach({ status: r.ok ? 200 : 422, body: { ...core.view(fresh || stored, now), ok: r.ok, msg: r.msg } });
+  }
+
   // 樂市樂座:運送、掛單、取消掛單、接受掛單
   const MK = { shipp: market.ship, offerp: market.offer, offerx: market.cancel, acceptp: market.accept };
   if (MK[body?.action?.t] && stored) {
