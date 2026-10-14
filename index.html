@@ -48,18 +48,15 @@ input[type=number],input[type=text],input[type=password]{width:70px;background:v
 .yard.nowall{outline:2px dashed rgba(241,230,211,.55);outline-offset:-1px}
 .wl{position:absolute;cursor:pointer;z-index:1;box-shadow:0 2px 3px rgba(0,0,0,.35)}
 .tw{position:absolute;cursor:pointer;z-index:2;border:2px solid rgba(0,0,0,.55);border-top:6px dotted rgba(0,0,0,.6);box-shadow:0 2px 4px rgba(0,0,0,.4)}
-.fc-wei{--w1:#c4283a;--w2:#8a1422;--wt:#a81e2e;--wl:#5a0a14}
-.fc-shu{--w1:#3d82d6;--w2:#24569a;--wt:#2f6bb8;--wl:#10305e}
-.fc-wu{--w1:#e6b52e;--w2:#a97d12;--wt:#cf9d1e;--wl:#5e4608}
-.wood .wl.h{background:repeating-linear-gradient(90deg,var(--w1) 0 7px,var(--w2) 7px 9px)}
-.wood .wl.v{background:repeating-linear-gradient(0deg,var(--w1) 0 7px,var(--w2) 7px 9px)}
-.wood .tw{background:var(--wt)}
-.brick .wl.h{background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(0,0,0,.45) 5px 6px),repeating-linear-gradient(90deg,var(--w1) 0 13px,var(--w2) 13px 14px)}
-.brick .wl.v{background:repeating-linear-gradient(90deg,transparent 0 5px,rgba(0,0,0,.45) 5px 6px),repeating-linear-gradient(0deg,var(--w1) 0 13px,var(--w2) 13px 14px)}
-.brick .tw{background:var(--wt)}
-.stone .wl.h{background:repeating-linear-gradient(0deg,transparent 0 7px,rgba(0,0,0,.5) 7px 8px),repeating-linear-gradient(90deg,var(--w1) 0 18px,var(--w2) 18px 20px)}
-.stone .wl.v{background:repeating-linear-gradient(90deg,transparent 0 7px,rgba(0,0,0,.5) 7px 8px),repeating-linear-gradient(0deg,var(--w1) 0 18px,var(--w2) 18px 20px)}
-.stone .tw{background:var(--wt)}
+.wood .wl.h{background:repeating-linear-gradient(90deg,#8a5a2c 0 7px,#5e3a18 7px 9px)}
+.wood .wl.v{background:repeating-linear-gradient(0deg,#8a5a2c 0 7px,#5e3a18 7px 9px)}
+.wood .tw{background:#6e4520}
+.brick .wl.h{background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(70,25,12,.55) 5px 6px),repeating-linear-gradient(90deg,#b4533c 0 13px,#8f3d2b 13px 14px)}
+.brick .wl.v{background:repeating-linear-gradient(90deg,transparent 0 5px,rgba(70,25,12,.55) 5px 6px),repeating-linear-gradient(0deg,#b4533c 0 13px,#8f3d2b 13px 14px)}
+.brick .tw{background:#a04632}
+.stone .wl.h{background:repeating-linear-gradient(0deg,transparent 0 7px,rgba(40,44,50,.6) 7px 8px),repeating-linear-gradient(90deg,#a3a9b0 0 18px,#7c838b 18px 20px)}
+.stone .wl.v{background:repeating-linear-gradient(90deg,transparent 0 7px,rgba(40,44,50,.6) 7px 8px),repeating-linear-gradient(0deg,#a3a9b0 0 18px,#7c838b 18px 20px)}
+.stone .tw{background:#8d949b}
 .wlab{position:absolute;left:50%;top:0;transform:translate(-50%,-2px);z-index:3;cursor:pointer}
 .gate{position:absolute;left:50%;top:84%;transform:translate(-50%,-86%);z-index:3;cursor:pointer;line-height:0}
 .gate svg{display:block;filter:drop-shadow(0 3px 3px rgba(0,0,0,.6))}
@@ -191,7 +188,7 @@ function incBar(){if(!ME||!INC.length)return'';const fr=INC.filter(e=>e.k=='rein
  return frH+`<div class="guide" style="border-left-color:#ff5a4a;background:linear-gradient(#5a0d12,#35070c)"><b>⚠ 來襲警報</b><br>`+hs.map(e=>`${esc(e.n)}(${e.x}|${e.y})的軍勢將於 <b data-rt="${e.arrAt}">${tm((e.arrAt-(Date.now()+CLK))/1000)}</b> 後抵達${e.tx!=null?cityRef(e.tx,e.ty):'你的城池'}<span class="mut">(兵力不明)</span>`).join('<br>')+`<br><span class="mut">部隊抵達時才會開戰,結果會用飛鴿傳書通知你。趁現在整備軍隊、升級城牆吧。</span></div>`}
 const cityName=()=>S.col?esc(S.cname||'分城'):esc(NICK)+'的主城',cnOf=c=>c.col?c.n:esc(NICK)+'的主城';
 const ttl=()=>`<div class="ttl"><span class="flag" style="background:${CASTLE_COL[S.fac]}">${fa().s}</span>${cityName()}<small>(${home().x}|${home().y})</small><small class="mut">${S.col?`二之丸・忠誠度 ${Math.floor(S.loy==null?100:S.loy)}/100`:'本丸'}</small>${citySel()}</div>`;
-const citySel=()=>CITIES.length>1?` <select id="csw" title="切換城池">${CITIES.map(c=>`<option value="${esc(c.k)}" ${c.k==CUR?'selected':''}>${esc(c.n)}(${c.x}|${c.y})${c.col?' 忠誠'+c.loy:''}</option>`).join('')}</select>`:'';
+const citySel=()=>CITIES.length>1?` <select id="csw" title="切換城池">${CITIES.map(c=>`<option value="${esc(c.k)}" ${c.k==CUR?'selected':''}>${cnOf(c)}(${c.x}|${c.y})${c.col?' 忠誠'+c.loy:''}</option>`).join('')}</select>`:'';
 const back=v=>`<p><a data-a="nav" data-v="${v}">« 返回${v=='in'?'城內':'城外'}</a></p>`;
 function qtab(){const rows=['f','b'].filter(l=>S.q[l]);if(!rows.length)return'';
  return `<table class="tb"><tr><th>刪除</th><th>任務 <a data-a="rushall">立即完成[2金幣]</a></th><th>剩餘時間</th><th>結束於</th></tr>`+rows.map(l=>{const q=S.q[l];return `<tr><td><a data-a="cancel" data-l="${l}" class="x">✖</a></td><td>${q.dm?`${q.name}→等級 ${q.to}`:`${q.name}(等級 ${q.to})`}</td><td><span data-cd="${q.end}">${tm(q.end-S.t)}</span></td><td>${clk(q.end)}</td></tr>`}).join('')+'</table>'}
@@ -328,7 +325,7 @@ function vIn(){
  ${[[4,4],[96,4],[4,84],[96,84]].map(([x,y])=>`<div class="tw" ${at} style="left:${x}%;top:${y}%;width:${tw}px;height:${tw}px;transform:translate(-50%,-50%)"></div>`).join('')}
  <div class="gate" ${at}>${gateSvg(kind,Math.min(116,84+Math.round(WL*1.4)))}</div>`;
  const lab=`<span class="wlab"><b class="lv" ${at}>${bn(w)} ${WL<1?'(未建)':'Lv '+WL}</b></span>`;
- return `${ttl()}<p class="mut">城內有 ${NSLOTS} 塊建地,點空地選擇要蓋什麼(已用 ${S.slots.filter(Boolean).length}/${NSLOTS})。點圍牆可以建造或升級${bn(w)}。</p><div class="fr sc sc-in ${kind} fc-${S.fac}">${wall}${lab}${sc}</div>${qtab()}${ttab()}`}
+ return `${ttl()}<p class="mut">城內有 ${NSLOTS} 塊建地,點空地選擇要蓋什麼(已用 ${S.slots.filter(Boolean).length}/${NSLOTS})。點圍牆可以建造或升級${bn(w)}。</p><div class="fr sc sc-in ${kind}">${wall}${lab}${sc}</div>${qtab()}${ttab()}`}
 function vF(){const i=fv,t=FT[i],L=S.fld[i];
  return `<div class="ttl">${FN[t]}<small>(等級 ${L})</small></div><p>${['生產木材。','生產泥土。','生產鐵塊。','生產糧食,養活村民與軍隊。'][t]}</p><table class="tb"><tr><th>目前產量</th><th>下一級產量</th></tr><tr><td>${prod(L)}/時</td><td>${prod(L+1)}/時</td></tr></table>`+(L>=20?'<p>已達最高等級</p>':`<table class="tb"><tr><th>升級成本</th><th>施工時間</th></tr><tr><td>${costH(costF(i))}</td><td>⏱ ${tm(durF(i))}</td></tr></table><p><button data-a="f" data-i="${i}">升級到等級 ${L+1}</button></p>`)+qtab()+back('out')}
 function eff(b,L){const n=Math.min(b.m,L+1),id=b.id;
@@ -382,13 +379,12 @@ let MK={offers:null};
 async function loadMarket(){if(!ME)return;try{const r=await api('/api/market');if(r.ok&&r.j){MK.offers=r.j.offers;dirty=1}}catch(e){}}
 // 英雄圖示:兜(頭盔)+前立(角飾),顏色跟著勢力走
 const heroSvg=(sz,col)=>{col=col||(S&&CASTLE_COL[S.fac])||'#d4142f';return `<svg viewBox="0 0 64 64" width="${sz}" height="${sz}" style="display:block"><path d="M10 40Q10 14 32 12Q54 14 54 40Z" fill="#2a2d33" stroke="#0c0d10" stroke-width="1.5"/><path d="M12 38Q12 18 32 15Q52 18 52 38" fill="none" stroke="#6b717c" stroke-width="1.6"/><path d="M6 44Q10 36 20 40L22 48Q12 50 6 44Z M58 44Q54 36 44 40L42 48Q52 50 58 44Z" fill="#3a3e46" stroke="#0c0d10" stroke-width="1.2"/><path d="M32 12L26 2Q32 6 32 12Z M32 12L38 2Q32 6 32 12Z" fill="${col}" stroke="#0c0d10" stroke-width="1"/><path d="M32 13L32 4" stroke="${col}" stroke-width="2.4"/><path d="M14 40H50L47 56Q32 62 17 56Z" fill="#8a2a20" stroke="#0c0d10" stroke-width="1.5"/><path d="M20 44H44" stroke="#e8c97a" stroke-width="2"/><circle cx="32" cy="27" r="4.2" fill="#e8c97a" stroke="#0c0d10" stroke-width="1"/><path d="M23 49Q32 53 41 49" fill="none" stroke="#0c0d10" stroke-width="1.6"/></svg>`};
-function vHero(){const h=S.hero;
- const card=h?`<div class="herocard"><div class="hicon">${heroSvg(96)}</div><div><div class="hname">${esc(h.n)} <small>Lv ${h.lv}/20</small></div><div class="hbar" title="經驗 ${h.xp}/${G.heroNeed(h.lv)}"><i style="width:${Math.min(100,Math.round(100*h.xp/G.heroNeed(h.lv)))}%"></i></div><div class="mut">經驗 ${h.xp}/${G.heroNeed(h.lv)}・${h.st=='home'?'在城裡':h.st=='away'?'出征中':'<span class="bad">陣亡</span>'}</div><div class="hchips"><span>⚔ 攻 ${G.heroAtk(h)}</span><span>🛡 防 ${G.heroDef(h)}</span><span>🐎 速 ${G.heroSpd(h)}</span><span>🎒 載 +${G.heroCarry(h)}</span></div></div></div>`:`<div class="herocard"><div class="hicon" style="opacity:.45">${heroSvg(96,'#888')}</div><div><div class="hname">尚未有英雄</div><p class="mut">在${B.find(z=>z.id=='cnl').n}把一名士兵提拔為英雄,他會帶隊攻打營寨與玩家城池、升級並替城池加防禦。</p></div></div>`;
- return `<div class="ttl">英雄</div>${card}${S.bld.cnl<1?`<p class="bad">需要先蓋${B.find(z=>z.id=='cnl').n}才能提拔英雄。</p>`:''}${heroTab().replace('<h4 class="sh">英雄</h4>','<h4 class="sh">提拔與屬性</h4>').replace(/<p><b>[^\n]*?<\/p><p class="mut">攻擊[^\n]*?<\/p>/,'')}`}
-const heroTab=()=>{const h=S.hero,U=us();let t=`<h4 class="sh">英雄</h4>`;
+const isCnl=()=>bs!=null&&bs!=='wall'&&!!S.slots[bs]&&S.slots[bs].b=='cnl';
+const heroCard=h=>h?`<div class="herocard"><div class="hicon">${heroSvg(96)}</div><div><div class="hname">${esc(h.n)} <small>Lv ${h.lv}/20</small></div><div class="hbar" title="經驗 ${h.xp}/${G.heroNeed(h.lv)}"><i style="width:${Math.min(100,Math.round(100*h.xp/G.heroNeed(h.lv)))}%"></i></div><div class="mut">經驗 ${h.xp}/${G.heroNeed(h.lv)}・${h.st=='home'?'在城裡':h.st=='away'?'出征中':'<span class="bad">陣亡</span>'}</div><div class="hchips"><span>⚔ 攻 ${G.heroAtk(h)}</span><span>🛡 防 ${G.heroDef(h)}</span><span>🐎 速 ${G.heroSpd(h)}</span><span>🎒 載 +${G.heroCarry(h)}</span></div></div></div>`:`<div class="herocard"><div class="hicon" style="opacity:.45">${heroSvg(96,'#888')}</div><div><div class="hname">尚未有英雄</div><p class="mut">把城裡的一名士兵提拔為英雄,他會帶隊攻打營寨與玩家城池、升級並替城池加防禦。</p></div></div>`;
+const heroTab=()=>{const h=S.hero,U=us();let t=`<h4 class="sh">英雄</h4>${heroCard(h)}`;
  if(!h){const opts=U.map((u,k)=>({u,k})).filter(x=>!x.u.k&&S.u[x.k]>0);
   t+=`<p class="mut">把城裡的一名士兵提拔為英雄(費用是該兵種成本的 20 倍)。英雄會帶領軍隊攻打營寨,獲得經驗升級;升級可分配屬性點。英雄在城裡時,還會替城池增加防禦。</p>`+(opts.length?`<p>提拔 <select id="hk">${opts.map(x=>`<option value="${x.k}">${x.u.n}(現有 ${S.u[x.k]};成本 ${x.u.r.map(v=>v*20).join('/')})</option>`).join('')}</select> <button data-a="hero">提拔為英雄</button></p>`:'<p class="mut">城裡目前沒有可以提拔的一般兵種。</p>')}
- else{t+=`<p><b>${esc(h.n)}</b> 等級 ${h.lv}/${20}・經驗 ${h.xp}/${G.heroNeed(h.lv)}・狀態:${h.st=='home'?'在城裡':h.st=='away'?'出征中':'<span class="bad">陣亡</span>'}</p><p class="mut">攻擊 ${G.heroAtk(h)}(出征時加進軍隊攻擊力)・城內防禦 +${G.heroDef(h)}・行軍速度 ${G.heroSpd(h)}・攜帶 +${G.heroCarry(h)}</p>`;
+ else{t+=`<p class="mut">攻擊力出征時會加進軍隊;城內防禦在英雄待在城裡時生效。</p>`;
   if(h.st=='dead')t+=`<p><button data-a="hrev">復活(每種資源 ${400*h.lv})</button></p>`;
   t+=`<p>屬性點:<b>${h.pts}</b>(攻 ${h.a}・防 ${h.d}・速 ${h.s}・載 ${h.c})</p>`+(h.pts?`<p>分配 攻<input id="hp0" type="number" min="0" value="0" style="width:50px"> 防<input id="hp1" type="number" min="0" value="0" style="width:50px"> 速<input id="hp2" type="number" min="0" value="0" style="width:50px"> 載<input id="hp3" type="number" min="0" value="0" style="width:50px"> <button data-a="hpt">確定</button></p>`:'')}
  const oc=Object.entries(S.occ||{});t+=`<h4 class="sh">佔領的營寨 ${oc.length}/${G.occSlots()}</h4><p class="mut">評定眾 10/15/20 級可佔領 1/2/3 座。營寨要在距離城池 ${G.OCC_RANGE} 格內,由英雄帶兵出征(軍奉行的出兵頁面勾選「英雄帶隊」)全滅守軍後佔領;每座每種資源每小時 +15×(營寨階級+1)。</p>`+(oc.length?'<table class="tb"><tr><th>營寨</th><th>座標</th><th>產出(每種資源/時)</th></tr>'+oc.map(([k,o])=>{const [x,y]=k.split(',').map(Number),n=npcAt(x,y);return `<tr><td>${n?n.n:'營寨'}</td><td>${x}|${y}</td><td>+${15*((o.tier||0)+1)}</td></tr>`}).join('')+'</table>':'');
@@ -478,8 +474,8 @@ function rkRows(){
  const by=k=>[...P].sort((a,b)=>b[k]-a[k]||b.p-a.p);
  if(rkt==0)return mk(P,['排名','武將','玩家','威望','城池','等級','經驗值'],r=>[r.hn||'—',nm(r),r.p,r.c,r.hl||'—',r.hl?r.hx:'—']);
  if(rkt==1)return mk(by('c'),['排名','玩家','城池數','威望'],r=>[nm(r),r.c,r.p]);
- if(rkt==2){const g={};for(const r of P)if(r.a){const e=g[r.a]||(g[r.a]={a:r.a,m:0,p:0});e.m++;e.p+=r.p}const L=Object.values(g).sort((a,b)=>b.p-a.p);
-  return {head:['排名','聯盟','成員(榜上)','總威望'],rows:L.map((e,i)=>({i:i+1,cells:['['+esc(e.a)+']',e.m,e.p],me:!!(AL&&AL.ally&&AL.ally.tag===e.a),t:'['+e.a+']'}))}}
+ if(rkt==2){const g={};for(const r of P)if(r.a){const e=g[r.a]||(g[r.a]={a:r.a,an:'',m:0,p:0});e.m++;e.p+=r.p;if(r.an)e.an=r.an}const L=Object.values(g).sort((a,b)=>b.p-a.p);
+  return {head:['排名','聯盟','成員(榜上)','總威望'],rows:L.map((e,i)=>({i:i+1,cells:['['+esc(e.a)+']'+(e.an?' '+esc(e.an):''),e.m,e.p],me:!!(AL&&AL.ally&&AL.ally.tag===e.a),t:'['+e.a+'] '+(e.an||'')}))}}
  if(rkt==3)return mk(by('at'),['排名','玩家','總攻擊力','兵力說明'],r=>[nm(r),fmt(r.at),'全城兵力含出征中']);
  if(rkt==4)return mk(by('df'),['排名','玩家','總防禦力','兵力說明'],r=>[nm(r),fmt(r.df),'(步防+騎防)÷2']);
  if(rkt==5)return mk([...P].filter(r=>r.hl>0).sort((a,b)=>b.hl-a.hl||b.hx-a.hx),['排名','武將','玩家','等級','經驗值'],r=>[r.hn,nm(r),r.hl,r.hx]);
@@ -542,8 +538,8 @@ function sidebar(){const det=(id,sm,body)=>`<details data-d="${id}" ${op[id]?'op
  +`<div class="ct">${['公頻','盟頻','密頻','系統'].map((n,i)=>`<span data-a="ct" data-i="${i}" class="${ct==i?'on':''}">${n}</span>`).join('')}</div><div id="chat">${msgs}</div>${chatBox()}`}
 try{document.getElementById('lgi').innerHTML=ICONS.arm}catch(e){}
 function render(){
- $('#nav').innerHTML=NAV.map(([v,n,ic])=>`<button data-a="${v=='x'?'soon':'nav'}" data-v="${v}" class="${view==v||(v=='out'&&view=='f')||(v=='in'&&view=='b')?'on':''}"><i>${ic=='HEROICON'?heroSvg(30):ic}</i>${n}${v=='mail'&&MAIL.unread?` <b class="bad">(${MAIL.unread})</b>`:''}</button>`).join('');
- const V={shop:vShop,out:vOut,in:vIn,f:vF,b:vB,map:vMap,rank:vRank,quest:vQuest,rep:vRep,mail:vMail,faq:vFaq,fb:vFb,hero:vHero};
+ $('#nav').innerHTML=NAV.map(([v,n,ic])=>`<button data-a="${v=='x'?'soon':v=='hero'?'herogo':'nav'}" data-v="${v}" class="${view==v||(v=='out'&&view=='f')||(v=='in'&&view=='b'&&!isCnl())||(v=='hero'&&view=='b'&&isCnl())?'on':''}"><i>${ic=='HEROICON'?heroSvg(30):ic}</i>${n}${v=='mail'&&MAIL.unread?` <b class="bad">(${MAIL.unread})</b>`:''}</button>`).join('');
+ const V={shop:vShop,out:vOut,in:vIn,f:vF,b:vB,map:vMap,rank:vRank,quest:vQuest,rep:vRep,mail:vMail,faq:vFaq,fb:vFb};
  $('#main').innerHTML=incBar()+guideBar()+V[view]();$('#side').innerHTML=sidebar();fvRestore();const c=$('#chat');if(c)c.scrollTop=c.scrollHeight;dirty=0}
 
 async function api(p,b,m,k){const r=await fetch(p,{method:m||(b?'POST':'GET'),headers:b?{'Content-Type':'application/json'}:{},body:b?JSON.stringify(b):undefined,credentials:'same-origin',keepalive:!!k});let j=null;try{j=await r.json()}catch(e){}return{ok:r.ok&&(!j||j.ok!==false),s:r.status,j}}
@@ -620,6 +616,7 @@ function act(d){
  if(d.a=='nav'){view=d.v;bv=null;bs=null;dirty=1;if(view=='mail'){mt=ME?mt:'in';loadMail()}}
  else if(d.a=='pg'){PG[d.k]=+d.p;dirty=1}
  else if(d.a=='fld'){fv=+d.i;view='f';dirty=1}
+ else if(d.a=='herogo'){const sl=S.slots.findIndex(c=>c&&c.b=='cnl'&&c.l>=1);if(sl<0)toast(`需要先蓋${B.find(z=>z.id=='cnl').n}才能有英雄`);else{bs=sl;view='b';dirty=1}}
  else if(d.a=='bld'){bs=d.slot==='wall'?'wall':+d.slot;view='b';dirty=1}
  else if(d.a=='f')doA({t:'f',i:+d.i},()=>{view='out'});
  else if(d.a=='b')doA({t:'b',slot:d.slot==='wall'?'wall':+d.slot,id:d.id},()=>{view='in'});
