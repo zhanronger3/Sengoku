@@ -41,6 +41,19 @@ async function findTarget(world, q) {
   return null;
 }
 
+// 所有玩家的帳號代號(每位玩家的本丸都有一個 owner_<uid>,分城是 owner_c_…)
+async function listPlayers(world) {
+  const out = [];
+  let cursor;
+  for (let i = 0; i < 200; i++) {
+    const r = await world.list(cursor ? { prefix: "owner_", cursor } : { prefix: "owner_" });
+    for (const b of (r && r.blobs) || []) { const u = b.key.slice(6); if (u && !u.startsWith("c_")) out.push(u); }
+    cursor = r && r.cursor;
+    if (!cursor) break;
+  }
+  return out;
+}
+
 async function addLog(world, entry) {
   await W.casUpdate(world, LOG_KEY, (cur) => ({ a: [entry, ...((cur && cur.a) || [])].slice(0, LOG_MAX) }));
 }
@@ -79,6 +92,18 @@ async function handle({ method, secret, expected, body, saves, world, mail, now 
 
   if (body && body.t === "fblist") return { status: 200, body: { ok: true, list: await FB.list(world) } };
   if (body && body.t === "fbdel") { await FB.remove(world, String(body.id || "")); return { status: 200, body: { ok: true, list: await FB.list(world) } }; }
+  // 全服發信:寄一封系統信給每一位玩家(以公告編號去重,重送也不會重複收到)。留一份紀錄在 "bc"
+  if (body && body.t === "bclist") { const b = await world.get("bc", { type: "json" }); return { status: 200, body: { ok: true, list: (b && b.a) || [] } }; }
+  if (body && body.t === "bcsend") {
+    const m = M.clean(body.m, 1000), subj = M.clean(body.s, 40) || "全服公告";
+    if (!m) return { status: 422, body: { ok: false, msg: "請輸入信件內容" } };
+    const id = `bc-${now}-${Math.random().toString(36).slice(2, 6)}`;
+    const uids = await listPlayers(world);
+    let n = 0;
+    for (let i = 0; i < uids.length; i += 20) await Promise.all(uids.slice(i, i + 20).map(async (u) => { try { await M.systemMail(mail, u, subj, m, now, { id, limit: 1000 }); n++; } catch {} }));
+    const b = await W.casUpdate(world, "bc", (cur) => ({ a: [{ id, t: now, s: subj, m, n }, ...((cur && cur.a) || [])].slice(0, 30) }));
+    return { status: 200, body: { ok: true, msg: `已寄給 ${n} 位玩家(共 ${uids.length} 位)`, list: b.a } };
+  }
   const amount = Math.floor(Number(body && body.amount));
   if (!Number.isFinite(amount) || amount < 1 || amount > MAX_AMOUNT) return { status: 422, body: { ok: false, msg: `金額要是 1 到 ${MAX_AMOUNT} 的整數` } };
   const reason = M.clean(body.reason, 60);

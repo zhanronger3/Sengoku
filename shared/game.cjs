@@ -69,7 +69,7 @@ const B=[
  {id:'lum',n:'製材所',p:5,r:[400,350,400,100],t:2200,m:5,d:'加工木料,每級增加 5% 的木材產量,共 5 級。',q:{f0:10,gov:5}},
  {id:'kiln',n:'瓦窯',p:5,r:[400,475,300,75],t:2000,m:5,d:'增加土石產量,每級增加 5%,共 5 級。',q:{f1:10,gov:5}},
  {id:'smel',n:'採礦精鍊所',p:6,r:[200,400,500,150],t:2800,m:5,d:'冶煉金屬,每級增加 5% 的金屬產量,共 5 級。',q:{f2:10,gov:5}},
- {id:'cnl',n:'評定眾',p:2,r:[600,550,500,300],t:870,m:20,d:'掌管家臣任免的評定之所,可以將士兵提拔為英雄,英雄能率軍攻打並佔領野外營寨。1 級可以提拔 1 名英雄;10、15、20 級各可佔領 1、2、3 座營寨(營寨要在這座城 7×7 範圍內)。',q:{gov:3,war:1}},
+ {id:'cnl',n:'評定眾',p:2,r:[600,550,500,300],t:870,m:20,d:'掌管家臣任免的評定之所,可以將士兵提拔為英雄,英雄能率軍攻打並佔領野外營寨。1 級可以提拔 1 名英雄;10、15、20 級各可佔領 1、2、3 座營寨(營寨要在這座城 15×15 範圍內)。',q:{gov:3,war:1}},
  {id:'wsh',n:'鍛冶場',p:4,r:[400,450,600,300],t:1330,m:20,d:'製造破門槌與大筒、飛石機、焙烙火砲車等攻城器械的作坊。等級越高,製造越快。器械需要兵學塾達到對應等級才能製造。',q:{acad:10,gov:5}},
  {id:'acc',n:'勘定所',p:4,r:[1150,1300,1150,400],t:2000,m:20,d:'掌管財政與商賈的勘定所,每級讓商人的運載量提高 10%,20 級時達到 3 倍(對全城的商人有效)。需要樂市樂座 20 級。',q:{cavb:10,mkt:20}},
  {id:'pal',n:'本丸御殿',p:1,r:[425,700,750,300],t:2400,m:20,d:'城池的核心。提供防衛力(每級守軍防禦 +1%),可以訓練開墾代官與行政官(管領/軍配者/水軍頭領)。每座城只能蓋一座。10、15、20 級各有 1、2、3 個擴張名額:開分城(派 3 名開墾代官到空地)或佔領城池(行政官讓目標忠誠度歸零)各用 1 個。',q:{gov:5}},
@@ -113,7 +113,7 @@ const ART=[{id:'timber',n:'巨木旗',d:'木材產量 +25%',r:0},{id:'clay',n:'�
 const ARTM=Object.fromEntries(ART.map(a=>[a.id,a]));
 const occSlots=()=>S.bld.cnl>=20?3:S.bld.cnl>=15?2:S.bld.cnl>=10?1:0;
 const artSlots=()=>Math.floor(S.bld.trs/10);
-const OCC_RANGE=3,HERO_MAXLV=20; // 佔領範圍:以出兵的那座城為中心的 7×7(上下左右各 3 格)
+const OCC_RANGE=7,HERO_MAXLV=20; // 佔領範圍:以出兵的那座城為中心的 15×15(上下左右各 7 格)
 const heroNeed=lv=>lv*60;
 const heroAtk=h=>50+10*h.lv+15*h.a,heroDef=h=>50+10*h.lv+15*h.d,heroSpd=h=>8+.5*h.s,heroCarry=h=>200+100*h.c;
 const occTier=key=>{const [x,y]=key.split(',').map(Number),n=npcAt(x,y);return n&&n.ti!=null?n.ti:0};
@@ -415,9 +415,9 @@ function campView(doc,n,now){const c=campCur(doc,n,now);
  if(c.o)return {occ:1,o:c.o,on:c.on||'',fac:c.fac,gs:c.gs||[],def:Math.round(garDef(c.gs)),n:n.n,ti:n.ti};
  const left=c.t?Math.max(0,campMs()-(now-c.t)):0,def=Math.round(defOf(c.g));
  return {occ:0,n:n.n,ti:n.ti,g:c.g,def,st:c.st,left,empty:def===0&&c.st.every(v=>v<=0)}}
-// 能不能由這座城佔領這座營寨:營寨在這座城 7×7 範圍內,而且評定眾的佔領名額還有空位
+// 能不能由這座城佔領這座營寨:營寨在這座城 15×15 範圍內,而且評定眾的佔領名額還有空位
 function occCheck(st,x,y){return withS(st,()=>{const dx=Math.abs(x-S.pos.x),dy=Math.abs(y-S.pos.y);
- if(Math.max(dx,dy)>OCC_RANGE)return {ok:false,why:`營寨不在這座城的佔領範圍(以城為中心 7×7)`};
+ if(Math.max(dx,dy)>OCC_RANGE)return {ok:false,why:`營寨不在這座城的佔領範圍(以城為中心 15×15)`};
  const n=Object.keys(S.occ||{}).length;if(n>=occSlots())return {ok:false,why:`評定眾的佔領名額已滿(${n}/${occSlots()})`};
  return {ok:true}})}
 // 一場營寨戰鬥(純計算,不改任何存檔)。info:{id,uid,cityKey,nick,fac,send,ab,hero:{atk,carry}|null,canOcc,tx,ty}

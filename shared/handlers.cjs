@@ -41,7 +41,7 @@ async function cityList(saves, wstore, owner) {
     const st = g && g.state;
     if (!st || !st.pos || !A.ownedBy(st, k, owner)) continue;
     if (pl && !pl.cs[k] && st.pub) { try { const s2 = JSON.parse(JSON.stringify(st)); s2.pub = null; world.stampPub(s2, st.pub.n, Date.now()); await world.publishState(wstore, k, s2, owner); } catch {} }
-    out.push({ k, x: st.pos.x, y: st.pos.y, f: st.fac, col: st.col ? 1 : 0, loy: Math.floor(st.loy == null ? 100 : st.loy), n: st.col ? st.cname || "分城" : "本丸" });
+    out.push({ k, x: st.pos.x, y: st.pos.y, f: st.fac, col: st.col ? 1 : 0, loy: Math.floor(st.loy == null ? 100 : st.loy), b: st.born || 0, n: st.col ? st.cname || "分城" : "本丸" });
   }
   return out;
 }
