@@ -47,12 +47,29 @@ async function allocate(world, uid) {
   const own = await world.get("owner_" + uid, { type: "json" });
   if (own) return own;
   let pos;
-  // 一格一格往外找,跳過已經被分城佔掉的格子
+  const G = require("./game.cjs");
   for (let tries = 0; tries < 200; tries++) {
     await casUpdate(world, "alloc", (cur) => {
       const n = cur ? cur.n : 0;
-      pos = slotPos(n);
-      return { n: n + 1 };
+      let pts = cur && cur.p ? cur.p.slice() : null;
+      if (!pts) { pts = []; for (let i = 0; i < n; i++) { const q = slotPos(i); pts.push([q.x, q.y]); } }
+      let pick = null;
+      if (!pts.length) pick = { x: 0, y: 0 };
+      else {
+        // 隨機挑一位現有玩家當錨點,在他身邊 10 格內隨機找空位(離任何人至少 5 格、不踩營寨)
+        for (let k = 0; k < 80 && !pick; k++) {
+          const an = pts[Math.floor(Math.random() * pts.length)];
+          const r = k < 40 ? 10 : 14;
+          const x = an[0] + Math.floor(Math.random() * (2 * r + 1)) - r, y = an[1] + Math.floor(Math.random() * (2 * r + 1)) - r;
+          if (G.npcAt(x, y) || (x === 4 && y === 1)) continue;
+          if (pts.some((q) => Math.max(Math.abs(q[0] - x), Math.abs(q[1] - y)) < 5)) continue;
+          pick = { x, y };
+        }
+        if (!pick) pick = slotPos(n);
+      }
+      pos = pick;
+      pts.push([pick.x, pick.y]);
+      return { n: n + 1, p: pts };
     });
     if (await findAt(world, pos.x, pos.y)) continue;
     if (await claimTile(world, pos.x, pos.y, uid)) break;
@@ -124,6 +141,19 @@ async function queryWindow(world, x0, y0, x1, y1, viewer) {
     }
   }
   return out;
+}
+
+// 方框內的營寨現況(全服共用的狀態:庫存、重生倒數、誰佔領)
+async function queryCamps(world, x0, y0, x1, y1, viewer, now) {
+  [x0, y0, x1, y1] = [x0, y0, x1, y1].map((n) => Math.floor(+n));
+  if (![x0, y0, x1, y1].every(Number.isFinite)) return [];
+  if (x1 < x0) [x0, x1] = [x1, x0];
+  if (y1 < y0) [y0, y1] = [y1, y0];
+  x1 = Math.min(x1, x0 + 30); y1 = Math.min(y1, y0 + 30);
+  const cells = [];
+  for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) { const n = G.npcAt(x, y); if (n && !n.zg) cells.push([x, y, n]); }
+  const docs = await Promise.all(cells.map(([x, y]) => world.get(`camp_${x}_${y}`, { type: "json" })));
+  return cells.map(([x, y, n], i) => { const d = docs[i], v = G.campView(d, n, now); return { x, y, ...v, mine: !!(d && d.o && d.o === viewer) }; });
 }
 
 // 這個座標上是不是有玩家的城池
@@ -237,4 +267,4 @@ async function ensureRegistered(saves, world, uid, nick, got, now) {
   return await saves.getWithMetadata(uid, { type: "json" });
 }
 
-module.exports = { allyInfo, setPlayerAlly, publishPlayer, removePlayer, topPlayers, tagOf, setTag, claimTile, CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };
+module.exports = { queryCamps, allyInfo, setPlayerAlly, publishPlayer, removePlayer, topPlayers, tagOf, setTag, claimTile, CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };

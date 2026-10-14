@@ -18,6 +18,7 @@ const MAIL_LIMIT = 2400;
 const akey = (id) => "atk_" + id;
 const seedOf = (id) => { let h = 2166136261; for (const c of String(id)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
 const ikey = (uid) => "inc_" + uid;
+const campKey = (x, y) => `camp_${x}_${y}`;
 
 // 帳號 id:存檔鍵可能是分城(c_ 開頭),信件與來襲通知都歸帳號
 const ownerOfAtt = (rec) => rec.att.o || rec.att.uid;
@@ -109,6 +110,80 @@ async function resolveFound({ saves, world, battle, mail, rec, now }) {
   return true;
 }
 
+// 對一份存檔做「讀 → 改 → 條件寫入」(fn 回傳 false 代表不用寫)
+async function mutateSave(saves, key, now, fn) {
+  for (let i = 0; i < 10; i++) {
+    const g = await saves.getWithMetadata(key, { type: "json" });
+    if (!g || !g.data || !g.data.state) return null;
+    const st = clone(g.data.state);
+    G.fix(st);
+    if (fn(st) === false) return st;
+    const w = await saves.setJSON(key, { state: st, rev: g.data.rev + 1, updatedAt: now }, { onlyIfMatch: g.etag });
+    if (!w || w.modified !== false) return st;
+    await sleep(Math.random() * 6 * (i + 1));
+  }
+  throw new Error("camp: write conflict");
+}
+const unitStr = (fac, u) => u.map((x, k) => (x ? `${G.UN[fac][k].n}×${x}` : "")).filter(Boolean).join("、") || "無";
+function campReport(res, rec, n) {
+  const pos = `${n.n}(${rec.tx}|${rec.ty})`;
+  if (res.scout) {
+    const v = res.view;
+    const body = v.occ ? `佔領者:${v.on || "不明"}\n駐軍合計 ${G.garSum(v.gs)} 人,防禦約 ${v.def}\n${v.gs.map((g) => unitStr(g.fac, g.u)).join("\n") || "(目前沒有駐軍,誰派兵進駐就能拿下)"}`
+      : `守軍:${Object.entries(v.g).filter(([, c]) => c > 0).map(([u, c]) => `${u}×${c}`).join("、") || "無"}\n防禦合計約 ${v.def}\n庫存(每種資源) ${v.st.map((x) => Math.max(0, Math.floor(x))).join("/")}${v.left ? `\n${Math.ceil(v.left / 60000)} 分鐘後重新集結` : ""}`;
+    return { s: `【偵察】${pos}`, b: `${R.fmtTime(rec.arrAt)},偵察兵抵達${pos}。\n\n${body}` };
+  }
+  const lost = res.deadA.reduce((p, q) => p + q, 0), sent = res.sent.reduce((p, q) => p + q, 0);
+  const head = `${R.fmtTime(rec.arrAt)},你的軍勢(出兵 ${sent} 人,英雄帶隊)抵達${pos}${res.occupied ? ",守軍是玩家的駐軍" : ""}。\n我方攻擊力 ${res.A}、守軍防禦力 ${res.D}。\n\n`;
+  let tail;
+  if (!res.win) tail = `進攻失敗,全軍覆沒,英雄戰死(需要到評定眾復活)。守軍也受到損傷。`;
+  else if (res.occupy) tail = `戰勝!陣亡 ${lost} 人,守軍被全滅。\n生還的 ${res.garr.reduce((p, q) => p + q, 0)} 人留下駐守,營寨現在是你的:每種資源每小時 +${15 * (res.tier + 1)}。${res.loot.some((x) => x > 0) ? `\n搶得 ${res.loot.join("/")} 已直接入庫。` : ""}${res.art.length ? "\n英雄似乎還找到了什麼寶物(若藏寶閣有空位會收進去)。" : ""}`;
+  else tail = `戰勝!陣亡 ${lost} 人。${res.loot.some((x) => x > 0) ? `搶得 ${res.loot.join("/")}(部隊返回後入庫)。` : ""}\n守軍已全滅,但這座營寨不在這座城 7×7 範圍內,或評定眾的佔領名額已滿,所以沒有佔領(營寨回到無主,等待重新集結)。`;
+  return { s: `【營寨】${res.win ? "戰勝" : "戰敗"} ${pos}`, b: head + tail };
+}
+
+// 營寨(全服共用)的戰鬥/偵察/駐守:結算寫進 camp_<x>_<y>,每場戰鬥用攻擊編號去重
+async function resolveCamp({ saves, world, battle, mail, rec, now }) {
+  const id = rec.id, owner = ownerOfAtt(rec), n = G.npcAt(rec.tx, rec.ty), ck = campKey(rec.tx, rec.ty), key = rec.tx + "," + rec.ty;
+  let res = null;
+  if (!n || n.zg) res = { void: true };
+  else if (rec.kind === "campscout") {
+    res = G.campScout(await world.get(ck, { type: "json" }), n, rec.arrAt);
+    res.sent = rec.send.slice(); res.deadA = rec.send.map(() => 0); res.surv = rec.send.slice();
+  } else if (rec.kind === "campgar") {
+    await W.casUpdate(world, ck, (cur) => {
+      if (!cur || cur.o !== owner) { res = { reinf: 1, ok: false, why: "這座營寨已經不是你的了" }; return undefined; }
+      res = { reinf: 1, ok: true, tk: "camp:" + key };
+      if ((cur.gs || []).some((g) => g.gid === id)) return undefined;
+      return { ...cur, gs: [...(cur.gs || []), { gid: id, fac: rec.att.fac, o: owner, k: rec.att.uid, u: rec.send.slice() }] };
+    });
+  } else {
+    const ag = await saves.get(rec.att.uid, { type: "json" });
+    const oc = ag && ag.state ? G.occCheck(clone(ag.state), rec.tx, rec.ty) : { ok: false };
+    const info = { id, uid: owner, cityKey: rec.att.uid, nick: rec.att.n, fac: rec.att.fac, send: rec.send, ab: rec.att.ab, hero: rec.att.hero || null, canOcc: !!oc.ok, tx: rec.tx, ty: rec.ty };
+    await W.casUpdate(world, ck, (cur) => {
+      if (cur && cur.rs && cur.rs[id]) { res = cur.rs[id].res; return undefined; }
+      const doc = G.campCur(cur, n, rec.arrAt);
+      const r = G.campBattle(info, doc, n, rec.arrAt);
+      res = r.res;
+      const old = (cur && cur.rs) || {}, ids = Object.keys(old).slice(-5);
+      const rs = {}; for (const k of ids) rs[k] = old[k]; rs[id] = { res: r.res };
+      return { ...r.doc, rs };
+    });
+    // 原本佔領的人:守軍有損失或營寨被奪走,同步他每一座出兵城的存檔並寄信
+    if (res.prev) {
+      for (const k of res.prev.ks) await mutateSave(saves, k, now, (st) => { core.settleTo(st, now); G.campSync(st, key, res.prev.lost ? null : res.prev.gs); });
+      const lostTxt = res.prev.lost ? `營寨${n.n}(${key.replace(",", "|")})被 ${rec.att.n} 攻陷了!你的駐軍全軍覆沒,營寨不再屬於你。` : `營寨${n.n}(${key.replace(",", "|")})遭到 ${rec.att.n} 的攻擊,守軍有損失,但守住了。`;
+      await M.systemMail(mail, res.prev.o, res.prev.lost ? "營寨失守" : "營寨遇襲", lostTxt, now, { id: `atk-${id}-d`, limit: MAIL_LIMIT });
+    }
+  }
+  await applyToAttacker({ saves, rec, id, res, now });
+  const rp = res.void ? { s: "【營寨】目標已不存在", b: "你的部隊抵達時,目標營寨已經不存在,部隊折返。" } : res.reinf ? { s: res.ok ? "駐守抵達" : "駐守失敗", b: res.ok ? `你派出的 ${rec.send.reduce((p, q) => p + q, 0)} 名士兵已抵達 ${n.n}(${key.replace(",", "|")}),開始駐守。` : `駐守失敗:${res.why}。部隊折返。` } : campReport(res, rec, n);
+  await M.systemMail(mail, owner, rp.s, rp.b, now, { id: `atk-${id}-a`, limit: MAIL_LIMIT });
+  await battle.delete(akey(id));
+  return true;
+}
+
 // 增援抵達:放進目標城池的駐防名單(同一場重複結算只會放一次)
 async function resolveReinf({ saves, world, battle, mail, rec, now }) {
   const id = rec.id, owner = ownerOfAtt(rec), defOwner = ownerOfDef(rec);
@@ -173,6 +248,7 @@ async function resolveAttack({ saves, world, battle, mail, id, now }) {
   if (!claimed || !rec) return false;
   if (rec.kind === "found") return resolveFound({ saves, world, battle, mail, rec, now });
   if (rec.kind === "reinf") return resolveReinf({ saves, world, battle, mail, rec, now });
+  if (rec.kind === "camp" || rec.kind === "campscout" || rec.kind === "campgar") return resolveCamp({ saves, world, battle, mail, rec, now });
 
   // 2 對「抵達那一刻」的防守方狀態算出戰果並寫回防守方存檔(寫入成功才算結算完成)
   let res = null;
@@ -277,4 +353,4 @@ async function resolveDueFor({ saves, world, battle, mail, uid, now }) {
   return n;
 }
 
-module.exports = { cancelAttack, uncancelAttack, finishCancel, registerAttack, incomingFor, resolveAttack, resolveDueFor, fizzle, akey, ikey };
+module.exports = { campKey, resolveCamp, cancelAttack, uncancelAttack, finishCancel, registerAttack, incomingFor, resolveAttack, resolveDueFor, fizzle, akey, ikey };

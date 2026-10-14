@@ -64,7 +64,15 @@ async function act({ stores, user, body, now }) {
   let pos = null;
   if (body?.action?.t === "init" && !stored && key === owner) pos = await world.allocate(wstore, owner);
 
-  const attach = async (res) => ({ status: res.status, body: { ...res.body, c: key, incoming: await battles.incomingFor(battle, owner) } });
+  const attach = async (res) => {
+    const b = res.body;
+    // 分城的金幣放在本丸:所有回應都要帶本丸的金幣,不然畫面會閃成 0
+    if (key !== owner && b && b.state && b.state.col && !res.goldSet) {
+      const cg = await saves.get(owner, { type: "json" });
+      if (cg && cg.state) b.state = { ...b.state, gold: core.settle(JSON.parse(JSON.stringify(cg.state)), now).gold };
+    }
+    return { status: res.status, body: { ...b, c: key, incoming: await battles.incomingFor(battle, owner) } };
+  };
 
   // 玩家出兵(含偵察、開分城、行政官佔領):只登記,戰鬥在抵達時才結算
   if (body?.action?.t === "raidp" && stored) {
@@ -80,7 +88,14 @@ async function act({ stores, user, body, now }) {
 
   // 召回或遣返駐防在別座城池的增援部隊
   if (body?.action?.t === "garrp" && stored) {
-    const r = await require("./garr-run.cjs").release({ saves, world: wstore, owner, a: body.action, now });
+    const r = await require("./garr-run.cjs").release({ saves, world: wstore, owner, a: body.action, now, hk: key });
+    const fresh = await saves.get(key, { type: "json" });
+    return attach({ status: r.ok ? 200 : 422, body: { ...core.view(fresh || stored, now), ok: r.ok, msg: r.msg } });
+  }
+
+  // 放棄佔領的營寨
+  if (body?.action?.t === "campx" && stored) {
+    const r = await require("./garr-run.cjs").abandon({ saves, world: wstore, owner, ck: key, a: body.action, now });
     const fresh = await saves.get(key, { type: "json" });
     return attach({ status: r.ok ? 200 : 422, body: { ...core.view(fresh || stored, now), ok: r.ok, msg: r.msg } });
   }

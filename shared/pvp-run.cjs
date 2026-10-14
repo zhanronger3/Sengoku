@@ -40,14 +40,25 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
     const found = a.kind === "found", reinf = a.kind === "reinf";
     const tx = Math.floor(+a.tx), ty = Math.floor(+a.ty);
     if (!Number.isFinite(tx) || !Number.isFinite(ty)) return await fail("座標錯誤");
-    let hit = null;
-    if (found) {
+    let hit = null, act = { ...a };
+    const npc = !found && G.npcAt(tx, ty);
+    if (npc) {
+      // 營寨(全服共用):無主、被別人佔領、或自己佔領的(自己佔領的就是增援駐軍)
+      if (npc.zg) return await fail("菩提山城不能攻擊,請行三顧之禮");
+      const cur = G.campCur(await world.get(B.campKey(tx, ty), { type: "json" }), npc, now);
+      if (cur.o === owner) {
+        if (act.kind !== "scout") act.kind = "reinf";
+      } else {
+        if (act.kind === "reinf") return await fail("只能增援自己佔領的營寨");
+        if (cur.o && (await allied(world, owner, cur.o))) return await fail("盟友佔領的營寨不能攻打");
+      }
+    } else if (found) {
       if (Math.abs(tx) > 500 || Math.abs(ty) > 500) return await fail("建城的座標太遠了(範圍 -500 ~ 500)");
       if (G.npcAt(tx, ty)) return await fail("這裡是營寨或山城,不能建城");
       if (await W.findAt(world, tx, ty)) return await fail("這個位置已經有城池了");
       const tk = await world.get(`t_${tx}_${ty}`, { type: "json" });
       if (tk) return await fail("這個位置已經被佔用了");
-    } else {
+    } else if (!npc) {
       hit = await W.findAt(world, tx, ty);
       if (!hit) return await fail("該座標沒有玩家的城池");
       const hitOwner = hit.rec.o || hit.uid;
@@ -64,7 +75,7 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
     }
 
     const aid = `${now}-${Math.random().toString(36).slice(2, 8)}`;
-    const r = G.pvpLaunch(att, a, { aid, defNick: hit && hit.rec.n, now });
+    const r = G.pvpLaunch(att, act, { aid, defNick: npc ? npc.n : hit && hit.rec.n, now, camp: npc ? 1 : 0 });
     if (!r.ok) return await fail(r.msg);
     att.saved = now;
     const next = rev + 1;
@@ -79,14 +90,16 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
         battle, mail, now,
         rec: {
           id: aid, att: { uid, o: owner, n: nick, x: r.pos.x, y: r.pos.y, fac: r.fac, ab: r.ab, hero: r.hero || null, ar: r.ar || 0, ah: r.ah || [] },
-          def: found ? null : { uid: hit.uid, o: hit.rec.o || hit.uid, n: hit.rec.n, x: hit.rec.x, y: hit.rec.y },
-          tx, ty, send: r.send, sentAt: now, arrAt, go: r.go, dur: r.dur, dist: r.dist, kind: r.kind || "", tg: r.tg || [],
+          def: found || npc ? null : { uid: hit.uid, o: hit.rec.o || hit.uid, n: hit.rec.n, x: hit.rec.x, y: hit.rec.y },
+          tx, ty, send: r.send, sentAt: now, arrAt, go: r.go, dur: r.dur, dist: r.dist, kind: npc ? (r.kind === "scout" ? "campscout" : r.kind === "reinf" ? "campgar" : "camp") : r.kind || "", tg: r.tg || [],
         },
       });
     } catch (e) { /* 登記失敗:攻擊方的「出征中」紀錄在抵達時間過後會自動取消,部隊折返 */ }
     await unlock(world, owner).catch(() => {});
     const total = r.send.reduce((p, q) => p + q, 0), mins = Math.max(1, Math.round((arrAt - now) / 60000));
-    const msg = found
+    const msg = npc
+      ? `已派 ${total} 人前往${npc.n}(${tx}|${ty}),約 ${mins} 分鐘後抵達;${r.kind === "scout" ? "偵察報告" : r.kind === "reinf" ? "抵達後開始駐守" : "戰況"}會用飛鴿傳書通知你`
+      : found
       ? `已派 3 名開墾代官前往(${tx}|${ty}),約 ${mins} 分鐘後抵達並建立分城`
       : reinf
       ? `已派 ${total} 名士兵前往 ${hit.rec.n}(${tx}|${ty}) 增援,約 ${mins} 分鐘後抵達並駐防`
