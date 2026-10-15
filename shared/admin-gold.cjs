@@ -91,7 +91,7 @@ async function heroFix({ saves, world, mail, target, level, xp, confirm, city, r
       const w = await saves.setJSON(key, { state: st, rev: g.data.rev + 1, updatedAt: now }, { onlyIfMatch: g.etag });
       if (!w || w.modified !== false) {
         try { await W.publishState(world, key, st, target.uid); } catch {}
-        try { await M.systemMail(mail, target.uid, "武將經驗值修正", `因為第 7 階營寨的經驗值設定錯誤,${h.n}的等級已修正為 ${pl.lv} 級。${pl.reset ? "已分配的屬性點全部退回,請到評定眾重新分配。" : "多出的屬性點已扣除。"}${reason ? `\n原因:${reason}` : ""}`, now); } catch {}
+        try { await M.systemMail(mail, target.uid, "武將等級調整", `${h.n}的等級已調整為 ${pl.lv} 級。${pl.reset ? "已分配的屬性點全部退回,請到評定眾重新分配。" : "多出的屬性點已扣除。"}${reason ? `\n原因:${reason}` : ""}`, now); } catch {}
         row.written = true; rows.push(row); break;
       }
       await new Promise((r) => setTimeout(r, Math.random() * 5 * (i + 1)));
@@ -137,6 +137,10 @@ async function handle({ method, secret, expected, body, saves, world, mail, now 
   if (method !== "POST") return { status: 405, body: { ok: false, msg: "Method Not Allowed" } };
 
   if (body && body.t === "fblist") return { status: 200, body: { ok: true, list: await FB.list(world) } };
+  if (body && body.t === "fbreply") {
+    const r = await FB.reply({ world, mail, id: String(body.id || ""), text: body.text, now });
+    return { status: r.ok ? 200 : 422, body: { ...r, list: await FB.list(world) } };
+  }
   if (body && body.t === "fbdel") { await FB.remove(world, String(body.id || "")); return { status: 200, body: { ok: true, list: await FB.list(world) } }; }
   // 全服發信:寄一封系統信給每一位玩家(以公告編號去重,重送也不會重複收到)。留一份紀錄在 "bc"
   if (body && body.t === "bclist") { const b = await world.get("bc", { type: "json" }); return { status: 200, body: { ok: true, list: (b && b.a) || [] } }; }

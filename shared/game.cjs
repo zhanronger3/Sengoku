@@ -57,7 +57,7 @@ function npcAt(x,y){
  if(x===ZG.x&&y===ZG.y)return {n:'菩提山城',e:'🏯',zg:1};
  if(NOCAMP.has(x+','+y))return null;
  if(hash(x,y,21)>=CAMP_DENS&&!campSpot(x,y))return null;
- const ti=hash(x,y,90002)<1/24?6:Math.min(5,Math.floor(hash(x,y,90001)*6)),t=TIERS[ti],k=.8+hash(x,y,2)*.5,g={}; // 前六種階級平均分佈;第 7 階級約 1/24 稀有;都跟離原點遠近無關
+ const ti=hash(x,y,90002)<1/60?6:Math.min(5,Math.floor(hash(x,y,90001)*6)),t=TIERS[ti],k=.8+hash(x,y,2)*.5,g={}; // 前六種階級平均分佈;第 7 階級約 1/60 稀有;都跟離原點遠近無關
  const g0={};for(const [u,c] of Object.entries(t.g)){g0[u]=Math.max(1,Math.round(c*k));g[u]=Math.max(1,Math.round(c*k*(t.gm||1)))}
  const def=defOf(g);
  return {n:t.n,e:t.e,ti,g,def,stash:Math.floor(defOf(g0)*0.5*STASH_MULT),noOcc:t.noOcc?1:0}}

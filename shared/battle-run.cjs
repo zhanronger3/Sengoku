@@ -131,16 +131,10 @@ function campReport(res, rec, n) {
     const v = res.view;
     const body = v.occ ? `佔領者:${v.on || "不明"}\n駐軍合計 ${G.garSum(v.gs)} 人,防禦約 ${v.def}\n${v.gs.map((g) => unitStr(g.fac, g.u)).join("\n") || "(目前沒有駐軍,誰派兵進駐就能拿下)"}`
       : `守軍:${Object.entries(v.g).filter(([, c]) => c > 0).map(([u, c]) => `${u}×${c}`).join("、") || "無"}\n防禦合計約 ${v.def}\n庫存(每種資源) ${v.st.map((x) => Math.max(0, Math.floor(x))).join("/")}${v.left ? `\n${Math.ceil(v.left / 60000)} 分鐘後重新集結` : ""}`;
-    return { s: `【偵察】${pos}`, b: `${R.fmtTime(rec.arrAt)},偵察兵抵達${pos}。\n\n${body}` };
+    return { s: `【諜報】${pos}`, b: `${R.fmtTime(rec.arrAt)},忍者潛入${pos}。\n\n${body}` };
   }
-  const lost = res.deadA.reduce((p, q) => p + q, 0), sent = res.sent.reduce((p, q) => p + q, 0);
-  const head = `${R.fmtTime(rec.arrAt)},你的軍勢(出兵 ${sent} 人,武將領軍)抵達${pos}${res.occupied ? ",守軍是玩家的駐軍" : ""}。\n我方攻擊力 ${res.A}、守軍防禦力 ${res.D}。\n\n`;
-  let tail;
-  if (!res.win) tail = `進攻失敗,全軍覆沒,武將戰死(需要到評定眾復活)。守軍也受到損傷。`;
-  else if (res.occupy) tail = `戰勝!陣亡 ${lost} 人,守軍被全滅。\n生還的 ${res.garr.reduce((p, q) => p + q, 0)} 人留下駐守,營寨現在是你的:這座城每種資源產量 +${res.tier + 1}%。${res.loot.some((x) => x > 0) ? `\n搶得 ${res.loot.join("/")} 已直接入庫。` : ""}${res.art.length ? `\n武將在營寨裡找到了名物${res.art.map((id) => `「${((G.ARTM || {})[id] || {}).n || id}」`).join("、")}(藏寶閣有空位、且還沒有同一件才會收進去)。` : ""}`;
-  else tail = `戰勝!陣亡 ${lost} 人。${res.loot.some((x) => x > 0) ? `搶得 ${res.loot.join("/")}(部隊返回後入庫)。` : ""}\n守軍已全滅,但這座營寨不在這座城 15×15 範圍內,或評定眾的佔領名額已滿,所以沒有佔領(營寨回到無主,等待重新集結)。`;
-  const ht = R.heroText(res.hero, "att", { win: res.win, seed: rec.id, fac: rec.att.fac, target: n.n, name: rec.att.hero && rec.att.hero.n });
-  return { s: `【營寨】${res.win ? "戰勝" : "戰敗"} ${pos}`, b: head + (ht ? ht + "\n\n" : "") + tail };
+  const body = R.buildCamp(res, { id: rec.id, name: n.n, tx: rec.tx, ty: rec.ty, fac: rec.att.fac, attNick: rec.att.n, arrAt: rec.arrAt, heroName: rec.att.hero && rec.att.hero.n, noOcc: n.noOcc });
+  return { s: `【營寨】${res.win ? "大勝" : "敗走"} ${pos}`, b: body };
 }
 
 // 營寨(全服共用)的戰鬥/偵察/駐守:結算寫進 camp_<x>_<y>,每場戰鬥用攻擊編號去重
@@ -174,12 +168,12 @@ async function resolveCamp({ saves, world, battle, mail, rec, now }) {
     // 原本佔領的人:守軍有損失或營寨被奪走,同步他每一座出兵城的存檔並寄信
     if (res.prev) {
       for (const k of res.prev.ks) await mutateSave(saves, k, now, (st) => { core.settleTo(st, now); G.campSync(st, key, res.prev.lost ? null : res.prev.gs); });
-      const lostTxt = res.prev.lost ? `營寨${n.n}(${key.replace(",", "|")})被 ${rec.att.n} 攻陷了!你的駐軍全軍覆沒,營寨不再屬於你。` : `營寨${n.n}(${key.replace(",", "|")})遭到 ${rec.att.n} 的攻擊,守軍有損失,但守住了。`;
+      const lostTxt = res.prev.lost ? `營寨${n.n}(${key.replace(",", "|")})被 ${rec.att.n} 攻陷了!你的駐軍全軍覆沒,營寨不再屬於你。` : `營寨${n.n}(${key.replace(",", "|")})遭 ${rec.att.n} 來襲,守軍雖有折損,仍守住了。`;
       await M.systemMail(mail, res.prev.o, res.prev.lost ? "營寨失守" : "營寨遇襲", lostTxt, now, { id: `atk-${id}-d`, limit: MAIL_LIMIT });
     }
   }
   await applyToAttacker({ saves, rec, id, res, now });
-  const rp = res.void ? { s: "【營寨】目標已不存在", b: "你的部隊抵達時,目標營寨已經不存在,部隊折返。" } : res.reinf ? { s: res.ok ? "駐守抵達" : "駐守失敗", b: res.ok ? `你派出的 ${rec.send.reduce((p, q) => p + q, 0)} 名士兵已抵達 ${n.n}(${key.replace(",", "|")}),開始駐守。` : `駐守失敗:${res.why}。部隊折返。` } : campReport(res, rec, n);
+  const rp = res.void ? { s: "【營寨】目標已不存在", b: "軍勢抵達時,目標營寨已不存在,只得收兵。" } : res.reinf ? { s: res.ok ? "駐守抵達" : "駐守失敗", b: res.ok ? `你派出的 ${rec.send.reduce((p, q) => p + q, 0)} 名士兵已進駐 ${n.n}(${key.replace(",", "|")}),開始守備。` : `進駐失敗:${res.why}。軍勢只得收兵。` } : campReport(res, rec, n);
   await M.systemMail(mail, owner, rp.s, rp.b, now, { id: `atk-${id}-a`, limit: MAIL_LIMIT });
   await battle.delete(akey(id));
   return true;
@@ -214,9 +208,9 @@ async function resolveReinf({ saves, world, battle, mail, rec, now }) {
   await applyToAttacker({ saves, rec, id, res, now });
   const pos = `${rec.def.n}(${rec.def.x}|${rec.def.y})`, n = rec.send.reduce((p, q) => p + q, 0);
   await M.systemMail(mail, owner, res.ok ? "增援抵達" : "增援失敗",
-    res.ok ? `你派出的 ${n} 名士兵已抵達 ${pos},開始駐防。可以在出發城池的軍奉行把他們召回。` : `你派去 ${pos} 的 ${n} 名士兵無法駐防:${res.why}。部隊正在返回。`,
+    res.ok ? `你派出的 ${n} 名士兵已進駐 ${pos},開始守備。可至出發城池的軍奉行將他們召回。` : `你派去 ${pos} 的 ${n} 名士兵無法進駐:${res.why}。軍勢正在歸陣。`,
     now, { id: `atk-${id}-a`, limit: MAIL_LIMIT });
-  if (res.ok && defOwner !== owner) await M.systemMail(mail, defOwner, "盟軍抵達", `${rec.att.n} 派來的 ${n} 名士兵抵達 ${pos},現在和你的守軍一起守城。`, now, { id: `atk-${id}-d`, limit: MAIL_LIMIT });
+  if (res.ok && defOwner !== owner) await M.systemMail(mail, defOwner, "盟軍抵達", `${rec.att.n} 派來的 ${n} 名士兵進駐 ${pos},與你的守軍並肩守城。`, now, { id: `atk-${id}-d`, limit: MAIL_LIMIT });
   await W.casUpdate(battle, ikey(defOwner), (cur) => (!cur || !cur.a.some((x) => x.id === id) ? undefined : { a: cur.a.filter((x) => x.id !== id) }));
   await battle.delete(akey(id));
   return true;
