@@ -45,6 +45,10 @@ footer{flex-shrink:0;text-align:center;padding:14px 12px;border-top:1px solid rg
 <h1 style="margin-top:24px">全服發信</h1>
 <div class="box"><input id="bcsub" type="text" maxlength="40" placeholder="主旨(預設:全服公告)" style="width:100%"><br><textarea id="bctext" rows="4" maxlength="1000" style="width:100%" placeholder="信件內容(最多 1000 字)。會以「系統」寄信給所有玩家的收件箱。"></textarea><br>
 <button id="bcsend">寄給所有玩家</button> <button id="bcload" class="alt">看寄過的信</button> <span id="bcmsg"></span><div id="bclist"></div></div>
+<h1 style="margin-top:24px">武將修正</h1>
+<div class="box"><p style="color:var(--mut);margin-top:0">玩家用上面「找玩家」的欄位。只會降等、不會升等;先按「試算」看結果,確認再按「確認執行」。</p>
+<label for="hlv">降到幾級</label><input id="hlv" type="number" min="1" max="20" value="8" style="width:80px"> <label for="hxp">該級經驗值(預設 0)</label><input id="hxp" type="number" min="0" value="0" style="width:100px"><br>
+<button id="hlist" class="alt">看武將</button> <button id="hdry">試算</button> <button id="hgo">確認執行</button> <span id="hmsg"></span><div id="hout"></div></div>
 <h1 style="margin-top:24px">玩家意見箱</h1>
 <div class="box"><button id="fbload" class="alt" style="margin-top:0">讀取意見</button> <span id="fbmsg"></span><div id="fblist"></div></div>
 </main>
@@ -73,6 +77,12 @@ $('#fbload').onclick=async()=>{const m=$('#fbmsg');m.className='';m.textContent=
 $('#fblist').addEventListener('click',async ev=>{const t=ev.target,box=t.closest('[data-id]');if(!box)return;const m=$('#fbmsg');
  if(t.classList.contains('fbdel')){if(!confirm('刪除這則意見?'))return;const r=await call('POST',{t:'fbdel',id:box.dataset.id});if(r.ok)fbShow(r.j.list);else{m.className='bad';m.textContent=(r.j&&r.j.msg)||'失敗'}}
  else if(t.classList.contains('fbgold')){const amt=Number(box.querySelector('.fbamt').value);if(!confirm('確定送 '+amt+' 金幣給這位玩家嗎?'))return;const r=await call('POST',{uid:t.dataset.u,amount:amt,reason:'意見回饋'});m.className=r.ok?'ok':'bad';m.textContent=(r.j&&r.j.msg)||('失敗('+r.s+')')}});
+function whoBody(){const how=$('#how').value,b={};if(how=='xy'){b.x=$('#x').value;b.y=$('#y').value}else if(how=='nick')b.nick=$('#nick').value;else b.uid=$('#uid').value;return b}
+const hv=h=>h?`${esc(h.n)} Lv${h.lv} 經驗${h.xp} 剩餘點${h.pts} (攻${h.a}/防${h.d}/速${h.s}/載${h.c})`:'(沒有武將)';
+async function hero(t,confirmIt){const m=$('#hmsg');m.className='';m.textContent='處理中…';const b={...whoBody(),t};if(t=='herofix'){b.level=Number($('#hlv').value);b.xp=Number($('#hxp').value)||0;b.confirm=confirmIt;if(confirmIt&&!confirm('確定把這位玩家的武將降到 '+b.level+' 級嗎?'))return m.textContent='已取消'}
+  try{const r=await call('POST',b);if(!r.ok){m.className='err';m.textContent=(r.j&&r.j.msg)||('失敗('+r.s+')');return}
+  m.textContent=r.j.msg;$('#hout').innerHTML=r.j.rows.map(x=>`<p><b>${esc(x.key)} ${esc(x.cname||'')}</b><br>現在:${hv(x.before)}`+(x.changed?`<br>改成:${hv(x.after)}${x.reset?'(屬性點全部退回)':''}${x.written?' ✅已寫入':x.err?' ⚠'+esc(x.err):''}`:'<br>不用改')+'</p>').join('')}catch(e){m.className='err';m.textContent='連線失敗'}}
+$('#hlist').onclick=()=>hero('herolist');$('#hdry').onclick=()=>hero('herofix',false);$('#hgo').onclick=()=>hero('herofix',true);
 </script>
 </body>
 </html>
