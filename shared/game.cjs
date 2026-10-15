@@ -43,7 +43,7 @@ const TIERS=[
  {n:'山賊山城',e:'⛰️',g:{野盜:65,野盜頭領:15,山賊總頭目:9}},
  {n:'石山本願寺',e:'🛕',g:{一向一揆門徒:60,一向一揆坊官:10,一向一揆大將:4}},
  {n:'大筒陣地',e:'💣',g:{竹束防護眾:30,重裝大筒車:8}},
- {n:'比叡山延曆寺',e:'⛩️',noOcc:1,g:{重裝大筒車:45,戰犬眾:50,一向一揆大將:66,竹束防護眾:100}}]; // 第 7 階級(稀有、無法佔領,只能掠奪):防禦與庫存約為大筒陣地的 10 倍
+ {n:'比叡山延曆寺',e:'⛩️',noOcc:1,gm:5,g:{重裝大筒車:45,戰犬眾:50,一向一揆大將:66,竹束防護眾:100}}]; // 第 7 階級(稀有、無法佔領,只能掠奪):庫存約為大筒陣地的 10 倍(以基準守軍算),守軍防禦 ×5(gm),約為大筒陣地的 50 倍
 const ZG={x:4,y:1},CAMP_DENS=0.05,CAMP_BLK=4,CAMP_PER=2;
 const NOCAMP=new Set(); // 玩家城池所在的格子(營寨不會蓋在城上);客戶端與伺服器各自在讀到城池時填入
 // 保底:地圖切成 4×4 的小區塊,每塊固定 2 座營寨,所以任何 7×7 範圍至少完整包含一塊,至少有 2 座營寨。再加上原本隨機散布的營寨(保留舊的,已佔領的不會消失)
@@ -57,10 +57,10 @@ function npcAt(x,y){
  if(x===ZG.x&&y===ZG.y)return {n:'菩提山城',e:'🏯',zg:1};
  if(NOCAMP.has(x+','+y))return null;
  if(hash(x,y,21)>=CAMP_DENS&&!campSpot(x,y))return null;
- const ti=hash(x,y,90002)<1/12?6:Math.min(5,Math.floor(hash(x,y,90001)*6)),t=TIERS[ti],k=.8+hash(x,y,2)*.5,g={}; // 前六種階級平均分佈;第 7 階級約 1/12 稀有;都跟離原點遠近無關
- for(const [u,c] of Object.entries(t.g))g[u]=Math.max(1,Math.round(c*k));
+ const ti=hash(x,y,90002)<1/24?6:Math.min(5,Math.floor(hash(x,y,90001)*6)),t=TIERS[ti],k=.8+hash(x,y,2)*.5,g={}; // 前六種階級平均分佈;第 7 階級約 1/24 稀有;都跟離原點遠近無關
+ const g0={};for(const [u,c] of Object.entries(t.g)){g0[u]=Math.max(1,Math.round(c*k));g[u]=Math.max(1,Math.round(c*k*(t.gm||1)))}
  const def=defOf(g);
- return {n:t.n,e:t.e,ti,g,def,stash:Math.floor(def*0.5*STASH_MULT),noOcc:t.noOcc?1:0}}
+ return {n:t.n,e:t.e,ti,g,def,stash:Math.floor(defOf(g0)*0.5*STASH_MULT),noOcc:t.noOcc?1:0}}
 // 營寨的狀態(每位玩家各自一份):被打過會損兵、庫存會減少,隔一段時間重新集結
 function campGet(x,y){const key=x+','+y,n=npcAt(x,y);if(!n||n.zg||(S.occ&&S.occ[key]))return null;let c=S.camps[key];
  if(c&&S.t-c.t>=CAMP_RESPAWN){delete S.camps[key];c=null}
@@ -131,7 +131,7 @@ const ARTM=Object.fromEntries(ART.map(a=>[a.id,a]));
 const occSlots=()=>S.bld.cnl>=20?3:S.bld.cnl>=15?2:S.bld.cnl>=10?1:0;
 const artSlots=()=>Math.floor(S.bld.trs/10);
 const OCC_RANGE=7,HERO_MAXLV=20; // 佔領範圍:以出兵的那座城為中心的 15×15(上下左右各 7 格)
-const heroNeed=lv=>lv*60;
+const heroNeed=lv=>lv*60,HERO_XP_CAP=400; // 單場戰鬥武將最多拿 400 經驗值
 const heroAtk=h=>50+10*h.lv+15*h.a,heroDef=h=>50+10*h.lv+15*h.d,heroSpd=h=>8+.5*h.s,heroCarry=h=>200+100*h.c;
 const occTier=key=>{const [x,y]=key.split(',').map(Number),n=npcAt(x,y);return n&&n.ti!=null?n.ti:0};
 const occP=t=>t+1; // 每佔領 1 座營寨,這座城每種資源產量 +(階級+1)%
@@ -197,7 +197,7 @@ function heroGain(h,xp){h.xp+=xp;let up=0;
  while(h.lv<HERO_MAXLV&&h.xp>=heroNeed(h.lv)){h.xp-=heroNeed(h.lv);h.lv++;h.pts+=5;up++}
  if(up)logm(`武將${h.n}升到等級 ${h.lv}!獲得 ${up*5} 點屬性點(到評定眾分配)`,1)}
 function heroWin(h,m,c,D){
- heroGain(h,Math.max(5,Math.round(D/20)));
+ heroGain(h,Math.min(HERO_XP_CAP,Math.max(5,Math.round(D/20))));
  if(defOf(c.g)>0)return; // 守軍還沒被全滅
  const key=c.key,tier=occTier(key);
  if(Math.max(Math.abs(m.tx-S.pos.x),Math.abs(m.ty-S.pos.y))<=OCC_RANGE&&!(npcAt(m.tx,m.ty)||{}).noOcc){
@@ -352,7 +352,7 @@ function pvpBattle(info,def){
     for(let n=Math.min(over,info.ar,cands.length),j=0;n>0;n--,j++){const k=((info.seed>>>0)+j*7)%cands.length;art.push(cands.splice(k,1)[0])}}}
   const loot=[0,1,2,3].map(i=>win?Math.floor(Math.min(carry/4,Math.max(0,defRes[i]-hideAmt))):0);
   const defBefore=S.u.slice(),defAfter=S.u.map(x=>Math.floor(x*(1-lossD)));
-  return {win,A:Math.round(A),D:Math.round(D),wallPct,wallLv:S.bld.wall,caveLv:S.bld.cave,defFac:S.fac,attFac:info.fac,lossA,lossD,sent:info.send.slice(),surv,deadA:info.send.map((x,k)=>x-surv[k]),defBefore,deadD:defBefore.map((x,k)=>x-defAfter[k]),loot,defRes:defRes.map(Math.floor),hide:Math.round(hideAmt),sg,conq,art,deadG:(S.gar||[]).map(g=>({gid:g.gid,d:g.u.map(x=>x-Math.floor(x*(1-lossD)))})),hero:info.hero?{n:info.hero.n,dead:!win,xp:win?Math.max(5,Math.round(D/20)):0}:null}})}
+  return {win,A:Math.round(A),D:Math.round(D),wallPct,wallLv:S.bld.wall,caveLv:S.bld.cave,defFac:S.fac,attFac:info.fac,lossA,lossD,sent:info.send.slice(),surv,deadA:info.send.map((x,k)=>x-surv[k]),defBefore,deadD:defBefore.map((x,k)=>x-defAfter[k]),loot,defRes:defRes.map(Math.floor),hide:Math.round(hideAmt),sg,conq,art,deadG:(S.gar||[]).map(g=>({gid:g.gid,d:g.u.map(x=>x-Math.floor(x*(1-lossD)))})),hero:info.hero?{n:info.hero.n,dead:!win,xp:win?Math.min(HERO_XP_CAP,Math.max(5,Math.round(D/20))):0}:null}})}
 // 偵察(純計算):防守方的偵察兵越多,攻方偵察兵折損越多;全滅就失敗
 function scoutBattle(info,def){return withS(def,()=>{const U=UN[info.fac],Ud=us();
  const aS=info.send.reduce((p,x,k)=>p+(U[k].k==='scout'?x:0),0),dS=S.u.reduce((p,x,k)=>p+(Ud[k].k==='scout'?x:0),0);
@@ -450,7 +450,7 @@ function campBattle(info,doc,n,now){
  if(A>D){
   const q=D>0?pw(D/A,1.5):0,surv=info.send.map(x=>Math.round(x*(1-q)));
   res.win=true;res.surv=surv;res.deadA=info.send.map((x,k)=>x-surv[k]);
-  res.hero=H?{dead:false,xp:Math.max(5,Math.round(D/20))}:null;
+  res.hero=H?{dead:false,xp:Math.min(HERO_XP_CAP,Math.max(5,Math.round(D/20)))}:null;
   let cleared;
   if(occ){cleared=true;next={...doc,gs:[]}}
   else{const carry=surv.reduce((a,x,k)=>a+x*U[k].c,0)+(H?H.carry:0),p=[0,1,2,3].map(i=>Math.floor(Math.min(carry/4,Math.max(0,doc.st[i]))));
