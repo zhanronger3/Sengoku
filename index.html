@@ -159,7 +159,7 @@ svg text{user-select:none}
 <body>
 <div id="app">
 <div id="hd"><div class="logo"><img src="/assets/logo.png" alt="車肥羊戰國" height="52"></div>
-<span id="who" class="mut" style="font-size:12px"></span><span id="cloud" class="mut" data-a="syncnow" style="font-size:12px;cursor:pointer"></span><div id="tn"><button data-a="help">遊戲指南</button><button data-a="set">遊戲設定</button><button data-a="soon" data-m="每日一題尚未開放">每日一題</button><button data-a="soon" data-m="論壇尚未開放">論 壇</button><button data-a="soon" data-m="客服中心尚未開放">客服中心</button><button data-a="logout">登 出</button><button data-a="nav" data-v="shop">商 城</button></div></div>
+<span id="who" class="mut" style="font-size:12px"></span><span id="cloud" class="mut" data-a="syncnow" style="font-size:12px;cursor:pointer"></span><div id="tn"><button data-a="help">遊戲指南</button><button data-a="set">遊戲設定</button><button data-a="nav" data-v="quiz">每日一題</button><button data-a="soon" data-m="論壇尚未開放">論 壇</button><button data-a="nav" data-v="fb">客服中心</button><button data-a="logout">登 出</button><button data-a="nav" data-v="shop">商 城</button></div></div>
 <div id="rb"></div>
 <div id="body"><nav id="nav"></nav><main id="main"></main><aside id="side"></aside></div>
 </div>
@@ -216,7 +216,7 @@ function incBar(){if(!ME||!INC.length)return'';const fr=INC.filter(e=>e.k=='rein
  if(!hs.length)return frH;
  return frH+`<div class="guide" style="border-left-color:#ff5a4a;background:linear-gradient(#5a0d12,#35070c)"><b>⚠ 來襲警報</b><br>`+hs.map(e=>`${esc(e.n)}(${e.x}|${e.y})的軍勢將於 <b data-rt="${e.arrAt}">${tm((e.arrAt-(Date.now()+CLK))/1000)}</b> 後抵達${e.tx!=null?cityRef(e.tx,e.ty):'你的城池'}<span class="mut">(兵力不明)</span>`).join('<br>')+`<br><span class="mut">部隊抵達時才會開戰,結果會用飛鴿傳書通知你。趁現在整備軍隊、升級城牆吧。</span></div>`}
 const cityName=()=>S.col?esc(S.cname||'分城'):esc(NICK)+'的主城',cnOf=c=>c.col?c.n:esc(NICK)+'的主城';
-const ttl=()=>`<div class="ttl"><span class="flag" style="background:${CASTLE_COL[S.fac]}">${fa().s}</span>${cityName()}<small>(${home().x}|${home().y})</small><small class="mut">${S.col?`二之丸・忠誠度 ${Math.floor(S.loy==null?100:S.loy)}/100`:'主城'}</small></div>`;
+const ttl=()=>`<div class="ttl"><span class="flag" style="background:${CASTLE_COL[S.fac]}">${fa().s}</span>${cityName()}<small>(${home().x}|${home().y})</small><small class="mut">${S.col?`分城・忠誠度 ${Math.floor(S.loy==null?100:S.loy)}/100`:'主城'}</small></div>`;
 const citySel=()=>CITIES.length>1?` <select id="csw" title="切換城池">${CITIES.map(c=>`<option value="${esc(c.k)}" ${c.k==CUR?'selected':''}>${cnOf(c)}(${c.x}|${c.y})${c.col?' 忠誠'+c.loy:''}</option>`).join('')}</select>`:'';
 const back=v=>`<p><a data-a="nav" data-v="${v}">« 返回${v=='in'?'城內':'城外'}</a></p>`;
 function qtab(){const rows=['f','b'].filter(l=>S.q[l]);if(!rows.length)return'';
@@ -514,13 +514,15 @@ function campInfoHtml(p,x,y){
 const balPrev=()=>{try{return '預覽:'+G.balanceTargets(SH.r.map(x=>Math.max(0,x))).map((v,i)=>RI[i]+v).join(' ')}catch(e){return ''}};
 function updBal(){const el=$('#balprev');if(el)el.textContent=balPrev()}
 function vShop(){const room=[0,1,2,3].map(i=>Math.max(0,Math.floor((cap(i)-S.res[i])/GOLD_RATE)));
- return `<div class="ttl">商城</div><p>金幣:<b>🪙 ${fmt(S.gold)}</b> <span class="mut">(每遊戲小時 +1,完成任務也有獎勵)</span></p>
-<h4 class="sh">購買資源</h4><p class="mut">1 金幣 = ${GOLD_RATE} 單位資源;藏屋敷放得下才能買。</p>
-<p>資源 <select id="brs">${RN.map((n,i)=>`<option value="${i}" ${SH.res==i?'selected':''}>${RI[i]} ${n}(最多再買 ${room[i]} 金幣)</option>`).join('')}</select> 花費 <input id="bgd" type="number" min="1" value="${SH.gold}"> 金幣 <button data-a="buy">購買</button></p>
-<h4 class="sh">平倉(依比例重新分配資源)</h4><p class="mut">把目前所有資源加總,照你設定的比例重新分配,不會有損耗(受藏屋敷上限限制)。每次 ${EXCHANGE_COST} 金幣。</p>
+ return `<div class="ttl">商城</div>`
++qcard('我的金幣',`<p><b>🪙 ${fmt(S.gold)}</b> <span class="mut">(每遊戲小時 +1,完成任務也有獎勵)</span></p>`)
++qcard('購買資源',`<p class="mut">1 金幣 = ${GOLD_RATE} 單位資源;藏屋敷放得下才能買。</p>
+<p>資源 <select id="brs">${RN.map((n,i)=>`<option value="${i}" ${SH.res==i?'selected':''}>${RI[i]} ${n}(最多再買 ${room[i]} 金幣)</option>`).join('')}</select> 花費 <input id="bgd" type="number" min="1" value="${SH.gold}"> 金幣 <button data-a="buy">購買</button></p>`)
++qcard('平倉(依比例重新分配資源)',`<p class="mut">把目前所有資源加總,照你設定的比例重新分配,不會有損耗(受藏屋敷上限限制)。每次 ${EXCHANGE_COST} 金幣。</p>
 <p>${RN.map((n,i)=>`${RI[i]}<input id="r${i}" type="number" min="0" max="1000" value="${SH.r[i]}" style="width:56px" aria-label="${n}比例">`).join(' ')} <button data-a="bal">平倉</button></p>
 <p>快速設定:<a data-a="balp" data-p="1,1,1,1">平均</a> | ${RN.map((n,i)=>`<a data-a="balp" data-p="${[0,1,2,3].map(k=>k==i?1:0).join(',')}">全部${n}</a>`).join(' | ')} | <a data-a="balp" data-p="2,2,1,1">建築型(木泥為主)</a> | <a data-a="balp" data-p="1,1,2,2">軍事型(鐵糧為主)</a></p>
-<p id="balprev" class="mut">${balPrev()}</p>`}
+<p id="balprev" class="mut">${balPrev()}</p>`)
++qcard('儲值',`<p>💳 儲值功能尚未開放,敬請期待。</p><p><button data-a="soon" data-m="儲值功能尚未開放" disabled style="opacity:.5;cursor:not-allowed">儲值(尚未開放)</button></p>`)}
 function cityAge(){const bs=(CITIES||[]).map(c=>c.b).filter(Boolean),b0=bs.length?Math.min(...bs):(S.born||Date.now()),ms=Math.max(0,Date.now()-b0),d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5);return `${d} 天 ${h} 小時`}
 let rkt=0;
 const RKT=['玩家','城池','聯盟','進攻','防禦','武將','寶鼎'];
@@ -560,9 +562,15 @@ async function chatSend(){if(CHBUSY)return;const m=($('#chm')||{}).value||'',to=
  try{const r=await api('/api/chat',{ch:['pub','ally','priv'][ct],to,m});if(r.ok&&r.j&&r.j.ok){delete FV.chm;await chatPoll()}else toast((r.j&&r.j.msg)||'送出失敗')}catch(e){toast('送出失敗,請稍後再試')}CHBUSY=0;dirty=1}
 // ====== 意見箱 ======
 let FBMSG='';
-const vFb=()=>`<div class="ttl">意見箱</div><div class="paper"><p>遇到問題、想到好點子都可以寫在這裡,管理者會看到。</p>`+(ME?`<p>主旨 <input id="fbs" type="text" maxlength="40" style="width:80%"> <small class="mut">(最多 40 字)</small></p><p>內容<br><textarea id="fbb" rows="8" maxlength="500" style="width:100%"></textarea><br><small class="mut">最多 500 字;每小時最多送出 3 則。</small></p><p><button data-a="fbsend">送出意見</button> <span class="${FBMSG.startsWith('意見已')?'ok':'bad'}">${esc(FBMSG)}</span></p>`:'<p class="mut">登入後才能使用意見箱。</p>')+'</div>';
-async function fbSend(){const s2=($('#fbs')||{}).value||'',b=($('#fbb')||{}).value||'';if(!s2.trim()||!b.trim()){FBMSG='請填寫主旨與內容';dirty=1;return}
- try{const r=await api('/api/feedback',{s:s2,b});FBMSG=(r.j&&r.j.msg)||'送出失敗';if(r.ok&&r.j&&r.j.ok){delete FV.fbs;delete FV.fbb;const a=$('#fbs'),c=$('#fbb');if(a)a.value='';if(c)c.value=''}}catch(e){FBMSG='送出失敗,請稍後再試'}dirty=1}
+const FBCATS=[['bug','遊戲錯誤'],['account','帳號問題'],['suggest','建議'],['report','檢舉玩家'],['other','其他']];
+const vFb=()=>`<div class="ttl">客服中心</div>`+qcard('常見問題',faqHtml())+qcard('回報問題',`<p>遇到問題、想到好點子都可以寫在這裡,管理者會看到,並以飛鴿傳書回覆你。</p>`+(ME?`<p>類型 <select id="fbc">${FBCATS.map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}</select></p><p>主旨 <input id="fbs" type="text" maxlength="40" style="width:80%"> <small class="mut">(最多 40 字)</small></p><p>內容<br><textarea id="fbb" rows="8" maxlength="500" style="width:100%"></textarea><br><small class="mut">最多 500 字;每小時最多送出 3 則。</small></p><p><button data-a="fbsend">送出</button> <span class="${FBMSG.startsWith('意見已')?'ok':'bad'}">${esc(FBMSG)}</span></p>`:'<p class="mut">登入後才能回報問題。</p>'));
+async function fbSend(){const s2=($('#fbs')||{}).value||'',b=($('#fbb')||{}).value||'',c=($('#fbc')||{}).value||'other';if(!s2.trim()||!b.trim()){FBMSG='請填寫主旨與內容';dirty=1;return}
+ try{const r=await api('/api/feedback',{s:s2,b,c});FBMSG=(r.j&&r.j.msg)||'送出失敗';if(r.ok&&r.j&&r.j.ok){delete FV.fbs;delete FV.fbb;const a=$('#fbs'),c2=$('#fbb');if(a)a.value='';if(c2)c2.value=''}}catch(e){FBMSG='送出失敗,請稍後再試'}dirty=1}
+// ====== 每日一題 ======
+let QZ=null,QZBUSY=0;
+async function loadQuiz(){if(!ME)return;try{const r=await api('/api/quiz');if(r.ok&&r.j&&r.j.q){QZ=r.j;dirty=1}}catch(e){}}
+async function quizAnswer(i){if(QZBUSY||!QZ||QZ.done)return;QZBUSY=1;try{const r=await api('/api/quiz',{a:i});if(r.j&&r.j.q){QZ=r.j;toast(r.j.msg||'');pull(true)}else toast((r.j&&r.j.msg)||'送出失敗')}catch(e){toast('送出失敗,請稍後再試')}QZBUSY=0;dirty=1}
+const vQuiz=()=>`<div class="ttl">每日一題</div>`+(!ME?qcard('每日一題','<p class="mut">登入後才能參加。</p>'):!QZ?qcard('每日一題','<p class="mut">載入中…</p>'):qcard(`${QZ.day} 戰國問答`,`<p style="font-size:16px;line-height:1.6"><b>${esc(QZ.q)}</b></p>`+QZ.opts.map((t,i)=>QZ.done?`<p style="margin:6px 0">${i==QZ.ans?'✅':i==QZ.pick?'❌':'⬜'} ${esc(t)}</p>`:`<p style="margin:6px 0"><button data-a="quizans" data-i="${i}" style="width:100%;text-align:left">${'ABCD'[i]}. ${esc(t)}</button></p>`).join('')+(QZ.done?`<p class="${QZ.right?'ok':'bad'}"><b>${QZ.right?`答對了!獲得 🪙${QZ.gold} 金幣。`:'答錯了,明天再挑戰!'}</b></p><p class="mut">${esc(QZ.exp)}</p>`:`<p class="mut">答對可得 🪙${QZ.gold} 金幣。每天只能作答一次,答錯就要等明天。</p>`)));
 function vQuest(){return `<div class="ttl">任務</div>${dailyBox()}<h4 class="sh">成長任務</h4><table class="tb"><tr><th>任務</th><th>獎勵</th><th></th></tr>`+QS.map(q=>{const dn=G.QD().includes(q.id),ok=q.ok();return `<tr><td>${q.n}</td><td>${q.g?'🪙'+q.g+' 金幣':q.r.map((x,i)=>RI[i]+x).join(' ')}</td><td>${dn?'<span class="mut">已領取</span>':ok?`<button data-a="claim" data-id="${q.id}">領取</button>`:'<span class="mut">未完成</span>'}</td></tr>`}).join('')+'</table>'}
 const vFaq=()=>`<div class="ttl">常見問題</div><div class="scroll"><div class="paper">${faqHtml()}</div></div>`;
 const vRep=()=>`<div class="ttl">報告</div>`+(S.rep.length?pgBar('rep',S.rep.length)+`<table class="tb"><tr><th>時間</th><th>內容</th></tr>${pgSl('rep',S.rep).map(r=>`<tr><td>${dstr(r.t)}</td><td style="text-align:left">${artFmt(r.m)}</td></tr>`).join('')}</table>`+pgBar('rep',S.rep.length):'<p class="mut">目前沒有報告。</p>');
@@ -586,7 +594,7 @@ async function pollMail(){if(!ME)return;try{const r=await api('/api/mail?count=1
 const PG={rep:0,in:0,out:0,sys:0},PGN=10;
 const pgBar=(k,n)=>{const m=Math.max(1,Math.ceil(n/PGN));PG[k]=Math.max(0,Math.min(PG[k],m-1));if(m<2)return'';const p=PG[k];return `<p style="text-align:center">${p>0?`<a data-a="pg" data-k="${k}" data-p="${p-1}">上一頁</a>`:'<span class="mut">上一頁</span>'} ${p+1} / ${m} ${p<m-1?`<a data-a="pg" data-k="${k}" data-p="${p+1}">下一頁</a>`:'<span class="mut">下一頁</span>'}</p>`};
 const pgSl=(k,a)=>a.slice(PG[k]*PGN,PG[k]*PGN+PGN);
-const NAV=[['out','城外','⛰️'],['in','城內','🏯'],['map','地圖','🗺️'],['rank','排行榜','📜'],['hero','武將','HEROICON'],['quest','任務','🏆'],['rep','報告','⚔️'],['mail','飛鴿傳書','🕊️'],['fb','意見箱','💬'],['x','跨服戰','🚩']];
+const NAV=[['out','城外','⛰️'],['in','城內','🏯'],['map','地圖','🗺️'],['rank','排行榜','📜'],['hero','武將','HEROICON'],['quest','任務','🏆'],['rep','報告','⚔️'],['mail','飛鴿傳書','🕊️'],['x','跨服戰','🚩']];
 const FAQ=[["不上線時資源是否依然生產？","是，離線狀況下各資源（木材、泥土、鐵塊、糧食）依然照生產速率持續產出。"],["下線後在建的建築是否持續？","是，離線前排入建造或研究佇列的任務會持續進行直到完成，速度不變。"],["如何提升建築、拆除與研究速度？","升級「知行所」，最高 20 級可縮短 50% 建造時間。3級可解鎖城內建築拆除功能（每次拆除 1 級）。"],["如何增加資源容量？","升級「藏屋敷」與「米藏」，最高 20 級（單個容量 10 萬），超出的話可於 20 級後加建新倉庫或米藏。"],["是否可以修改暱稱與密碼？","暱稱及密碼可透過「客服中心」進行重設。"],["如何攻打別人？","進入「軍奉行」點擊出兵，輸入座標或在地圖點擊目標。"],["如何在敵人來襲時隱藏資源？","建造「埋藏所」，1 級每種資源隱藏 300 單位，最高 10 級（可再加建新地窖）。【勢力特色】：豐臣家地窖容量 2 倍。"],["如何擁有自己的士兵？","建造足輕營或馬廻組訓練。高級兵種需先在「兵學塾」完成解鎖研究。"],["耗糧如何計算？","耗糧包含本村建築人口與軍隊，不包含被俘虜的敵方士兵。"],["如何運輸與交易資源？","透過「樂市樂座」進行運輸（建議直接輸入座標最可靠）或買賣交易。"],["如何加入或創建聯盟？","「奏者番」1 級可接受邀請入盟，3 級可建立自己的聯盟。建議可發信件向盟主或官員申請。"],["如何擁有自己的武將？","在「評定眾」中可將已有士兵提拔為武將，武將升級後可分配 5 個屬性點。"],["如何提高士兵攻防素質？","防禦在「具足屋」升級，攻擊在「刀鍛冶所」升級。"],["城牆防禦加成如何計算？","木柵靈活多變但耐久低（最高 70%）；石垣耐久極高但加成低（最高 50%）；土壘漆壁均衡（最高 60%）。"],["如何開分城或佔領別人城池？","本丸御殿在 10、15、20 級可各開一分村；二之丸御殿在 10、20 級可開分村。開分村需要 3 個「開墾代官」。佔領他人城池需研究行政官，在對方無行宮時派行政官普通攻擊直至忠誠歸零。"],["如何增加文明度？","建造「禮儀所」，10 級前小型活動（400文明度/次），10 級後大型活動（1600文明度/次）。"],["如何增加商人運輸量？","商人的基礎運載量：織田為 500、德川為 1000、豐臣為 750。建造「勘定所」每升 1 級運載量提高 10%（需樂市樂座 20 級後解鎖）。"],["如何佔領野外營寨？","評定眾達到 10、15、20 級時可佔領 1/2/3 座。營寨要在你某座城的 15×15 範圍內(上下左右各 7 格),由武將領軍全滅守軍後佔領,存活部隊留下駐守(糧食由出兵的城負擔)。營寨資源與狀態全服共用,被佔領的營寨別人也能打下來;「召回」只撤回駐軍,「放棄」才會讓營寨變回無主。"],["如何擁有寶物（名物）？","在家中建造 10 級「藏寶閣」，由武將領軍全滅中立兵或攻擊玩家（需砸毀對方藏寶閣）即可搶奪。寶物附帶各種加成（如巨木旗 +25%、聖靈珠 +50% 等）。"],["刀鍛冶所與具足屋攻防加成計算？","每升 1 級增加基礎值的 1.5%。例如攻擊等級 10 的鄉士足輕攻擊力 = 40 * (1 + 1.5% * 10) = 46。"]];
 const faqHtml=()=>FAQ.map((x,i)=>`<details class="faq" data-d="faq${i}" ${op['faq'+i]?'open':''}><summary>${i+1}. ${esc(x[0])}</summary><div class="fa">${esc(x[1])}</div></details>`).join('')+'<p><a data-a="help">遊戲指南</a></p>';
 function sidebar(){const det=(id,sm,body)=>`<details data-d="${id}" ${op[id]?'open':''}><summary>${sm}</summary><div class="dbody">${body}</div></details>`;
@@ -597,7 +605,7 @@ function sidebar(){const det=(id,sm,body)=>`<details data-d="${id}" ${op[id]?'op
 try{document.getElementById('lgi').innerHTML=ICONS.arm}catch(e){}
 function render(){
  $('#nav').innerHTML=NAV.map(([v,n,ic])=>`<button data-a="${v=='x'?'soon':v=='hero'?'herogo':'nav'}" data-v="${v}" class="${view==v||(v=='out'&&view=='f')||(v=='in'&&view=='b'&&!isCnl())||(v=='hero'&&view=='b'&&isCnl())?'on':''}"><i>${ic=='HEROICON'?heroSvg(30):ic}</i>${n}${v=='mail'&&MAIL.unread?` <b class="bad">(${MAIL.unread})</b>`:''}</button>`).join('');
- const V={shop:vShop,out:vOut,in:vIn,f:vF,b:vB,map:vMap,rank:vRank,quest:vQuest,rep:vRep,mail:vMail,faq:vFaq,fb:vFb};
+ const V={shop:vShop,out:vOut,in:vIn,f:vF,b:vB,map:vMap,rank:vRank,quest:vQuest,rep:vRep,mail:vMail,faq:vFaq,fb:vFb,quiz:vQuiz};
  $('#main').innerHTML=incBar()+guideBar()+V[view]();$('#side').innerHTML=sidebar();fvRestore();const c=$('#chat');if(c)c.scrollTop=c.scrollHeight;dirty=0}
 
 async function api(p,b,m,k){const r=await fetch(p,{method:m||(b?'POST':'GET'),headers:b?{'Content-Type':'application/json'}:{},body:b?JSON.stringify(b):undefined,credentials:'same-origin',keepalive:!!k});let j=null;try{j=await r.json()}catch(e){}return{ok:r.ok&&(!j||j.ok!==false),s:r.status,j}}
@@ -671,7 +679,7 @@ function act(d){
    if(ME){try{await drain();if(CUR&&CUR!==ME.id){CUR=ME.id;await pull(true)}let r=await api('/api/act',{action:{t:'reset'},rev:REV,c:CUR||undefined});if(r.s==409&&r.j&&r.j.rev!=null){REV=r.j.rev;await api('/api/act',{action:{t:'reset'},rev:REV,c:CUR||undefined})}}catch(e){}REV=0;CUR=null;CITIES=[];setCloud('')}
    S=null;$('#rb').innerHTML=$('#side').innerHTML=$('#main').innerHTML=$('#nav').innerHTML='';pick()})();return}
  if(!S)return;
- if(d.a=='nav'){view=d.v;bv=null;bs=null;dirty=1;if(view=='mail'){mt=ME?mt:'in';loadMail()}}
+ if(d.a=='nav'){view=d.v;bv=null;bs=null;dirty=1;if(view=='mail'){mt=ME?mt:'in';loadMail()}if(view=='quiz')loadQuiz()}
  else if(d.a=='pg'){PG[d.k]=+d.p;dirty=1}
  else if(d.a=='fld'){fv=+d.i;view='f';dirty=1}
  else if(d.a=='herogo'){const sl=S.slots.findIndex(c=>c&&c.b=='cnl'&&c.l>=1);if(sl<0)toast(`需要先蓋${B.find(z=>z.id=='cnl').n}才能有武將`);else{bs=sl;view='b';dirty=1}}
@@ -732,7 +740,7 @@ function act(d){
  else if(d.a=='ct'){ct=+d.i;dirty=1}
  else if(d.a=='chsend')chatSend();
  else if(d.a=='chto'){ct=2;dirty=1;render();const e=$('#cht');if(e){e.value=d.n;FV.cht=d.n;const m=$('#chm');if(m)m.focus()}}
- else if(d.a=='fbsend')fbSend();
+ else if(d.a=='fbsend')fbSend();else if(d.a=='quizans')quizAnswer(+d.i);
  if(view=='map'&&['nav','mp','mgo','mhome'].includes(d.a))loadWorld();
  if(view=='rank'&&d.a=='nav')loadRank();
  if(dirty)render()}
