@@ -27,7 +27,7 @@ async function allied(world, a, b) {
   return !!(x && y && x.a && x.a === y.a);
 }
 
-// uid = 出兵城池的存檔鍵(本丸就是帳號 id);owner = 帳號 id(多座城池共用同一個鎖、同一個收件匣)
+// uid = 出兵城池的存檔鍵(主城就是帳號 id);owner = 帳號 id(多座城池共用同一個鎖、同一個收件匣)
 async function prepare({ saves, world, battle, mail, uid, owner, nick, body, stored, etag, now }) {
   owner = owner || uid;
   const rev = stored.rev;
