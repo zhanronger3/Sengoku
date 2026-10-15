@@ -41,7 +41,7 @@ async function findTarget(world, q) {
   return null;
 }
 
-// 所有玩家的帳號代號(每位玩家的本丸都有一個 owner_<uid>,分城是 owner_c_…)
+// 所有玩家的帳號代號(每位玩家的主城都有一個 owner_<uid>,分城是 owner_c_…)
 async function listPlayers(world) {
   const out = [];
   let cursor;

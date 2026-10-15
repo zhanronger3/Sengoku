@@ -93,7 +93,7 @@ async function release({ saves, world, owner, a, now, hk }) {
     const hostOwner = tst.own || tk;
     if (owner !== grp.o && owner !== hostOwner) return { ok: false, msg: "你不能調動這支部隊" };
 
-    // 出發城池:還屬於原主就回去那裡,否則回到原主的本丸
+    // 出發城池:還屬於原主就回去那裡,否則回到原主的主城
     let hk = grp.k;
     const hg = await saves.get(hk, { type: "json" });
     if (!hg || !hg.state || !A.ownedBy(hg.state, hk, grp.o)) hk = grp.o;
