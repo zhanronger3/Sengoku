@@ -43,7 +43,7 @@ const TIERS=[
  {n:'山賊山城',e:'⛰️',g:{野盜:65,野盜頭領:15,山賊總頭目:9}},
  {n:'石山本願寺',e:'🛕',g:{一向一揆門徒:60,一向一揆坊官:10,一向一揆大將:4}},
  {n:'大筒陣地',e:'💣',g:{竹束防護眾:30,重裝大筒車:8}},
- {n:'比叡山延曆寺',e:'⛩️',noOcc:1,gm:5,g:{重裝大筒車:45,戰犬眾:50,一向一揆大將:66,竹束防護眾:100}}]; // 第 7 階級(稀有、無法佔領,只能掠奪):庫存約為大筒陣地的 10 倍(以基準守軍算),守軍防禦 ×5(gm),約為大筒陣地的 50 倍
+ {n:'比叡山延曆寺',e:'⛩️',noOcc:1,gm:3,g:{重裝大筒車:45,戰犬眾:50,一向一揆大將:66,竹束防護眾:100}}]; // 第 7 階級(稀有、無法佔領,只能掠奪):庫存約為大筒陣地的 10 倍(以基準守軍算),守軍防禦 ×3(gm),約為大筒陣地的 30 倍
 const ZG={x:4,y:1},CAMP_DENS=0.05,CAMP_BLK=4,CAMP_PER=2;
 const NOCAMP=new Set(); // 玩家城池所在的格子(營寨不會蓋在城上);客戶端與伺服器各自在讀到城池時填入
 // 保底:地圖切成 4×4 的小區塊,每塊固定 2 座營寨,所以任何 7×7 範圍至少完整包含一塊,至少有 2 座營寨。再加上原本隨機散布的營寨(保留舊的,已佔領的不會消失)
@@ -63,7 +63,7 @@ function npcAt(x,y){
  return {n:t.n,e:t.e,ti,g,def,stash:Math.floor(defOf(g0)*0.5*STASH_MULT),noOcc:t.noOcc?1:0}}
 // 營寨的狀態(每位玩家各自一份):被打過會損兵、庫存會減少,隔一段時間重新集結
 function campGet(x,y){const key=x+','+y,n=npcAt(x,y);if(!n||n.zg||(S.occ&&S.occ[key]))return null;let c=S.camps[key];
- if(c&&S.t-c.t>=CAMP_RESPAWN){delete S.camps[key];c=null}
+ if(c&&(S.t-c.t>=CAMP_RESPAWN||(n.ti===6&&c.v!==2))){delete S.camps[key];c=null} // 第 7 階舊版紀錄(沒有 v:2)一律作廢重生
  if(!c)return {n,key,fresh:true,g:{...n.g},st:[n.stash,n.stash,n.stash,n.stash],t:S.t};
  return {n,key,fresh:false,g:c.g,st:c.st,t:c.t}}
 function campInfo(x,y){const c=campGet(x,y);if(!c)return null;const left=c.fresh?null:Math.max(0,CAMP_RESPAWN-(S.t-c.t));
@@ -88,7 +88,7 @@ const B=[
  {id:'acc',n:'勘定所',p:4,r:[1150,1300,1150,400],t:2000,m:20,d:'掌管財政與商賈的勘定所,每級讓商人的運載量提高 10%,20 級時達到 3 倍(對全城的商人有效)。需要樂市樂座 20 級。',q:{cavb:10,mkt:20}},
  {id:'pal',n:'本丸御殿',p:1,r:[425,700,750,300],t:2400,m:20,d:'城池的核心。提供防衛力(每級守軍防禦 +1%),可以訓練開墾代官與行政官(管領/軍配者/水軍頭領)。每座城只能蓋一座。10、15、20 級各有 1、2、3 個擴張名額:開分城(派 3 名開墾代官到空地)或佔領城池(行政官讓目標忠誠度歸零)各用 1 個。',q:{gov:5}},
  {id:'trs',n:'藏寶閣',p:3,r:[2400,2000,2800,1200],t:4800,m:20,d:'每 10 級可以收藏 1 件名物(珍貴寶物)。武將打贏營寨有機會帶回名物,藏寶閣放得下才收得進去。',q:{gov:10}},
- {id:'pub',n:'普請役所',p:3,r:[130,125,120,80],t:3200,m:20,d:'掌管土木工事的普請役所,每級讓建築的耐久度 +10%:敵方的攻城器械要花更多力氣才能拆毀你的建築。',q:{gov:5,pal:3}},
+ {id:'pub',n:'普請役所',p:3,r:[130,125,120,80],t:3200,m:20,d:'掌管土木工事的普請役所,每級讓建築的耐久度 +10%:敵方的攻城器械要花更多力氣才能拆毀你的建築。',q:{gov:5,'pal|res':3}},
  {id:'mkt',n:'樂市樂座',p:4,r:[80,70,120,70],t:1800,m:20,d:'城下的市集。每級有 1 名商人,可以把資源運送給自己的其他城池或其他玩家,也可以在市場掛單、與其他玩家交換資源。商人每名載運量:織田 500、德川 1000、豐臣 750(勘定所每級再 +10%);商人往返期間無法再用。',q:{wh:1,gov:3}},
  {id:'res',n:'二之丸御殿',p:1,r:[450,380,320,160],t:2000,m:20,d:'主城之外的另一種居館。10 級有 1 個擴張名額,20 級有 2 個(開分城或佔領城池各用 1 個),也能訓練開墾代官與行政官。與本丸御殿只能擇一(同一座城不能同時蓋兩種)。',q:{gov:5}},
  {id:'emb',n:'奏者番',p:3,r:[180,130,150,80],t:1000,m:20,d:'掌管外交與盟約的奏者番。1 級可以接受邀請加入聯盟,3 級可以建立自己的聯盟。聯盟人數上限是盟主奏者番等級的 2 倍(最少 6 人)。',q:{gov:1}},
@@ -150,8 +150,8 @@ const durF=i=>Math.round(200*pw(1.2,S.fld[i])*hallM());
 const costB=(b,L)=>br(b).map(x=>Math.round(x*pw(1.28,L)));
 const durB=(b,L)=>Math.round(b.t*pw(1.2,L)*hallM());
 const fmax=t=>Math.max(...S.fld.filter((_,k)=>FTx()[k]==t));
-const reqOk=b=>Object.entries(b.q||{}).every(([k,v])=>k[0]=='f'&&k.length==2?fmax(+k[1])>=v:S.bld[k]>=v);
-const reqT=b=>Object.entries(b.q||{}).map(([k,v])=>(k[0]=='f'&&k.length==2?FN[+k[1]]:B.find(x=>x.id==k).n)+v+'級').join('、');
+const reqOk=b=>Object.entries(b.q||{}).every(([k,v])=>k[0]=='f'&&k.length==2?fmax(+k[1])>=v:k.split('|').some(x=>S.bld[x]>=v)); // 鍵含「|」代表其中一棟達標即可
+const reqT=b=>Object.entries(b.q||{}).map(([k,v])=>(k[0]=='f'&&k.length==2?FN[+k[1]]:k.split('|').map(x=>B.find(y=>y.id==x).n).join('或'))+v+'級').join('、');
 const canPay=c=>c.every((x,i)=>S.res[i]>=x);
 const pay=c=>c.forEach((x,i)=>S.res[i]-=x);
 const logm=(m,r)=>{S.log.unshift({t:S.t,m});S.log.length=Math.min(S.log.length,40);if(r){S.rep.unshift({t:S.t,m});S.rep.length=Math.min(S.rep.length,40)}};
@@ -231,10 +231,10 @@ function settleEvents(opt){
    const D=defOf(c.g);
    if(A>D){const q=D>0?pw(D/A,1.5):0,sv=m.send.map(x=>Math.round(x*(1-q))),carry=sv.reduce((a,x,k)=>a+x*us()[k].c,0)+(HH?heroCarry(HH):0),p=[0,1,2,3].map(i=>Math.floor(Math.min(carry/4,Math.max(0,c.st[i]))));
     for(const u of Object.keys(c.g))c.g[u]=Math.round(c.g[u]*q);
-    S.camps[c.key]={g:c.g,st:c.st.map((v,i)=>v-p[i]),t:S.t};
+    S.camps[c.key]={g:c.g,st:c.st.map((v,i)=>v-p[i]),t:S.t,v:2};
     S.stat.raids++;logm(`掠奪${n.n}成功!我方折損 ${Math.round(q*100)}%,守軍損失 ${Math.round((1-q)*100)}%,每種資源搶得 ${p.join('/')}`,1);m.ret=1;m.send=sv;m.loot=p;m.arr+=m.dur;
     if(HH)heroWin(HH,m,c,D)}
-   else{const f=.3*pw(A/D,1.5);for(const u of Object.keys(c.g))c.g[u]=Math.round(c.g[u]*(1-f));S.camps[c.key]={g:c.g,st:c.st,t:S.t};
+   else{const f=.3*pw(A/D,1.5);for(const u of Object.keys(c.g))c.g[u]=Math.round(c.g[u]*(1-f));S.camps[c.key]={g:c.g,st:c.st,t:S.t,v:2};
     logm(`進攻${n.name||n.n}失敗,全軍覆沒(攻 ${Math.floor(A)} < 守 ${Math.floor(D)}),守軍損失 ${Math.round(f*100)}%`,1);if(HH){HH.st='dead';logm(`武將${HH.n}在戰場上倒下了,需要到評定眾花資源復活`,1)}S.mv.splice(i,1)}}}
 }
 // 以「事件」為單位前進,長時間離線也只要跑很少次迴圈
