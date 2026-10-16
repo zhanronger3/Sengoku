@@ -7,6 +7,7 @@ const W = require("./world-store.cjs");
 const M = require("./mail-store.cjs");
 const FB = require("./feedback-run.cjs");
 const A = require("./acct.cjs");
+const SB = require("./save-backup.cjs");
 
 const MAX_AMOUNT = 1_000_000;
 const LOG_KEY = "gold_log";
@@ -125,7 +126,7 @@ async function grant({ saves, world, mail, target, amount, reason, now }) {
 }
 
 // method / secret / expected / body 由函式層傳進來;回傳 { status, body }
-async function handle({ method, secret, expected, body, saves, world, mail, now }) {
+async function handle({ method, secret, expected, body, saves, backup, world, mail, now }) {
   const auth = checkSecret(secret, expected);
   if (auth === "unset") return { status: 503, body: { ok: false, msg: "伺服器還沒設定 ADMIN_SECRET(至少 8 個字元),請先到 Netlify 設定環境變數並重新部署" } };
   if (auth !== "ok") return { status: 401, body: { ok: false, msg: "管理密碼不對" } };
@@ -153,6 +154,21 @@ async function handle({ method, secret, expected, body, saves, world, mail, now 
     for (let i = 0; i < uids.length; i += 20) await Promise.all(uids.slice(i, i + 20).map(async (u) => { try { await M.systemMail(mail, u, subj, m, now, { id, limit: 1000 }); n++; } catch {} }));
     const b = await W.casUpdate(world, "bc", (cur) => ({ a: [{ id, t: now, s: subj, m, n }, ...((cur && cur.a) || [])].slice(0, 30) }));
     return { status: 200, body: { ok: true, msg: `已寄給 ${n} 位玩家(共 ${uids.length} 位)`, list: b.a } };
+  }
+  // 存檔備份:列出某位玩家各座城的備份時間 / 還原(還原前目前的存檔會換成新的備份,可再還原回來)
+  if (body && (body.t === "baklist" || body.t === "bakrestore")) {
+    if (!backup) return { status: 503, body: { ok: false, msg: "沒有備份空間" } };
+    const target = await findTarget(world, body);
+    if (!target) return { status: 422, body: { ok: false, msg: "找不到這位玩家(暱稱只找得到排行榜前 200 名,找不到請改用座標)" } };
+    if (target.ambiguous) return { status: 422, body: { ok: false, msg: "有同名的玩家,請改用座標:" + target.ambiguous.join("、") } };
+    const keys = await A.list(world, target.uid);
+    if (body.t === "baklist") return { status: 200, body: { ok: true, rows: await Promise.all(keys.map((k) => SB.info({ backup, key: k }))) } };
+    const ck = String(body.city || target.uid);
+    if (!keys.includes(ck)) return { status: 422, body: { ok: false, msg: "這座城不屬於這位玩家" } };
+    if (body.confirm !== true) return { status: 200, body: { ok: true, msg: "試算(尚未還原):加上 confirm:true 才會寫入", rows: [await SB.info({ backup, key: ck })] } };
+    const r = await SB.restore({ saves: saves.raw || saves, backup, key: ck, now });
+    if (r.ok) await addLog(world, { t: now, uid: target.uid, n: target.n, x: target.x, y: target.y, amount: 0, reason: `還原存檔備份 ${ck}` });
+    return { status: r.ok ? 200 : 422, body: r };
   }
   if (body && (body.t === "herolist" || body.t === "herofix")) {
     const target = await findTarget(world, body);

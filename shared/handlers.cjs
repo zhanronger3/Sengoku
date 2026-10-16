@@ -4,6 +4,7 @@
 const core = require("./server-core.cjs");
 const world = require("./world-store.cjs");
 const pvp = require("./pvp-run.cjs");
+const { healCamps } = require("./camp-heal.cjs");
 const battles = require("./battle-run.cjs");
 const A = require("./acct.cjs");
 const ships = require("./ship-run.cjs");
@@ -176,6 +177,7 @@ async function save({ stores, user, now, c }) {
   const { saves, world: wstore, mail, battle } = stores;
   const owner = user.id;
   await settleBattles({ saves, world: wstore, battle, mail, uid: owner, now });
+  try { await healCamps({ saves, world: wstore, owner, now }); } catch (e) { console.error("healCamps failed", e); } // 營寨狀態自我修復(靜靜修掉)
   let pk = await pickCity(wstore, owner, c);
   let key = pk.err ? owner : pk.key;
   let got = await saves.getWithMetadata(key, { type: "json" });
