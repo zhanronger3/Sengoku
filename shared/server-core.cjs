@@ -12,7 +12,6 @@ function settle(state, now) {
   G.adv(Math.min(real, MAX_OFFLINE_SEC) * G.SPEED, { quiet: real > 300 });
   state.saved = now;
   G.setNow(now);
-  G.dailyRoll(now);
   return state;
 }
 
@@ -52,7 +51,9 @@ function act(stored, body, now, ctx) {
   if (!stored) return { status: 400, body: { ok: false, msg: "尚未開始遊戲" } };
   const st = settle(clone(stored.state), now);
   G.setNow(now);
-  const r = G.perform(a);
+  G.setAcc(ctx && ctx.acc);
+  let r;
+  try { r = G.perform(a); } finally { G.setAcc(null); }
   if (!r.ok) return { status: 422, body: { ok: false, msg: r.msg, state: st, rev, now } };
   const next = rev + 1;
   return { status: 200, body: { ok: true, msg: r.msg, state: st, rev: next, now }, store: { state: st, rev: next, updatedAt: now } };
