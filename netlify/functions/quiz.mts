@@ -1,4 +1,5 @@
 import { getStore } from "@netlify/blobs";
+import saveBackup from "../../shared/save-backup.cjs";
 import * as identity from "@netlify/identity";
 import quiz from "../../shared/quiz-run.cjs";
 
@@ -12,7 +13,7 @@ export default async (req: Request) => {
   const user = await getUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
   const world = getStore({ name: "world", consistency: "strong" });
-  const saves = getStore({ name: "saves", consistency: "strong" });
+  const saves = saveBackup.withBackup(getStore({ name: "saves", consistency: "strong" }), getStore({ name: "backup", consistency: "strong" }));
   if (req.method === "GET") return Response.json(await quiz.state({ world, uid: user.id, now: Date.now() }));
   if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
   try { identity.verifyRequestOrigin(req); } catch { return Response.json({ ok: false, msg: "bad origin" }, { status: 403 }); }
