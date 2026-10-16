@@ -75,7 +75,7 @@ function buildCamp(res, ctx) {
   let tail;
   if (!res.win) tail = `【結果】敗走!全軍玉碎,守軍亦有折損。\n\n${pick(CLOSERS_LOSE, id, "cl")}`;
   else if (res.occupy) tail = `【結果】大勝!守軍盡數殲滅,${pos}落入我手。\n生還的 ${sum(res.garr)} 人留下駐守,營寨從今歸我方所有:此城每種資源產量 +${res.tier + 1}%。${loot ? `\n【分捕】${loot},已直接入庫。` : ""}\n\n${pick(CLOSERS_WIN, id, "cw")}`;
-  else tail = `【結果】大勝!守軍盡數殲滅。${loot ? `\n【分捕】${loot}(待軍勢歸陣後入庫)。` : ""}\n守軍雖已全滅,但${ctx.noOcc ? "此營寨無法佔領,只能掠奪" : "此營寨不在這座城 15×15 範圍內,或評定眾的佔領名額已滿,故未能佔領"}(營寨回歸無主,待其重新集結)。\n軍勢收兵,正踏上歸途。\n\n${pick(CLOSERS_WIN, id, "cw")}`;
+  else tail = `【結果】大勝!守軍盡數殲滅。${loot ? `\n【分捕】${loot}(待軍勢歸陣後入庫)。` : ""}\n守軍雖已全滅,但${ctx.noOcc ? "此營寨無法佔領,只能掠奪" : !res.hero ? "未有武將領軍,無法佔領營寨,也帶不回名物" : "此營寨不在這座城 15×15 範圍內,或評定眾的佔領名額已滿,故未能佔領"}(營寨回歸無主,待其重新集結)。\n軍勢收兵,正踏上歸途。\n\n${pick(CLOSERS_WIN, id, "cw")}`;
   const tbl = `【我軍】出陣 ${sentN} 人 → 陣亡 ${deadA} 人\n${table(fac, res.sent, res.deadA, true, ["出陣", "陣亡"])}`;
   return [setting, clash, strength, ht, tail.split("\n\n")[0], tbl, tail.split("\n\n").slice(1).join("\n\n")].filter(Boolean).join("\n\n");
 }

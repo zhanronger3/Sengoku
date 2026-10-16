@@ -123,7 +123,7 @@ function canBuildNew(b){if(b.id==='pal'&&S.col)return `${BMAP.pal.n}整個帳號
  if(MULTI.includes(b.id))return ex.every(x=>x.l>=b.m)?'':`需要先把現有的${b.n}升到滿級(${b.m} 級),才能再蓋一座`;
  return `${b.n}每個城池只能蓋一座`}
 // ====== 武將、營寨佔領、名物 ======
-const HN={wei:['柴田勝家','前田利家','丹羽長秀','瀧川一益','佐佐成政','森可成'],shu:['本多忠勝','榊原康政','酒井忠次','井伊直政','鳥居元忠','大久保忠世'],wu:['加藤清正','福島正則','石田三成','黑田官兵衛','蜂須賀正勝','仙石秀久']};
+const HN={wei:['瀧川一益','前田利家','柴田勝家','佐佐成政','丹羽長秀','森可成','池田恒興'],shu:['服部半藏','酒井忠次','榊原康政','鳥居元忠','大久保忠世','井伊直政','本多忠勝'],wu:['蜂須賀正勝','加藤清正','福島正則','石田三成','黑田官兵衛','仙石秀久','脇坂安治']}; // 順序=肖像檔 hero_<家>_<序號+1>.webp;已有武將靠名字對圖
 const LORD={wei:'織田信長',shu:'德川家康',wu:'豐臣秀吉'}; // 主城的武將是各家的家主;分城的武將從名將名單隨機
 const ART=[{id:'timber',n:'巨木旗',d:'木材產量 +25%',r:0},{id:'clay',n:'黃金茶釜',d:'泥土產量 +25%',r:1},{id:'iron',n:'鐵砲傳來書',d:'鐵塊產量 +25%',r:2},{id:'rice',n:'豐年之鍬',d:'糧食產量 +25%',r:3},
  {id:'seal',n:'天下布武印',d:'全部資源產量 +10%',r:'all'},{id:'lance',n:'千鳥十文字槍',d:'全軍攻擊 +10%',a:.1},{id:'armor',n:'南蠻胴具足',d:'全軍防禦 +10%',df:.1}];
@@ -309,7 +309,6 @@ function pvpLaunch(att,a,meta){
   if(S.bld.war<1)return bad('需要先建造軍奉行才能出兵');
   if(!Array.isArray(a.send))return bad('請選擇出征兵力');
   const U=us(),lc=launchCheck(a,!!meta.camp);if(lc.err)return bad(lc.err);const {send,kind,tg,sl,hero}=lc;
-  if(meta.camp&&!kind&&!hero)return bad('攻打營寨一定要武將領軍(無主營寨和被玩家佔領的營寨都一樣)');
   const dist=distTo(tx,ty);if(dist<=0)return bad(kind==='found'?'那裡就是這座城':kind==='reinf'?'不能增援這座城自己':'不能攻擊自己的城池');
   const sp=Math.min(...send.map((x,k)=>x?U[k].s:99),hero?heroSpd(S.hero):99),dur=Math.max(1,Math.round(dist/sp*3600));
   send.forEach((x,k)=>S.u[k]-=x);const hi=hero?{n:S.hero.n,atk:heroAtk(S.hero),carry:heroCarry(S.hero)}:null;if(hero)S.hero.st='away';
@@ -456,8 +455,8 @@ function campBattle(info,doc,n,now){
   else{const carry=surv.reduce((a,x,k)=>a+x*U[k].c,0)+(H?H.carry:0),p=[0,1,2,3].map(i=>Math.floor(Math.min(carry/4,Math.max(0,doc.st[i]))));
    res.loot=p;cleared=true;next={o:null,g:{},st:doc.st.map((v,i)=>v-p[i]),t:now}}
   if(cleared){
-   const tier=n.ti;if(hash(info.tx,info.ty,Math.floor(now/1000))<.4){const pool=tier<=1?[0,1,2,3]:tier<=3?[4]:[5,6],a=ART[pool[Math.floor(hash(info.ty,info.tx,Math.floor(now/1000)+7)*pool.length)%pool.length]];res.art=[a.id]}
-   if(info.canOcc){next={o:info.uid,oc:info.cityKey,on:info.nick,fac:info.fac,gs:[{gid:info.id,fac:info.fac,o:info.uid,k:info.cityKey,u:surv.slice()}],t:now};res.occupy={key:info.tx+','+info.ty};res.garr=surv.slice();res.surv=surv.map(()=>0);res.deadA=info.send.map((x,k)=>x-surv[k])}
+   const tier=n.ti;if(H&&hash(info.tx,info.ty,Math.floor(now/1000))<.4){const pool=tier<=1?[0,1,2,3]:tier<=3?[4]:[5,6],a=ART[pool[Math.floor(hash(info.ty,info.tx,Math.floor(now/1000)+7)*pool.length)%pool.length]];res.art=[a.id]}
+   if(info.canOcc&&H){next={o:info.uid,oc:info.cityKey,on:info.nick,fac:info.fac,gs:[{gid:info.id,fac:info.fac,o:info.uid,k:info.cityKey,u:surv.slice()}],t:now};res.occupy={key:info.tx+','+info.ty};res.garr=surv.slice();res.surv=surv.map(()=>0);res.deadA=info.send.map((x,k)=>x-surv[k])}
    else next={o:null,g:{},st:[0,0,0,0],t:now}}
  }else{
   const f=D>0?.3*pw(A/D,1.5):0;

@@ -48,7 +48,13 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
       if (npc.zg) return await fail("菩提山城不能攻擊,請行三顧之禮");
       const cur = G.campCur(await world.get(B.campKey(tx, ty), { type: "json" }), npc, now);
       if (cur.o === owner) {
-        if (act.kind !== "scout") act.kind = "reinf";
+        // 自己佔領的營寨:這座城自己佔的,或明確按「增援駐防」→ 增援駐軍;另一座城(例如主城)佔的,用「出兵掠奪」就是真的攻打、打贏換成這座城佔領
+        if (act.kind !== "scout" && (act.kind === "reinf" || cur.oc === uid)) act.kind = "reinf";
+        else if (act.kind !== "scout") {
+          if (!act.hero) return await fail("這座營寨是你另一座城佔領的:要攻打它必須由武將領軍(打贏後改由這座城佔領);只想送兵進去請按「增援駐防」");
+          const oc = G.occCheck(clone(att), tx, ty);
+          if (!oc.ok) return await fail(`這座城無法佔領這座營寨(${oc.why || "不在範圍內或名額已滿"}),不能攻打自己的營寨`);
+        }
       } else {
         if (act.kind === "reinf") return await fail("只能增援自己佔領的營寨");
         if (cur.o && (await allied(world, owner, cur.o))) return await fail("盟友佔領的營寨不能攻打");
