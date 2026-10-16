@@ -43,7 +43,7 @@ const TIERS=[
  {n:'山賊山城',e:'⛰️',g:{野盜:65,野盜頭領:15,山賊總頭目:9}},
  {n:'石山本願寺',e:'🛕',g:{一向一揆門徒:60,一向一揆坊官:10,一向一揆大將:4}},
  {n:'大筒陣地',e:'💣',g:{竹束防護眾:30,重裝大筒車:8}},
- {n:'比叡山延曆寺',e:'⛩️',noOcc:1,gm:3,g:{重裝大筒車:45,戰犬眾:50,一向一揆大將:66,竹束防護眾:100}}]; // 第 7 階級(稀有、無法佔領,只能掠奪):庫存約為大筒陣地的 10 倍(以基準守軍算),守軍防禦 ×3(gm),約為大筒陣地的 30 倍
+ {n:'比叡山延曆寺',e:'⛩️',noOcc:1,gm:2,g:{重裝大筒車:45,戰犬眾:50,一向一揆大將:66,竹束防護眾:100}}]; // 第 7 階級(稀有、無法佔領,只能掠奪):庫存約為大筒陣地的 10 倍(以基準守軍算),守軍防禦 ×2(gm),約為大筒陣地的 20 倍
 const ZG={x:4,y:1},CAMP_DENS=0.05,CAMP_BLK=4,CAMP_PER=2;
 const NOCAMP=new Set(); // 玩家城池所在的格子(營寨不會蓋在城上);客戶端與伺服器各自在讀到城池時填入
 // 保底:地圖切成 4×4 的小區塊,每塊固定 2 座營寨,所以任何 7×7 範圍至少完整包含一塊,至少有 2 座營寨。再加上原本隨機散布的營寨(保留舊的,已佔領的不會消失)
@@ -63,7 +63,7 @@ function npcAt(x,y){
  return {n:t.n,e:t.e,ti,g,def,stash:Math.floor(defOf(g0)*0.5*STASH_MULT),noOcc:t.noOcc?1:0}}
 // 營寨的狀態(每位玩家各自一份):被打過會損兵、庫存會減少,隔一段時間重新集結
 function campGet(x,y){const key=x+','+y,n=npcAt(x,y);if(!n||n.zg||(S.occ&&S.occ[key]))return null;let c=S.camps[key];
- if(c&&(S.t-c.t>=CAMP_RESPAWN||(n.ti===6&&c.v!==2))){delete S.camps[key];c=null} // 第 7 階舊版紀錄(沒有 v:2)一律作廢重生
+ if(c&&(S.t-c.t>=CAMP_RESPAWN||(n.ti===6&&c.v!==3))){delete S.camps[key];c=null} // 第 7 階舊版紀錄(沒有 v:3,即防禦倍率改 ×2 之前的)一律作廢重生
  if(!c)return {n,key,fresh:true,g:{...n.g},st:[n.stash,n.stash,n.stash,n.stash],t:S.t};
  return {n,key,fresh:false,g:c.g,st:c.st,t:c.t}}
 function campInfo(x,y){const c=campGet(x,y);if(!c)return null;const left=c.fresh?null:Math.max(0,CAMP_RESPAWN-(S.t-c.t));
@@ -220,7 +220,7 @@ function settleEvents(opt){
   while(q.length&&q[0].next!=null&&q[0].next<=S.t){const o=q[0],t=o.next;S.u[o.u]++;S.stat.trained++;o.n--;
    if(o.n>0)o.next=t+o.per;else{logm(`${us()[o.u].n} 訓練完成`);q.shift();if(q.length)q[0].next=t+q[0].per}}}
  for(let i=S.mv.length-1;i>=0;i--){const m=S.mv[i];if(m.arr>S.t||m.pending)continue;const n={n:m.name,def:m.def};
-  if(m.ret){if(m.hero&&S.hero&&S.hero.st==='away')S.hero.st='home';m.send.forEach((x,k)=>S.u[k]+=x);m.loot.forEach((x,k)=>S.res[k]=Math.min(cap(k),S.res[k]+x));logm(`部隊自${n.n}返回,帶回 ${m.loot.map(Math.floor).join('/')}`,1);S.mv.splice(i,1)}
+  if(m.ret){if(m.hero&&S.hero&&S.hero.st==='away'){S.hero.st='home';delete S.hero.gr}m.send.forEach((x,k)=>S.u[k]+=x);m.loot.forEach((x,k)=>S.res[k]=Math.min(cap(k),S.res[k]+x));logm(`部隊自${n.n}返回,帶回 ${m.loot.map(Math.floor).join('/')}`,1);S.mv.splice(i,1)}
   else if(m.kind==='scout'){const c=campGet(m.tx,m.ty);
    if(!c)logm(`${n.n}已經不存在,偵察兵返回`,1);
    else{const gl=Object.entries(c.g).filter(([k,v])=>v>0).map(([k,v])=>`${k}×${v}`).join('、')||'無';
@@ -231,10 +231,10 @@ function settleEvents(opt){
    const D=defOf(c.g);
    if(A>D){const q=D>0?pw(D/A,1.5):0,sv=m.send.map(x=>Math.round(x*(1-q))),carry=sv.reduce((a,x,k)=>a+x*us()[k].c,0)+(HH?heroCarry(HH):0),p=[0,1,2,3].map(i=>Math.floor(Math.min(carry/4,Math.max(0,c.st[i]))));
     for(const u of Object.keys(c.g))c.g[u]=Math.round(c.g[u]*q);
-    S.camps[c.key]={g:c.g,st:c.st.map((v,i)=>v-p[i]),t:S.t,v:2};
+    S.camps[c.key]={g:c.g,st:c.st.map((v,i)=>v-p[i]),t:S.t,v:3};
     S.stat.raids++;logm(`掠奪${n.n}成功!我方折損 ${Math.round(q*100)}%,守軍損失 ${Math.round((1-q)*100)}%,每種資源搶得 ${p.join('/')}`,1);m.ret=1;m.send=sv;m.loot=p;m.arr+=m.dur;
     if(HH)heroWin(HH,m,c,D)}
-   else{const f=.3*pw(A/D,1.5);for(const u of Object.keys(c.g))c.g[u]=Math.round(c.g[u]*(1-f));S.camps[c.key]={g:c.g,st:c.st,t:S.t,v:2};
+   else{const f=.3*pw(A/D,1.5);for(const u of Object.keys(c.g))c.g[u]=Math.round(c.g[u]*(1-f));S.camps[c.key]={g:c.g,st:c.st,t:S.t,v:3};
     logm(`進攻${n.name||n.n}失敗,全軍覆沒(攻 ${Math.floor(A)} < 守 ${Math.floor(D)}),守軍損失 ${Math.round(f*100)}%`,1);if(HH){HH.st='dead';logm(`武將${HH.n}在戰場上倒下了,需要到評定眾花資源復活`,1)}S.mv.splice(i,1)}}}
 }
 // 以「事件」為單位前進,長時間離線也只要跑很少次迴圈
@@ -284,9 +284,10 @@ function launchCheck(a,npc){const U=us(),send=U.map((_,k)=>Math.min(S.u[k]||0,Ma
   const kn=(S.kids||0)+S.mv.filter(m=>m.sl&&m.kind==='found').length,th=KID_PREST[kn];
   if(th&&prest()<th)return {err:`這座城的威望要達到 ${th} 才能開第 ${kn+1} 座分城(目前 ${prest()})`};
   return {send,kind,tg:[],sl:1}}
- if(kind==='reinf'){if(a.hero)return {err:'武將不能駐防別的城池'};
+ if(kind==='reinf'){let hero=0;
+  if(a.hero){if(!npc)return {err:'武將只能駐防自己佔領的營寨,不能駐防別的城池'};if(!S.hero)return {err:'你還沒有武將'};if(S.hero.st==='dead')return {err:'武將已經陣亡,請先到評定眾復活'};if(S.hero.st!=='home')return {err:'武將不在城裡'};hero=1}
   if(send.some((x,k)=>x&&U[k].k))return {err:'只有一般戰鬥兵種可以增援駐防(偵察兵、器械、行政官、開墾代官不行)'};
-  return {send,kind,tg:[],sl:0,hero:0}}
+  return {send,kind,tg:[],sl:0,hero}}
  let hero=0;if(a.hero){if(kind==='scout')return {err:'偵察任務不能帶武將'};if(!S.hero)return {err:'你還沒有武將'};if(S.hero.st==='dead')return {err:'武將已經陣亡,請先到評定眾復活'};if(S.hero.st!=='home')return {err:'武將不在城裡'};hero=1}
  if(send.some((x,k)=>x&&U[k].k==='set'))return {err:'開墾代官只能用來開分城'};
  let sl=0;
@@ -311,9 +312,9 @@ function pvpLaunch(att,a,meta){
   const U=us(),lc=launchCheck(a,!!meta.camp);if(lc.err)return bad(lc.err);const {send,kind,tg,sl,hero}=lc;
   const dist=distTo(tx,ty);if(dist<=0)return bad(kind==='found'?'那裡就是這座城':kind==='reinf'?'不能增援這座城自己':'不能攻擊自己的城池');
   const sp=Math.min(...send.map((x,k)=>x?U[k].s:99),hero?heroSpd(S.hero):99),dur=Math.max(1,Math.round(dist/sp*3600));
-  send.forEach((x,k)=>S.u[k]-=x);const hi=hero?{n:S.hero.n,atk:heroAtk(S.hero),carry:heroCarry(S.hero)}:null;if(hero)S.hero.st='away';
+  send.forEach((x,k)=>S.u[k]-=x);const hi=hero?{n:S.hero.n,atk:heroAtk(S.hero),carry:heroCarry(S.hero),def:heroDef(S.hero)}:null;if(hero)S.hero.st='away';
   const name=kind==='found'?`新城預定地(${tx}|${ty})`:`${meta.defNick}(${tx}|${ty})`;
-  S.stat.sent++;S.mv.push({pv:1,pending:1,aid:meta.aid,tx,ty,name,def:0,sent:send.slice(),send:send.slice(),go:S.t+dur,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0],sentAt:meta.now,kind,tg,sl,hero,camp:meta.camp?1:0});
+  S.stat.sent++;S.mv.push({pv:1,pending:1,aid:meta.aid,tx,ty,name,def:0,sent:send.slice(),send:send.slice(),go:S.t+dur,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0],sentAt:meta.now,kind,tg,sl,hero,hd:hero?heroDef(S.hero):0,camp:meta.camp?1:0});
   logm(kind==='found'?`派 3 名開墾代官前往${name}建立分城,速度 ${sp} 格/時`:kind==='reinf'?`派 ${send.reduce((p,q)=>p+q,0)} 名士兵前往${name}增援駐防,速度 ${sp} 格/時`:`派${kind?'偵察兵':'兵'}前往${name},出兵 ${send.reduce((p,q)=>p+q,0)} 人,速度 ${sp} 格/時;部隊抵達後才會${kind?'展開偵察':'開戰'}`);
   return {ok:true,tx,ty,dur,sp,dist,send,go:S.t+dur,fac:S.fac,ab:ab(),pos:{...home()},kind,tg,hero:hi,ar:Math.max(0,artSlots()-S.art.length),ah:S.art.slice()}})}
 // 攻城:存活的破門槌拆城牆;存活的大筒類器械轟擊建築(軍奉行 10/20 級可指定 1/2 處,否則隨機 1 處)。在防守方的狀態(S)上試算,不改存檔
@@ -403,7 +404,7 @@ function pvpApplyAtt(att,aid,res,ctx){return withS(att,()=>{
  m.pending=0;m.ret=1;m.sl=0;m.arr=m.go+m.dur;
  if(res.found){if(res.ok){S.kids=(S.kids||0)+1;S.mv.splice(i,1);logm(`${m.name}建立了新的分城!(開墾代官已在當地落地生根)`,1)}
   else{m.loot=[0,0,0,0];logm(`${m.name}無法建城:${res.why||'失敗'},開墾代官折返`,1)}return true}
- if(res.reinf){if(res.ok){S.out=(S.out||[]);S.out.push({gid:aid,k:res.tk,name:m.name,x:m.tx,y:m.ty,u:m.send.slice(),t:S.t});S.mv.splice(i,1);logm(`增援部隊抵達${m.name},開始駐防`,1)}
+ if(res.reinf){if(res.ok){S.out=(S.out||[]);const og={gid:aid,k:res.tk,name:m.name,x:m.tx,y:m.ty,u:m.send.slice(),t:S.t};if(m.hero&&S.hero){og.h={n:S.hero.n,d:m.hd||heroDef(S.hero)};S.hero.gr=m.name}S.out.push(og);S.mv.splice(i,1);logm(m.hero&&S.hero?`增援部隊與武將${S.hero.n}抵達${m.name},開始駐防`:`增援部隊抵達${m.name},開始駐防`,1)}
   else{m.loot=[0,0,0,0];logm(`增援${m.name}失敗:${res.why||'無法駐防'},部隊折返`,1)}return true}
  if(res.void||res.fizzled){m.loot=[0,0,0,0];logm(res.void?`${m.name}的城池已經不在了,部隊折返`:`出兵沒有成功送出,部隊折返`,1);return true}
  m.send=m.send.map((x,k)=>Math.min(x,res.surv[k]));m.loot=(res.loot||[0,0,0,0]).slice();
@@ -425,7 +426,7 @@ function pvpApplyAtt(att,aid,res,ctx){return withS(att,()=>{
 const campMs=()=>CAMP_RESPAWN/SPEED*1000;
 const campFresh=n=>({o:null,g:{...n.g},st:[n.stash,n.stash,n.stash,n.stash],t:0});
 function campCur(doc,n,now){if(!doc)return campFresh(n);if(doc.o)return doc;if(doc.t&&now-doc.t>=campMs())return campFresh(n);return doc}
-const garDef=gs=>(gs||[]).reduce((a,g)=>a+g.u.reduce((b,x,k)=>b+x*((UN[g.fac]&&UN[g.fac][k])?(UN[g.fac][k].di+UN[g.fac][k].dc)/2:0),0),0);
+const garDef=gs=>(gs||[]).reduce((a,g)=>a+(g.h?g.h.d||0:0)+g.u.reduce((b,x,k)=>b+x*((UN[g.fac]&&UN[g.fac][k])?(UN[g.fac][k].di+UN[g.fac][k].dc)/2:0),0),0);
 const garSum=gs=>(gs||[]).reduce((a,g)=>a+g.u.reduce((b,x)=>b+x,0),0);
 // 給客戶端看的營寨資訊(含重生倒數)
 function campView(doc,n,now){const c=campCur(doc,n,now);
@@ -463,12 +464,14 @@ function campBattle(info,doc,n,now){
   res.hero=H?{dead:true,xp:0}:null;
   next=occ?{...doc,gs:scaleGs(doc.gs,1-f)}:{o:null,g:scaleG(doc.g,1-f),st:doc.st,t:now};
  }
- if(occ){res.prev={o:doc.o,oc:doc.oc,on:doc.on||'',lost:next.o!==doc.o,gs:next.o===doc.o?next.gs:null,ks:[...new Set([doc.oc,...(doc.gs||[]).map(g=>g.k)].filter(Boolean))]}}
+ if(occ){res.prev={o:doc.o,oc:doc.oc,on:doc.on||'',lost:next.o!==doc.o||next.oc!==doc.oc,gs:next.o===doc.o&&next.oc===doc.oc?next.gs:null,ks:[...new Set([doc.oc,...(doc.gs||[]).map(g=>g.k)].filter(Boolean))]}}
  return {doc:next,res}}
 // 戰鬥偵察(營寨):只回報資訊
 function campScout(doc,n,now){const v=campView(doc,n,now);return {camp:1,scout:1,ok:true,view:v,n:n.n}}
 // 營寨駐軍變動後,同步佔領者那座城的存檔:gs=null 代表營寨已經不是他的了
 function campSync(st,key,gs){return withS(st,()=>{const ck='camp:'+key;S.out=S.out||[];
+ // 駐防的武將:他那一支駐軍沒了(全滅或營寨失守),武將突圍回城
+ if(S.out.some(o=>o.k===ck&&o.h&&(!gs||!gs.some(g=>g.gid===o.gid)))&&S.hero&&S.hero.st==='away'){S.hero.st='home';delete S.hero.gr;logm(`武將${S.hero.n}自失守的營寨突圍,平安回到城裡`,1)}
  if(!gs){delete S.occ[key];S.out=S.out.filter(o=>o.k!==ck);return {ok:true,lost:1}}
  S.out=S.out.filter(o=>o.k!==ck||gs.some(g=>g.gid===o.gid));
  for(const o of S.out)if(o.k===ck){const g=gs.find(x=>x.gid===o.gid);if(g)o.u=g.u.slice()}
@@ -488,7 +491,7 @@ function garrReturn(home,grp,meta){return withS(home,()=>{
  S.out=(S.out||[]).filter(x=>x.gid!==grp.gid);
  if(S.mv.some(m=>m.gid===grp.gid))return {ok:true,dup:1};
  const dur=Math.max(1,meta.dur);
- S.mv.push({gid:grp.gid,name:meta.name,def:0,sent:grp.u.slice(),send:grp.u.slice(),go:S.t,arr:S.t+dur,dur,ret:1,loot:[0,0,0,0],kind:'garr'});
+ S.mv.push({gid:grp.gid,name:meta.name,def:0,sent:grp.u.slice(),send:grp.u.slice(),go:S.t,arr:S.t+dur,dur,ret:1,loot:[0,0,0,0],kind:'garr',hero:grp.h?1:0});
  logm(`${meta.name}的駐防部隊啟程返回`,1);return {ok:true}})}
 const garrDur=(fac,u,dist)=>{const U=UN[fac],sp=Math.min(...u.map((x,k)=>x?U[k].s:99));return Math.max(1,Math.round(dist/(sp>=99?8:sp)*3600))};
 // ====== 樂市樂座:商人、運送、掛單 ======

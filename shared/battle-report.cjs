@@ -9,6 +9,23 @@ function fmtTime(ms) {
 }
 const sum = (a) => a.reduce((p, q) => p + q, 0);
 const WEATHER = ["朝霧瀰漫", "細雨初歇", "烈日當空", "秋風蕭瑟", "夜色低垂", "殘雪未消", "晴空萬里", "陣風獵獵", "山嵐翻湧", "月隱雲間"];
+// 戰國合戰常用陣形:攻方偏進攻型、守方偏防守型,同一場戰鬥用 seed 固定
+const FORM = {
+  魚鱗之陣: "如魚鱗層層相疊,前鋒尖銳、後陣厚實,專破正面",
+  鶴翼之陣: "兩翼如鶴翼徐徐張開,欲將敵軍包入懷中",
+  雁行之陣: "斜斜排開如雁行,前後相繼、互為犄角",
+  鋒矢之陣: "陣如箭鏃,欲以最銳的一點貫穿敵陣",
+  長蛇之陣: "首尾呼應如長蛇,擊其首則尾至,擊其尾則首至",
+  圓月之陣: "環成滿月,四面皆是正面,無懈可擊",
+};
+const FORM_ATT = ["魚鱗之陣", "鶴翼之陣", "雁行之陣", "鋒矢之陣", "長蛇之陣"], FORM_DEF = ["圓月之陣", "鶴翼之陣", "魚鱗之陣", "雁行之陣"];
+const formPair = (id) => { const fa = pick(FORM_ATT, id, "fa"), pool = FORM_DEF.filter((x) => x !== fa); return { fa, fd: pick(pool, id, "fd") }; };
+// side: att = 以攻方口吻;def = 以守方口吻。dn = 守方稱呼
+function formText(id, side, dn, camp) {
+  const { fa, fd } = formPair(id);
+  if (side === "att") return `【陣形】我軍布成${fa}——${FORM[fa]};${camp ? "守軍依寨列" : dn + "軍則據城列"}${fd}——${FORM[fd]}。`;
+  return `【陣形】敵軍布成${fa}——${FORM[fa]};我軍列${fd}——${FORM[fd]}。`;
+}
 const APPROACH = ["陣太鼓震天,大軍翻山越嶺", "軍配一揮,軍勢浩浩蕩蕩", "法螺貝長鳴,旌旗蔽野", "星夜兼程,銜枚疾進", "旗指物獵獵,足輕列陣而行"];
 const CLASH_FIRST = ["兩軍甫一照面,箭矢如雨,", "雙方先以鐵砲與弓矢對射,硝煙瀰漫,", "陣太鼓聲未歇,先鋒已然撞在一處,", "喊殺聲震動山谷,", "一聲法螺貝響,兩軍同時掩殺而上,"];
 const CLOSERS_WIN = ["戰國亂世,強者為尊,這一仗註定被寫進軍記。", "夕陽照著殘破的旗幟,勝負已分,勝鬨聲傳遍原野。", "此戰之後,城下之盟只是遲早的事。", "「天下布武」之路,又向前邁進了一步。"];
@@ -77,7 +94,8 @@ function buildCamp(res, ctx) {
   else if (res.occupy) tail = `【結果】大勝!守軍盡數殲滅,${pos}落入我手。\n生還的 ${sum(res.garr)} 人留下駐守,營寨從今歸我方所有:此城每種資源產量 +${res.tier + 1}%。${loot ? `\n【分捕】${loot},已直接入庫。` : ""}\n\n${pick(CLOSERS_WIN, id, "cw")}`;
   else tail = `【結果】大勝!守軍盡數殲滅。${loot ? `\n【分捕】${loot}(待軍勢歸陣後入庫)。` : ""}\n守軍雖已全滅,但${ctx.noOcc ? "此營寨無法佔領,只能掠奪" : !res.hero ? "未有武將領軍,無法佔領營寨,也帶不回名物" : "此營寨不在這座城 15×15 範圍內,或評定眾的佔領名額已滿,故未能佔領"}(營寨回歸無主,待其重新集結)。\n軍勢收兵,正踏上歸途。\n\n${pick(CLOSERS_WIN, id, "cw")}`;
   const tbl = `【我軍】出陣 ${sentN} 人 → 陣亡 ${deadA} 人\n${table(fac, res.sent, res.deadA, true, ["出陣", "陣亡"])}`;
-  return [setting, clash, strength, ht, tail.split("\n\n")[0], tbl, tail.split("\n\n").slice(1).join("\n\n")].filter(Boolean).join("\n\n");
+  const AM = require("./game.cjs").ARTM || {}, artLine = res.win && res.art && res.art.length ? `【名物】武將在寨中尋得名物${res.art.map((x) => `「${(AM[x] || {}).n || x}」`).join("、")}(待軍勢歸陣後,藏寶閣有空位且尚未擁有才能收藏)。` : "";
+  return [setting, formText(id, "att", "守軍", true), clash, strength, ht, artLine, tail.split("\n\n")[0], tbl, tail.split("\n\n").slice(1).join("\n\n")].filter(Boolean).join("\n\n");
 }
 // 行政官說服家臣:降低忠誠度,歸零時城池易主(res.conq 由 G.pvpBattle 算出)
 // 武將的戰場畫面(熱血戰記口吻)。o:{win, seed, fac, target, name};同一場戰鬥用 seed 固定句型
@@ -188,7 +206,7 @@ function build(res, ctx) {
   const tDef = `【敵方】守軍 ${defN} 人 → 陣亡 ${deadD} 人\n${table(dFac, res.defBefore, res.deadD, true, ["原有", "陣亡"])}`;
   const closerW = pick(CLOSERS_WIN, id, "cw"), closerL = pick(CLOSERS_LOSE, id, "cl");
   const attBody = [
-    setting, defense, battle, clash, strength, siegeText(res.sg, dFac, "att", { seed: id, aFac, sent: res.sent }), conqText(res.conq, d, "att"), heroText(res.hero, "att", { win: res.win, seed: id, fac: aFac, target: d }), artText(res, "att"),
+    setting, defense, formText(id, "att", d), battle, clash, strength, siegeText(res.sg, dFac, "att", { seed: id, aFac, sent: res.sent }), conqText(res.conq, d, "att"), heroText(res.hero, "att", { win: res.win, seed: id, fac: aFac, target: d }), artText(res, "att"),
     res.win ? `【結果】大勝!${a}軍攻破${d}的防線,城頭換上了我軍的旗幟。` : `【結果】敗走。${a}軍攻不下${d}的城池,${survN > 0 ? "殘兵負傷收兵。" : "全軍玉碎,無一生還。"}`,
     tAtt, tDef.replace("【敵方】", "【對手】"),
     res.win ? `【分捕】${lootTxt}(待軍勢歸陣後入庫)${cave ? "\n" + cave : ""}\n軍勢收兵,正踏上歸途。` : (survN > 0 ? "軍勢收兵,正踏上歸途。" : ""),
@@ -196,7 +214,7 @@ function build(res, ctx) {
   ].filter(Boolean).join("\n\n");
   const defBody = [
     `${fmtTime(ctx.arrAt)},${weather}。${a}(${attPos.x}|${attPos.y})的軍勢 ${sentN} 人(${unitsText(aFac, res.sent)})壓境,直逼城下。`,
-    defense, battle.replace(attMain, `敵軍的${attMain}`).replace(attCav || "\u0000", `敵軍的${attCav}`), clash.replace(attMain, `敵軍的${attMain}`), strength, siegeText(res.sg, dFac, "def", { seed: id, aFac, sent: res.sent }), conqText(res.conq, d, "def"), heroText(res.hero, "def", { win: res.win, seed: id, fac: aFac, target: d }), artText(res, "def"),
+    defense, formText(id, "def", d), battle.replace(attMain, `敵軍的${attMain}`).replace(attCav || "\u0000", `敵軍的${attCav}`), clash.replace(attMain, `敵軍的${attMain}`), strength, siegeText(res.sg, dFac, "def", { seed: id, aFac, sent: res.sent }), conqText(res.conq, d, "def"), heroText(res.hero, "def", { win: res.win, seed: id, fac: aFac, target: d }), artText(res, "def"),
     res.win ? `【結果】城池陷落!守軍不敵,${a}軍大肆掠奪而去。` : `【結果】守城成功!${d}軍擊退了${a}的來襲,敵軍丟盔棄甲而逃。`,
     tDef.replace("【敵方】", "【我方】"), tAtt.replace("【我方】", "【敵方】"),
     res.win ? `【遭掠奪的資源】${lootTxt}${cave ? "\n" + cave : ""}` : "【遭掠奪的資源】無",

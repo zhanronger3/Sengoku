@@ -150,7 +150,7 @@ async function resolveCamp({ saves, world, battle, mail, rec, now }) {
       if (!cur || cur.o !== owner) { res = { reinf: 1, ok: false, why: "這座營寨已經不是你的了" }; return undefined; }
       res = { reinf: 1, ok: true, tk: "camp:" + key };
       if ((cur.gs || []).some((g) => g.gid === id)) return undefined;
-      return { ...cur, gs: [...(cur.gs || []), { gid: id, fac: rec.att.fac, o: owner, k: rec.att.uid, u: rec.send.slice() }] };
+      return { ...cur, gs: [...(cur.gs || []), { gid: id, fac: rec.att.fac, o: owner, k: rec.att.uid, u: rec.send.slice(), ...(rec.att.hero ? { h: { n: rec.att.hero.n, d: rec.att.hero.def || 0 } } : {}) }] };
     });
   } else {
     const ag = await saves.get(rec.att.uid, { type: "json" });

@@ -42,7 +42,7 @@ async function releaseCamp({ saves, world, owner, hk, a, now }) {
   const grp = (hst.out || []).find((o) => o.gid === gid && o.k === a.k);
   if (!grp) return { ok: false, msg: "這支駐軍已經不在營寨了" };
   const hp = hst.pos, dist = Math.max(1, Math.hypot(hp.x - cp.x, hp.y - cp.y)), dur = G.garrDur(hst.fac, grp.u, dist);
-  await mutate(saves, hk, now, (st) => { core.settleTo(st, now); G.garrReturn(st, { gid, u: grp.u }, { name: grp.name || "營寨", dur }); });
+  await mutate(saves, hk, now, (st) => { core.settleTo(st, now); G.garrReturn(st, { gid, u: grp.u, h: grp.h }, { name: grp.name || "營寨", dur }); });
   await W.casUpdate(world, ckey(cp.x, cp.y), (cur) => (cur && cur.o === owner && (cur.gs || []).some((g) => g.gid === gid) ? { ...cur, gs: cur.gs.filter((g) => g.gid !== gid) } : undefined));
   return { ok: true, msg: `駐軍啟程返回,約 ${Math.max(1, Math.round(dur / G.SPEED / 60))} 分鐘後抵達(營寨仍歸你所有,可以再派兵進駐)` };
 }
@@ -66,7 +66,7 @@ async function abandonCamp({ saves, world, owner, ck, a, now }) {
     const mine = (hg.state.out || []).filter((o) => o.k === "camp:" + key);
     for (const grp of mine) {
       const hp = hg.state.pos, dist = Math.max(1, Math.hypot(hp.x - x, hp.y - y)), dur = G.garrDur(hg.state.fac, grp.u, dist);
-      await mutate(saves, hk, now, (st) => { core.settleTo(st, now); G.garrReturn(st, { gid: grp.gid, u: grp.u }, { name: grp.name || "營寨", dur }); });
+      await mutate(saves, hk, now, (st) => { core.settleTo(st, now); G.garrReturn(st, { gid: grp.gid, u: grp.u, h: grp.h }, { name: grp.name || "營寨", dur }); });
     }
     if (hk === ck) await mutate(saves, hk, now, (st) => { if (!st.occ[key]) return false; core.settleTo(st, now); G.campAbandon(st, key); });
   }
