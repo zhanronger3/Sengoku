@@ -2,7 +2,17 @@
 // 沒有任何畫面相關的程式,所有操作都透過 perform() 進行。
 const G=(()=>{
 const SPEED=60,CD=6*3600,CAMP_RESPAWN=12*3600,STASH_MULT=3,TRAIN_QMAX=10,DEMOLISH_GOV=3,NSLOTS=21,NU=10,TRB=['infb','cavb','wsh','pal','res'],MULTI=['wh','gr','cave']; // 城內 21 塊建地;藏屋敷、米藏、埋藏所在舊的升到滿級後可再蓋新的
-const GOLD_RATE=200,EXCHANGE_COST=1,PROTECT_DAYS=2; // 1 金幣買 200 單位資源;平倉每次 1 金幣;新手保護 2 個真實日(依開城時間 born 計算,與時間倍率無關)
+const GOLD_RATE=200,EXCHANGE_COST=1,PROTECT_DAYS=2;
+// 轉蛋內容(管理者可在後台修改,存在伺服器;沒設定時用這組預設)。獎品 t:'pack' = 四種資源各 v;t:'ticket' = 訓練縮短 v 個遊戲小時;p = 權重(換算成機率)。加速券以 "t"+小時 當鍵存在 S.it。
+const GACHA_DEF={cost:99,prizes:[{n:'資源包(S)',t:'pack',v:5000,p:50},{n:'資源包(B)',t:'pack',v:10000,p:30},{n:'訓練加速券(30 小時)',t:'ticket',v:30,p:13},{n:'訓練加速券(60 小時)',t:'ticket',v:60,p:7}]};
+function normGachaCfg(c){if(!c||typeof c!=='object')return null;const cost=Math.floor(+c.cost);if(!(cost>=1&&cost<=100000))return null;
+ if(!Array.isArray(c.prizes)||c.prizes.length<1||c.prizes.length>8)return null;const out=[];
+ for(const x of c.prizes){if(!x||(x.t!=='pack'&&x.t!=='ticket'))return null;const v=Math.floor(+x.v),p=+x.p;
+  if(!(v>=1&&v<=(x.t==='pack'?1000000:1000)))return null;if(!(p>0&&p<=1e6))return null;
+  const n=String(x.n==null?'':x.n).replace(/[<>&"'`]/g,'').trim().slice(0,16)||(x.t==='pack'?`資源包(${v})`:`訓練加速券(${v} 小時)`);out.push({n,t:x.t,v,p})}
+ return {cost,prizes:out}}
+let GCFG=normGachaCfg(GACHA_DEF);
+const getGachaCfg=()=>GCFG,setGachaCfg=c=>{const n=normGachaCfg(c);if(n)GCFG=n;return !!n},tkH=k=>{const m=/^t(\d{1,4})$/.exec(k);const h=m?+m[1]:0;return h>=1&&h<=1000?h:0};
 const RN=['木材','泥土','鐵塊','糧食'],FN=['伐木場','泥坑','鐵礦場','農田'];
 const FT=[0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,3,3];
 // 荒地地形:森林(木材)/泥坑(泥土)/礦坑(鐵塊)/平原(糧食),其餘是標準空地;決定新開分城的資源田配置(編號 = 資源編號)
@@ -187,11 +197,11 @@ const fix=s=>{if(!s.stat)s.stat={};for(const k of['trained','raids','fup','bup',
   for(const l of['f','b']){const q=s.q&&s.q[l];if(q&&q.k==='b'&&q.slot==null){if(q.id==='wall')q.slot='wall';else{let i=s.slots.findIndex(x=>x&&x.b===q.id);if(i<0){i=s.slots.indexOf(null);s.slots[i]={b:q.id,l:0}}q.slot=i}}}}
  if(s.bld.wall==null)s.bld.wall=0;
  {const prev=S;S=s;try{recalc()}finally{S=prev}}
-if(!s.rep)s.rep=[];if(!s.qd)s.qd=[];if(!s.stat)s.stat={trained:0,raids:0};if(!s.cd)s.cd={};if(!s.mv)s.mv=[];if(!s.log)s.log=[];
+if(!s.it)s.it={};if(!s.rep)s.rep=[];if(!s.qd)s.qd=[];if(!s.stat)s.stat={trained:0,raids:0};if(!s.cd)s.cd={};if(!s.mv)s.mv=[];if(!s.log)s.log=[];
  if(s.mv.some(m=>m.npc!=null)){s.mv=s.mv.filter(m=>{if(m.npc==null)return true;(m.send||[]).forEach((x,k)=>s.u[k]=(s.u[k]||0)+x);if(m.ret&&m.loot)m.loot.forEach((x,k)=>s.res[k]+=x);return false})}
  return s};
 function init(f,pos){const bld={};B.forEach(b=>bld[b.id]=0);
- S={fac:f,slots:Array(NSLOTS).fill(null),t:0,res:[600,600,600,600],gold:20,fld:Array(18).fill(0),bld,q:{f:null,b:null},tr:{infb:[],cavb:[],wsh:[],pal:[],res:[]},u:Array(NU).fill(0),mv:[],log:[],rep:[],qd:[],stat:{trained:0,raids:0},cd:{},buff:0,zg:0,rc:0,kids:0,loy:100,occ:{},art:[],hero:null,camps:{},pos:pos||{x:0,y:0},born:Date.now(),saved:Date.now()};
+ S={fac:f,slots:Array(NSLOTS).fill(null),t:0,res:[600,600,600,600],gold:20,fld:Array(18).fill(0),bld,q:{f:null,b:null},tr:{infb:[],cavb:[],wsh:[],pal:[],res:[]},u:Array(NU).fill(0),mv:[],log:[],rep:[],qd:[],it:{},stat:{trained:0,raids:0},cd:{},buff:0,zg:0,rc:0,kids:0,loy:100,occ:{},art:[],hero:null,camps:{},pos:pos||{x:0,y:0},born:Date.now(),saved:Date.now()};
  logm(`你選擇了${fa().n},開始經營自己的城池。城內有 ${NSLOTS} 塊空地,先蓋知行所吧!`);return S}
 // 分城:由開墾代官建立的新城池,資源很少,金幣與任務由主城管理
 function initCity(f,pos,o){init(f,pos);if(pos&&terOf(pos.x,pos.y)>=0)S.ft=ftFor(terOf(pos.x,pos.y));S.col=1;S.own=o.own;S.cname=o.cname||'';S.gold=0;S.res=[500,500,500,500];S.born=o.now;S.saved=o.now;S.log=[];S.rep=[];
@@ -623,6 +633,24 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
   if(!m||m.pv||m.pending||m.ret||m.arr<=S.t||m.tx!==a.tx||m.ty!==a.ty)return bad('這支部隊現在無法撤回');
   const el=Math.max(1,Math.round(S.t-(m.arr-m.dur)));m.ret=1;m.recalled=1;m.arr=S.t+el;m.dur=el;m.loot=[0,0,0,0];
   logm(`撤回前往${m.name}的部隊,已走 ${Math.round(el/60)} 分鐘,同樣時間後返回`);return ok()}
+
+ if(t=='gacha'){const n=a.n===10?10:a.n===1?1:0;if(!n)return bad('參數錯誤');const C=GCFG,cost=C.cost;
+  if(!Array.isArray(a.rnd)||a.rnd.length<n||a.rnd.slice(0,n).some(x=>!(x>=0&&x<1)))return bad('轉蛋需要伺服器產生亂數,請重新整理後再試');
+  if(S.gold<cost*n)return bad(`金幣不足(需要 ${cost*n} 金幣)`);
+  S.gold-=cost*n;if(!S.it)S.it={};const out=[],tot=C.prizes.reduce((x,o)=>x+o.p,0);
+  for(let i=0;i<n;i++){let r=a.rnd[i]*tot,pz=C.prizes[C.prizes.length-1];for(const o of C.prizes){if(r<o.p){pz=o;break}r-=o.p}
+   if(pz.t==='pack'){const g=[0,1,2,3].map(j=>{const add=Math.max(0,Math.floor(Math.min(pz.v,cap(j)-S.res[j])));S.res[j]+=add;return add});out.push({n:pz.n,t:'pack',v:pz.v,g})}
+   else{const k='t'+pz.v;S.it[k]=(S.it[k]||0)+1;out.push({n:pz.n,t:'ticket',v:pz.v})}}
+  S.gl=out;logm(`轉蛋 ${n} 抽,花費 ${cost*n} 金幣`);return {ok:true,msg:`轉蛋完成,花費 ${cost*n} 金幣`}}
+ if(t=='useticket'){const k=a.k,b=a.b,H=tkH(k);if(!H)return bad('參數錯誤');if(!TRB.includes(b))return bad('參數錯誤');
+  if(!((S.it&&S.it[k])>0))return bad('沒有這種加速券');const q=S.tr[b];if(!q.length)return bad('這間訓練所目前沒有在訓練');
+  let rem=H*3600;const total0=(q[0].next-S.t)+(q[0].n-1)*q[0].per+q.slice(1).reduce((x,o)=>x+o.n*o.per,0);
+  while(q.length&&rem>1e-9){const o=q[0],cur=Math.max(0,o.next-S.t);
+   if(rem<cur){o.next-=rem;rem=0;break}
+   rem-=cur;S.u[o.u]++;S.stat.trained++;o.n--;
+   if(o.n>0)o.next=S.t+o.per;else{logm(`${us()[o.u].n} 訓練完成`);q.shift();if(q.length)q[0].next=S.t+q[0].per}}
+  S.it[k]--;const used=Math.min(total0,H*3600);logm(`使用訓練加速券(${H} 小時),這個佇列縮短了 ${Math.round(used/3600*10)/10} 小時`);
+  return {ok:true,msg:total0<H*3600?`佇列只剩 ${Math.round(total0/3600*10)/10} 小時,已全部完成(不補差額)`:`已縮短 ${H} 小時的訓練時間`}}
  if(t=='buy'){const k=int(a.res,0,3),g=int(a.gold,1,100000);if(k==null||g==null)return bad('請輸入購買的金幣數量');if(S.gold<g)return bad('金幣不足');
   const amt=g*GOLD_RATE;if(S.res[k]+amt>cap(k))return bad(`${RN[k]}藏屋敷放不下(目前最多再買 ${Math.max(0,Math.floor((cap(k)-S.res[k])/GOLD_RATE))} 金幣)`);
   S.gold-=g;S.res[k]+=amt;logm(`用 ${g} 金幣買了 ${amt} ${RN[k]}`);return {ok:true,msg:`花費 ${g} 金幣,獲得 ${amt} ${RN[k]}`}}
@@ -631,6 +659,6 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
  if(t=='claimd'){if(S.col)return bad('每日任務獎勵要存進主城');dailyRoll(NOW);const q=dailyInfo();if(!q)return bad('每日任務尚未產生');if(q.done)return bad('今天的每日任務獎勵已領取');if(!q.ok)return bad('每日任務尚未完成');S.daily.done=1;S.gold+=q.g;return {ok:true,msg:`每日任務完成,獲得 ${q.g} 金幣`}}
  if(t=='claim'){if(S.col)return bad('任務獎勵要存進主城');const q=QS.find(x=>x.id===a.id);if(!q||S.qd.includes(q.id)||!q.ok())return bad('任務尚未完成');S.qd.push(q.id);if(q.g)S.gold+=q.g;if(q.r)q.r.forEach((x,i)=>S.res[i]=Math.min(cap(i),S.res[i]+x));return {ok:true,msg:'任務獎勵已領取'}}
  return bad('未知的操作')}
-return {WALLD,TERN,TERI,TERF,terOf,ftFor,FTx,setAcc,Q,QD,qx,virtDaily,NOCAMP,campSpot,campMs,campFresh,campCur,campView,campBattle,campScout,campSync,campAbandon,occCheck,garDef,garSum,powers,setNow,dailyRoll,dailyInfo,DQ,dayKey,KID_PREST,get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,NU,TRB,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,protectedAt,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvpProtected,pvpLaunch,pvpBattle,pvpApplyDef,pvpApplyAtt,pvpRecall,scoutBattle,scoutApplyDef,launchCheck,initCity,ART,ARTM,garrApply,garrTake,garrReturn,garrDur,GAR_MAX,HN,occSlots,artSlots,heroAtk,heroDef,heroSpd,heroCarry,heroNeed,occY,OCC_RANGE,HERO_MAXLV,MERC,MSPEED,merCap,merBusy,merFree,merDur,shipLaunch,shipApply,offerCheck,offerTake,offerRefund,acceptCheck,acceptTake,expSlots,slotsFree,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,DEMOLISH_GOV,UDESC,DEMOLISH_GOV,UDESC,CAMP_RESPAWN,STASH_MULT,defOf};
+return {GACHA_DEF,normGachaCfg,getGachaCfg,setGachaCfg,tkH,WALLD,TERN,TERI,TERF,terOf,ftFor,FTx,setAcc,Q,QD,qx,virtDaily,NOCAMP,campSpot,campMs,campFresh,campCur,campView,campBattle,campScout,campSync,campAbandon,occCheck,garDef,garSum,powers,setNow,dailyRoll,dailyInfo,DQ,dayKey,KID_PREST,get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,NU,TRB,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,protectedAt,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvpProtected,pvpLaunch,pvpBattle,pvpApplyDef,pvpApplyAtt,pvpRecall,scoutBattle,scoutApplyDef,launchCheck,initCity,ART,ARTM,garrApply,garrTake,garrReturn,garrDur,GAR_MAX,HN,occSlots,artSlots,heroAtk,heroDef,heroSpd,heroCarry,heroNeed,occY,OCC_RANGE,HERO_MAXLV,MERC,MSPEED,merCap,merBusy,merFree,merDur,shipLaunch,shipApply,offerCheck,offerTake,offerRefund,acceptCheck,acceptTake,expSlots,slotsFree,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,DEMOLISH_GOV,UDESC,DEMOLISH_GOV,UDESC,CAMP_RESPAWN,STASH_MULT,defOf};
 })();
 if(typeof module!=='undefined')module.exports=G;

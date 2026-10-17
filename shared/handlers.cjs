@@ -2,7 +2,10 @@
 // 一個帳號可以有多座城池:每座城池各一份存檔,存檔鍵 = 城池鍵(主城就是帳號 id)。
 // 請求用 body.c / ?c= 指定要操作哪座城,沒指定就是主城。
 const core = require("./server-core.cjs");
-const SPEEDN = require("./game.cjs").SPEED; // 遊戲秒/真實秒
+const GAME = require("./game.cjs");
+const SPEEDN = GAME.SPEED; // 遊戲秒/真實秒
+// 轉蛋內容由管理者設定,存在 world 的 cfg_gacha;沒設定就用預設
+const loadGcfg = async (wstore) => { try { const c = await wstore.get("cfg_gacha", { type: "json" }); const n = c && GAME.normGachaCfg(c.cfg); return n || GAME.normGachaCfg(GAME.GACHA_DEF); } catch { return GAME.normGachaCfg(GAME.GACHA_DEF); } };
 const world = require("./world-store.cjs");
 const pvp = require("./pvp-run.cjs");
 const { healCamps } = require("./camp-heal.cjs");
@@ -79,7 +82,7 @@ async function act({ stores, user, body, now }) {
     // 分城的金幣放在主城:所有回應都要帶主城的金幣,不然畫面會閃成 0
     if (key !== owner && b && b.state && b.state.col && !res.goldSet) {
       const cg = await saves.get(owner, { type: "json" });
-      if (cg && cg.state) b.state = { ...b.state, gold: core.settle(JSON.parse(JSON.stringify(cg.state)), now).gold };
+      if (cg && cg.state) { const cs = core.settle(JSON.parse(JSON.stringify(cg.state)), now); b.state = { ...b.state, gold: cs.gold, it: cs.it || {} }; }
     }
     let acc = null;
     try { acc = await accOf({ saves, world: wstore, owner, cur: b && b.state && b.state.pos ? { key, state: b.state } : null, now }); } catch (e) { console.error("accOf failed", e); }
@@ -93,7 +96,7 @@ async function act({ stores, user, body, now }) {
     const curState = key === owner ? null : { key, state: core.settle(clone(stored.state), now) };
     const acc = await accOf({ saves, world: wstore, owner, cur: curState, now });
     const res = core.act(capGot.data, key === owner ? body : { ...body, rev: capGot.data.rev }, now, { acc });
-    const colView = () => { const v = core.view(stored, now); return { ...v, state: { ...v.state, gold: res.store ? res.store.state.gold : core.settle(clone(capGot.data.state), now).gold } }; };
+    const colView = () => { const v = core.view(stored, now); return { ...v, state: { ...v.state, gold: res.store ? res.store.state.gold : core.settle(clone(capGot.data.state), now).gold, it: (res.store ? res.store.state.it : capGot.data.state.it) || {} } }; };
     if (!res.store) return attach(key === owner ? res : { status: res.status, body: { ...colView(), ok: false, msg: res.body.msg }, goldSet: true });
     const w = await saves.setJSON(owner, res.store, { onlyIfMatch: capGot.etag });
     if (w && w.modified === false) return { status: 409, body: { ok: false, msg: "同步衝突,請再試一次" } };
@@ -136,25 +139,32 @@ async function act({ stores, user, body, now }) {
 
   if (body?.action?.t === "reset" && key !== owner) return { status: 422, body: { ok: false, msg: "只能在主城重新開始" } };
   // 分城也能用金幣:金幣是玩家的(存在主城),分城的金幣操作先向主城扣款
-  const GOLDT = ["buy", "balance", "rushall"];
+  const GOLDT = ["buy", "balance", "rushall", "gacha", "useticket"];
   let cap = null, useStored = stored;
   if (key !== owner && stored && GOLDT.includes(body?.action?.t)) {
     const cg = await saves.getWithMetadata(owner, { type: "json" });
     if (!cg || !cg.data) return { status: 422, body: { ok: false, msg: "找不到主城存檔" } };
     cap = { g: cg, st: core.settle(JSON.parse(JSON.stringify(cg.data.state)), now) };
-    useStored = { ...stored, state: { ...stored.state, gold: cap.st.gold } };
+    useStored = { ...stored, state: { ...stored.state, gold: cap.st.gold, it: JSON.parse(JSON.stringify(cap.st.it || {})) } };
   }
+  let gcfg = null;
+  if (body?.action?.t === "gacha") { gcfg = await loadGcfg(wstore); GAME.setGachaCfg(gcfg); }
   const res = core.act(useStored, body, now, { pos });
+  if (gcfg && res.body) res.body = { ...res.body, gcfg };
   if (cap && res.store && res.store !== "delete") {
     const spent = cap.st.gold - res.store.state.gold;
-    if (spent > 1e-9) {
-      cap.st.gold -= spent;
+    const oldIt = JSON.stringify(cap.st.it || {}), newIt = JSON.stringify(res.store.state.it || {}), itChanged = oldIt !== newIt;
+    if (spent > 1e-9 || itChanged) {
+      cap.st.gold -= Math.max(0, spent);
+      if (itChanged) cap.st.it = JSON.parse(newIt);
       const wc = await saves.setJSON(owner, { ...cap.g.data, state: cap.st, updatedAt: now }, { onlyIfMatch: cap.g.etag });
       if (wc && wc.modified === false) return { status: 409, body: { ok: false, msg: "同步衝突,請再試一次" } };
     }
-    res.body = { ...res.body, state: { ...res.body.state, gold: cap.st.gold } };
-    res.store = { ...res.store, state: { ...res.store.state, gold: 0 } };
+    res.body = { ...res.body, state: { ...res.body.state, gold: cap.st.gold, it: cap.st.it || {} } };
+    res.store = { ...res.store, state: { ...res.store.state, gold: 0, it: {} } };
     res.refund = spent > 1e-9 ? spent : 0;
+    res.itRevert = itChanged ? JSON.parse(oldIt) : null;
+    res.itNew = itChanged ? newIt : null;
   }
   if (res.store === "delete") {
     // 重新開始:主城與所有分城一起清掉
@@ -170,7 +180,7 @@ async function act({ stores, user, body, now }) {
     // 只有在資料沒被別的請求改過時才寫入,避免同時操作互相覆蓋
     const w = await saves.setJSON(key, res.store, etag ? { onlyIfMatch: etag } : { onlyIfNew: true });
     if (w && w.modified === false) {
-      if (res.refund) await require("./world-store.cjs").casUpdate(saves, owner, (c) => (c && c.state ? { ...c, state: { ...c.state, gold: (c.state.gold || 0) + res.refund } } : undefined));
+      if (res.refund || res.itRevert) await require("./world-store.cjs").casUpdate(saves, owner, (c) => (c && c.state ? { ...c, state: { ...c.state, gold: (c.state.gold || 0) + (res.refund || 0), ...(res.itRevert && JSON.stringify(c.state.it || {}) === res.itNew ? { it: res.itRevert } : {}) } } : undefined));
       return { status: 409, body: { ok: false, msg: "同步衝突,請再試一次" } };
     }
     if (needPublish) {
@@ -193,11 +203,11 @@ async function save({ stores, user, now, c }) {
   const vw = core.view(got?.data ?? null, now);
   if (key !== owner && vw.state && vw.state.col) {
     const cg = await saves.get(owner, { type: "json" });
-    if (cg && cg.state) vw.state.gold = core.settle(JSON.parse(JSON.stringify(cg.state)), now).gold;
+    if (cg && cg.state) { const cs = core.settle(JSON.parse(JSON.stringify(cg.state)), now); vw.state.gold = cs.gold; vw.state.it = cs.it || {}; }
   }
   let acc = null;
   try { acc = await accOf({ saves, world: wstore, owner, cur: vw.state && vw.state.pos ? { key, state: vw.state } : null, now }); } catch (e) { console.error("accOf failed", e); }
-  return { status: 200, body: { ...vw, c: key, acc, cities: await cityList(saves, wstore, owner), incoming: await battles.incomingFor(battle, owner) } };
+  return { status: 200, body: { ...vw, c: key, acc, gcfg: await loadGcfg(wstore), cities: await cityList(saves, wstore, owner), incoming: await battles.incomingFor(battle, owner) } };
 }
 
 module.exports = { act, save, settleBattles, cityList, pickCity };

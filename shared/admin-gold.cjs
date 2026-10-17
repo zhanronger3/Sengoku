@@ -137,6 +137,19 @@ async function handle({ method, secret, expected, body, saves, backup, world, ma
   }
   if (method !== "POST") return { status: 405, body: { ok: false, msg: "Method Not Allowed" } };
 
+  // 轉蛋內容:讀取 / 儲存(立即對所有玩家生效,不用重新部署)
+  if (body && body.t === "gachaget") {
+    const c = await world.get("cfg_gacha", { type: "json" });
+    return { status: 200, body: { ok: true, cfg: (c && G.normGachaCfg(c.cfg)) || G.normGachaCfg(G.GACHA_DEF), custom: !!(c && c.cfg), t: (c && c.t) || null } };
+  }
+  if (body && body.t === "gachaset") {
+    if (body.reset === true) { await world.delete("cfg_gacha"); await addLog(world, { t: now, uid: "-", n: "系統", x: 0, y: 0, amount: 0, reason: "轉蛋內容恢復預設" }); return { status: 200, body: { ok: true, msg: "已恢復預設內容", cfg: G.normGachaCfg(G.GACHA_DEF), custom: false } }; }
+    const cfg = G.normGachaCfg(body.cfg);
+    if (!cfg) return { status: 422, body: { ok: false, msg: "設定不正確:價格 1~100000、獎品 1~8 項、資源包每種 1~1000000、加速券 1~1000 小時、權重要大於 0" } };
+    await world.setJSON("cfg_gacha", { cfg, t: now });
+    await addLog(world, { t: now, uid: "-", n: "系統", x: 0, y: 0, amount: 0, reason: `修改轉蛋內容(${cfg.cost} 金幣/抽,${cfg.prizes.length} 種獎品)` });
+    return { status: 200, body: { ok: true, msg: "已儲存,所有玩家立即生效", cfg, custom: true } };
+  }
   if (body && body.t === "fblist") return { status: 200, body: { ok: true, list: await FB.list(world) } };
   if (body && body.t === "fbreply") {
     const r = await FB.reply({ world, mail, id: String(body.id || ""), text: body.text, now });
