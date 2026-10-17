@@ -30,7 +30,7 @@ async function registerAttack({ battle, mail, rec, now }) {
   const friendly = rec.kind === "reinf";
   if (friendly && ownerOfDef(rec) === ownerOfAtt(rec)) return; // 增援自己的城池:不用通知
   await W.casUpdate(battle, ikey(ownerOfDef(rec)), (cur) => ({
-    a: [...((cur && cur.a) || []), { id: rec.id, arrAt: rec.arrAt, n: rec.att.n, x: rec.att.x, y: rec.att.y, tx: rec.def.x, ty: rec.def.y, ...(friendly ? { k: "reinf" } : {}) }].sort((p, q) => p.arrAt - q.arrAt),
+    a: [...((cur && cur.a) || []), { id: rec.id, t0: now, arrAt: rec.arrAt, n: rec.att.n, x: rec.att.x, y: rec.att.y, tx: rec.def.x, ty: rec.def.y, ...(friendly ? { k: "reinf" } : {}) }].sort((p, q) => p.arrAt - q.arrAt),
   }));
   const mins = Math.max(1, Math.round((rec.arrAt - now) / 60000));
   if (friendly) {

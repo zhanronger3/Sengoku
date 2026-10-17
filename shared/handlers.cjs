@@ -2,6 +2,7 @@
 // 一個帳號可以有多座城池:每座城池各一份存檔,存檔鍵 = 城池鍵(主城就是帳號 id)。
 // 請求用 body.c / ?c= 指定要操作哪座城,沒指定就是主城。
 const core = require("./server-core.cjs");
+const SPEEDN = require("./game.cjs").SPEED; // 遊戲秒/真實秒
 const world = require("./world-store.cjs");
 const pvp = require("./pvp-run.cjs");
 const { healCamps } = require("./camp-heal.cjs");
@@ -44,7 +45,13 @@ async function cityList(saves, wstore, owner) {
     const st = g && g.state;
     if (!st || !st.pos || !A.ownedBy(st, k, owner)) continue;
     if (pl && !pl.cs[k] && st.pub) { try { const s2 = JSON.parse(JSON.stringify(st)); s2.pub = null; world.stampPub(s2, st.pub.n, Date.now()); await world.publishState(wstore, k, s2, owner); } catch {} }
-    out.push({ k, x: st.pos.x, y: st.pos.y, f: st.fac, col: st.col ? 1 : 0, loy: Math.floor(st.loy == null ? 100 : st.loy), b: st.born || 0, n: st.col ? st.cname || "分城" : "主城" });
+    const nowT = Date.now(), tNow = (st.t || 0) + Math.max(0, nowT - ((g && g.updatedAt) || st.saved || nowT)) / 1000 * SPEEDN;
+    const mv = (st.mv || []).filter((m) => m.tx != null && m.ty != null && m.dur).slice(0, 12).map((m) => {
+      const at = m.pending ? m.go : m.ret ? m.arr : m.go && st.t < m.go ? m.go : m.arr, sd = (m.ret ? m.send : m.sent) || m.send || [];
+      let uk = -1, tot = 0; sd.forEach((v, i) => { tot += +v || 0; if (v > (sd[uk] || 0)) uk = i; });
+      return [m.tx, m.ty, Math.round(at - tNow), m.dur, m.ret ? 1 : 0, m.kind || 0, tot, uk];
+    });
+    out.push({ mv, k, x: st.pos.x, y: st.pos.y, f: st.fac, col: st.col ? 1 : 0, loy: Math.floor(st.loy == null ? 100 : st.loy), b: st.born || 0, n: st.col ? st.cname || "分城" : "主城" });
   }
   return out;
 }

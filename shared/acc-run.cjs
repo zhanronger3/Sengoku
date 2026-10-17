@@ -23,11 +23,15 @@ async function accOf({ saves, world, owner, cur, now }) {
   const m = states.find((x) => x.k === owner);
   cap = m ? m.st : null;
   const bld = {}, stat = {};
-  let zg = 0, best = null, bestKey = [-1, -1];
+  let zg = 0, best = null, bestKey = [-1, -1], heroLv = 0, occN = 0;
+  const arts = new Set();
   for (const { st } of states) {
     for (const [b, l] of Object.entries(st.bld || {})) bld[b] = Math.max(bld[b] || 0, l || 0);
     for (const [k, v] of Object.entries(st.stat || {})) stat[k] = (stat[k] || 0) + (+v || 0);
     zg = Math.max(zg, st.zg || 0);
+    if (st.hero && st.hero.lv) heroLv = Math.max(heroLv, st.hero.lv);
+    occN += Object.keys(st.occ || {}).length;
+    for (const id of st.art || []) arts.add(id);
     const f = st.fld || [], mn = f.length ? Math.min(...f) : 0, sm = f.reduce((a, b) => a + b, 0);
     if (!best || mn > bestKey[0] || (mn === bestKey[0] && sm > bestKey[1])) { best = f; bestKey = [mn, sm]; }
   }
@@ -37,7 +41,7 @@ async function accOf({ saves, world, owner, cur, now }) {
   if (cap && daily && ((cap.daily || {}).d !== daily.d || (cap.daily || {}).v !== 2)) {
     try { await require("./world-store.cjs").casUpdate(saves, owner, (c) => (c && c.state && !(c.state.daily && c.state.daily.d === daily.d && c.state.daily.v === 2) ? { ...c, state: { ...c.state, daily } } : undefined)); } catch (e) { console.error("daily persist failed", e); }
   }
-  return { fld: best || Array(18).fill(0), bld, stat, zg, qd, daily };
+  return { fld: best || Array(18).fill(0), bld, stat, zg, qd, daily, heroLv, artN: arts.size, occN, cities: states.length };
 }
 
 module.exports = { accOf };

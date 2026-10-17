@@ -86,11 +86,11 @@ const B=[
  {id:'cnl',n:'評定眾',p:2,r:[600,550,500,300],t:870,m:20,d:'掌管家臣任免的評定之所,可以將士兵提拔為武將,武將能率軍攻打並佔領野外營寨。1 級可以提拔 1 名武將;10、15、20 級各可佔領 1、2、3 座營寨(營寨要在這座城 15×15 範圍內)。',q:{gov:3,war:1}},
  {id:'wsh',n:'鍛冶場',p:4,r:[400,450,600,300],t:1330,m:20,d:'製造破門槌與大筒、飛石機、焙烙火砲車等攻城器械的作坊。等級越高,製造越快。器械需要兵學塾達到對應等級才能製造。',q:{acad:10,gov:5}},
  {id:'acc',n:'勘定所',p:4,r:[1150,1300,1150,400],t:2000,m:20,d:'掌管財政與商賈的勘定所,每級讓商人的運載量提高 10%,20 級時達到 3 倍(對全城的商人有效)。需要樂市樂座 20 級。',q:{cavb:10,mkt:20}},
- {id:'pal',n:'本丸御殿',p:1,r:[425,700,750,300],t:2400,m:20,d:'城池的核心。提供防衛力(每級守軍防禦 +1%),可以訓練開墾代官與行政官(管領/軍配者/水軍頭領)。每座城只能蓋一座。10、15、20 級各有 1、2、3 個擴張名額:開分城(派 3 名開墾代官到空地)或佔領城池(行政官讓目標忠誠度歸零)各用 1 個。',q:{gov:5}},
+ {id:'pal',n:'本丸御殿',p:1,r:[425,700,750,300],t:2400,m:20,d:'城池的核心。提供防衛力(每級守軍防禦 +1%),可以訓練開墾代官與行政官(管領/軍配者/水軍頭領)。每座城只能蓋一座。10、15、20 級各有 1、2、3 個擴張名額:開分城(派 3 名開墾代官到空地)或佔領城池(行政官讓目標忠誠度歸零)各用 1 個。開分城另外要求這座城的威望達到 14000 / 28000 / 42000(第 1 / 2 / 3 座分城)。',q:{gov:5}},
  {id:'trs',n:'藏寶閣',p:3,r:[2400,2000,2800,1200],t:4800,m:20,d:'每 10 級可以收藏 1 件名物(珍貴寶物)。武將打贏營寨有機會帶回名物,藏寶閣放得下才收得進去。',q:{gov:10}},
  {id:'pub',n:'普請役所',p:3,r:[130,125,120,80],t:3200,m:20,d:'掌管土木工事的普請役所,每級讓建築的耐久度 +10%:敵方的攻城器械要花更多力氣才能拆毀你的建築。',q:{gov:5,'pal|res':3}},
  {id:'mkt',n:'樂市樂座',p:4,r:[80,70,120,70],t:1800,m:20,d:'城下的市集。每級有 1 名商人,可以把資源運送給自己的其他城池或其他玩家,也可以在市場掛單、與其他玩家交換資源。商人每名載運量:織田 500、德川 1000、豐臣 750(勘定所每級再 +10%);商人往返期間無法再用。',q:{wh:1,gov:3}},
- {id:'res',n:'二之丸御殿',p:1,r:[450,380,320,160],t:2000,m:20,d:'主城之外的另一種居館。10 級有 1 個擴張名額,20 級有 2 個(開分城或佔領城池各用 1 個),也能訓練開墾代官與行政官。與本丸御殿只能擇一(同一座城不能同時蓋兩種)。',q:{gov:5}},
+ {id:'res',n:'二之丸御殿',p:1,r:[450,380,320,160],t:2000,m:20,d:'主城之外的另一種居館。10 級有 1 個擴張名額,20 級有 2 個(開分城或佔領城池各用 1 個;開分城另外要求這座城的威望達到 14000 / 28000 / 42000),也能訓練開墾代官與行政官。與本丸御殿只能擇一(同一座城不能同時蓋兩種)。',q:{gov:5}},
  {id:'emb',n:'奏者番',p:3,r:[180,130,150,80],t:1000,m:20,d:'掌管外交與盟約的奏者番。1 級可以接受邀請加入聯盟,3 級可以建立自己的聯盟。聯盟人數上限是盟主奏者番等級的 2 倍(最少 6 人)。',q:{gov:1}},
  {id:'wall',n:'城牆',p:0,t:800,m:20,d:'提高守軍防禦。織田家為木柵(防禦強、耐久低,破門槌所需 ×0.8)、德川家為石垣(防禦一般、耐久高,所需 ×1.2)、豐臣家為土壘漆壁(中等,所需 ×1)。'}];
 const CM=[{id:'farm',n:'勸農',d:'所有資源產量 +25%,持續 2 小時'},{id:'fund',n:'御用金',d:'向商人徵調御用金,立即獲得 2 小時的產量'},{id:'build',n:'普請',d:'發動普請,施工佇列的剩餘時間減半(織田家專屬)',wei:1}];
@@ -98,6 +98,8 @@ let S=null;
 const FTx=()=>(S&&S.ft)||FT;
 // 任務、每日任務、新手引導是「帳號」的:條件看整個帳號(伺服器算好的 ACC),沒有 ACC(單機)就看目前這座城
 let ACC=null;const setAcc=a=>{ACC=a||null};const Q=()=>ACC||S,QD=()=>(ACC?ACC.qd:S.qd)||[];
+// 任務條件用的帳號資料(伺服器算好的 ACC;單機就看目前這座城)
+const qx=()=>{const q=Q();return ACC?{hl:q.heroLv||0,an:q.artN||0,cn:q.cities||1,on:q.occN||0}:{hl:S.hero?S.hero.lv:0,an:(S.art||[]).length,cn:1+(S.kids||0),on:Object.keys(S.occ||{}).length}};
 const QS=[
  {id:'q1',n:'把任一資源田升到 1 級',ok:()=>Q().fld.some(x=>x>=1),r:[200,200,200,200]},
  {id:'q2',n:'把知行所升到 3 級',ok:()=>Q().bld.gov>=3,g:3},
@@ -106,7 +108,17 @@ const QS=[
  {id:'q5',n:'訓練 20 名士兵',ok:()=>Q().stat.trained>=20,r:[500,500,500,500]},
  {id:'q6',n:'所有資源田升到 3 級',ok:()=>Q().fld.every(x=>x>=3),g:5},
  {id:'q7',n:'成功掠奪一次',ok:()=>Q().stat.raids>=1,g:5},
- {id:'q8',n:'行三顧之禮請出竹中半兵衛',ok:()=>Q().zg>=3,g:10}];
+ {id:'q8',n:'行三顧之禮請出竹中半兵衛',ok:()=>Q().zg>=3,g:10},
+ // 後期系統的成長任務(武將、藏寶閣、名物、營寨、分城、商路)
+ {id:'q9',n:'提拔一名武將(評定眾)',ok:()=>qx().hl>=1,g:10},
+ {id:'q10',n:'把武將升到 5 級',ok:()=>qx().hl>=5,g:10},
+ {id:'q11',n:'成功掠奪 10 次',ok:()=>Q().stat.raids>=10,g:10},
+ {id:'q12',n:'建造藏寶閣',ok:()=>Q().bld.trs>=1,g:15},
+ {id:'q13',n:'武將領軍佔領一座營寨',ok:()=>qx().on>=1,g:20},
+ {id:'q14',n:'收藏一件名物',ok:()=>qx().an>=1,g:15},
+ {id:'q15',n:'開一座分城',ok:()=>qx().cn>=2,g:30},
+ {id:'q16',n:'用樂市樂座運送一次資源',ok:()=>Q().stat.ship>=1,g:10},
+ {id:'q17',n:'把武將升到 10 級',ok:()=>qx().hl>=10,g:20}];
 const pw=Math.pow;
 const fa=()=>F[S.fac],us=()=>UN[S.fac];
 const br=b=>b.id=='wall'?fa().w.r:b.r,bn=b=>b.id=='wall'?fa().w.n:b.n;
@@ -184,7 +196,7 @@ function init(f,pos){const bld={};B.forEach(b=>bld[b.id]=0);
 // 分城:由開墾代官建立的新城池,資源很少,金幣與任務由主城管理
 function initCity(f,pos,o){init(f,pos);if(pos&&terOf(pos.x,pos.y)>=0)S.ft=ftFor(terOf(pos.x,pos.y));S.col=1;S.own=o.own;S.cname=o.cname||'';S.gold=0;S.res=[500,500,500,500];S.born=o.now;S.saved=o.now;S.log=[];S.rep=[];
  logm(`${fa().n}的分城建立了!城內有 ${NSLOTS} 塊空地,先蓋知行所吧。`);return S}
-const KID_PREST=[12000,24000,36000]; // 這座城自己的威望要達到多少,才能開第 1/2/3 座分城
+const KID_PREST=[14000,28000,42000]; // 這座城自己的威望要達到多少,才能開第 1/2/3 座分城
 const expSlots=()=>S.col?(S.bld.res>=20?2:S.bld.res>=10?1:0):(S.bld.pal>=20?3:S.bld.pal>=15?2:S.bld.pal>=10?1:0); // 本丸御殿 10/15/20 級各增加 1 個擴張名額(開分城或佔領城池各用 1 個)
 const slotsFree=()=>expSlots()-(S.kids||0)-S.mv.filter(m=>m.sl).length;
 function startQ(k,c,dur,o){const l=lane(k);if(S.q[l])return S.fac=='wei'?`${k=='f'?'城外':'城內'}已有施工中的項目`:'施工佇列已滿(只有織田家能城外城內同時施工)';
@@ -488,10 +500,10 @@ function garrApply(def,g){return withS(def,()=>{S.gar=S.gar||[];if(S.gar.some(x=
 function garrTake(st,gid){return withS(st,()=>{const i=(S.gar||[]).findIndex(x=>x.gid===gid);if(i<0)return null;return S.gar.splice(i,1)[0]})}
 // 部隊回到出發的城池:加一筆返程中的部隊(gid 重複就不再加),並把「派出去的駐防」紀錄拿掉
 function garrReturn(home,grp,meta){return withS(home,()=>{
- S.out=(S.out||[]).filter(x=>x.gid!==grp.gid);
+ const og=(S.out||[]).find(x=>x.gid===grp.gid);S.out=(S.out||[]).filter(x=>x.gid!==grp.gid);
  if(S.mv.some(m=>m.gid===grp.gid))return {ok:true,dup:1};
  const dur=Math.max(1,meta.dur);
- S.mv.push({gid:grp.gid,name:meta.name,def:0,sent:grp.u.slice(),send:grp.u.slice(),go:S.t,arr:S.t+dur,dur,ret:1,loot:[0,0,0,0],kind:'garr',hero:grp.h?1:0});
+ S.mv.push({gid:grp.gid,name:meta.name,def:0,sent:grp.u.slice(),send:grp.u.slice(),go:S.t,arr:S.t+dur,dur,ret:1,loot:[0,0,0,0],kind:'garr',hero:grp.h?1:0,...(og&&og.x!=null?{tx:og.x,ty:og.y}:{})});
  logm(`${meta.name}的駐防部隊啟程返回`,1);return {ok:true}})}
 const garrDur=(fac,u,dist)=>{const U=UN[fac],sp=Math.min(...u.map((x,k)=>x?U[k].s:99));return Math.max(1,Math.round(dist/(sp>=99?8:sp)*3600))};
 // ====== 樂市樂座:商人、運送、掛單 ======
@@ -619,6 +631,6 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
  if(t=='claimd'){if(S.col)return bad('每日任務獎勵要存進主城');dailyRoll(NOW);const q=dailyInfo();if(!q)return bad('每日任務尚未產生');if(q.done)return bad('今天的每日任務獎勵已領取');if(!q.ok)return bad('每日任務尚未完成');S.daily.done=1;S.gold+=q.g;return {ok:true,msg:`每日任務完成,獲得 ${q.g} 金幣`}}
  if(t=='claim'){if(S.col)return bad('任務獎勵要存進主城');const q=QS.find(x=>x.id===a.id);if(!q||S.qd.includes(q.id)||!q.ok())return bad('任務尚未完成');S.qd.push(q.id);if(q.g)S.gold+=q.g;if(q.r)q.r.forEach((x,i)=>S.res[i]=Math.min(cap(i),S.res[i]+x));return {ok:true,msg:'任務獎勵已領取'}}
  return bad('未知的操作')}
-return {WALLD,TERN,TERI,TERF,terOf,ftFor,FTx,setAcc,Q,QD,virtDaily,NOCAMP,campSpot,campMs,campFresh,campCur,campView,campBattle,campScout,campSync,campAbandon,occCheck,garDef,garSum,powers,setNow,dailyRoll,dailyInfo,DQ,dayKey,KID_PREST,get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,NU,TRB,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,protectedAt,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvpProtected,pvpLaunch,pvpBattle,pvpApplyDef,pvpApplyAtt,pvpRecall,scoutBattle,scoutApplyDef,launchCheck,initCity,ART,ARTM,garrApply,garrTake,garrReturn,garrDur,GAR_MAX,HN,occSlots,artSlots,heroAtk,heroDef,heroSpd,heroCarry,heroNeed,occY,OCC_RANGE,HERO_MAXLV,MERC,MSPEED,merCap,merBusy,merFree,merDur,shipLaunch,shipApply,offerCheck,offerTake,offerRefund,acceptCheck,acceptTake,expSlots,slotsFree,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,DEMOLISH_GOV,UDESC,DEMOLISH_GOV,UDESC,CAMP_RESPAWN,STASH_MULT,defOf};
+return {WALLD,TERN,TERI,TERF,terOf,ftFor,FTx,setAcc,Q,QD,qx,virtDaily,NOCAMP,campSpot,campMs,campFresh,campCur,campView,campBattle,campScout,campSync,campAbandon,occCheck,garDef,garSum,powers,setNow,dailyRoll,dailyInfo,DQ,dayKey,KID_PREST,get S(){return S},set S(v){S=v},SPEED,CD,NSLOTS,NU,TRB,MULTI,GOLD_RATE,EXCHANGE_COST,PROTECT_DAYS,protectedAt,RN,FN,FT,FC,F,W,UN,N,TIERS,ZG,B,CM,QS,pw,fa,us,br,bn,lane,capAt,hideAt,cap,hide,prod,mult,rate,bpop,upkeep,hallM,costF,durF,costB,durB,fmax,reqOk,reqT,canPay,pay,logm,ab,db,wb,npcAt,home,distTo,hash,prest,rnd,fix,init,adv,perform,balanceTargets,pvpProtected,pvpLaunch,pvpBattle,pvpApplyDef,pvpApplyAtt,pvpRecall,scoutBattle,scoutApplyDef,launchCheck,initCity,ART,ARTM,garrApply,garrTake,garrReturn,garrDur,GAR_MAX,HN,occSlots,artSlots,heroAtk,heroDef,heroSpd,heroCarry,heroNeed,occY,OCC_RANGE,HERO_MAXLV,MERC,MSPEED,merCap,merBusy,merFree,merDur,shipLaunch,shipApply,offerCheck,offerTake,offerRefund,acceptCheck,acceptTake,expSlots,slotsFree,place,slotOf,canBuildNew,recalc,inst,awayUnits,campInfo,TRAIN_QMAX,DEMOLISH_GOV,UDESC,DEMOLISH_GOV,UDESC,CAMP_RESPAWN,STASH_MULT,defOf};
 })();
 if(typeof module!=='undefined')module.exports=G;
