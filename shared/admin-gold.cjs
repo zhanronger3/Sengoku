@@ -6,6 +6,8 @@ const core = require("./server-core.cjs");
 const W = require("./world-store.cjs");
 const M = require("./mail-store.cjs");
 const FB = require("./feedback-run.cjs");
+const A = require("./acct.cjs");
+const SB = require("./save-backup.cjs");
 
 const MAX_AMOUNT = 1_000_000;
 const LOG_KEY = "gold_log";
@@ -41,7 +43,7 @@ async function findTarget(world, q) {
   return null;
 }
 
-// 所有玩家的帳號代號(每位玩家的本丸都有一個 owner_<uid>,分城是 owner_c_…)
+// 所有玩家的帳號代號(每位玩家的主城都有一個 owner_<uid>,分城是 owner_c_…)
 async function listPlayers(world) {
   const out = [];
   let cursor;
@@ -54,6 +56,51 @@ async function listPlayers(world) {
   return out;
 }
 
+
+// ===== 武將修正(把暴衝的武將降回指定等級)=====
+// 一位玩家的每座城各有一位武將。到等級 L 總共獲得 5×L 點屬性點(開局 5 點,每升一級 +5)。
+// 降級後:已分配的點數(攻/防/速/載)總和超過新的可用點數就全部歸零重領;沒超過就只扣掉多的。
+const heroEarned = (lv) => 5 * lv;
+function planHero(h, level, xp) {
+  const lv = Math.max(1, Math.min(G.HERO_MAXLV, level)), nx = Math.max(0, Math.min(xp, G.heroNeed(lv) - 1));
+  const spent = (h.a || 0) + (h.d || 0) + (h.s || 0) + (h.c || 0), earned = heroEarned(lv);
+  const reset = spent > earned;
+  return { lv, xp: nx, a: reset ? 0 : h.a || 0, d: reset ? 0 : h.d || 0, s: reset ? 0 : h.s || 0, c: reset ? 0 : h.c || 0, pts: reset ? earned : earned - spent, reset };
+}
+const heroView = (h) => ({ n: h.n, lv: h.lv, xp: h.xp, pts: h.pts || 0, a: h.a || 0, d: h.d || 0, s: h.s || 0, c: h.c || 0, st: h.st });
+// 列出玩家各城的武將;level 有給就試算(confirm=true 才真的寫入),只會降、不會升
+async function heroFix({ saves, world, mail, target, level, xp, confirm, city, reason, now }) {
+  const keys = await A.list(world, target.uid);
+  const rows = [];
+  for (const key of keys) {
+    if (city && key !== city) continue;
+    for (let i = 0; i < 12; i++) {
+      const g = await saves.getWithMetadata(key, { type: "json" });
+      if (!g || !g.data || !g.data.state) break;
+      const st = clone(g.data.state), h = st.hero;
+      if (!h) { rows.push({ key, hero: null }); break; }
+      const row = { key, cname: st.cname || (st.col ? "分城" : "主城"), before: heroView(h) };
+      if (level == null || h.lv <= level) { row.after = row.before; row.changed = false; rows.push(row); break; }
+      const pl = planHero(h, level, xp || 0);
+      row.after = { ...heroView(h), lv: pl.lv, xp: pl.xp, pts: pl.pts, a: pl.a, d: pl.d, s: pl.s, c: pl.c };
+      row.reset = pl.reset; row.changed = true;
+      if (!confirm) { rows.push(row); break; }
+      h.lv = pl.lv; h.xp = pl.xp; h.pts = pl.pts; h.a = pl.a; h.d = pl.d; h.s = pl.s; h.c = pl.c;
+      st.saved = now;
+      const nick = (st.pub && st.pub.n) || target.n || "";
+      W.stampPub(st, nick, now);
+      const w = await saves.setJSON(key, { state: st, rev: g.data.rev + 1, updatedAt: now }, { onlyIfMatch: g.etag });
+      if (!w || w.modified !== false) {
+        try { await W.publishState(world, key, st, target.uid); } catch {}
+        try { await M.systemMail(mail, target.uid, "武將等級調整", `${h.n}的等級已調整為 ${pl.lv} 級。${pl.reset ? "已分配的屬性點全部退回,請到評定眾重新分配。" : "多出的屬性點已扣除。"}${reason ? `\n原因:${reason}` : ""}`, now); } catch {}
+        row.written = true; rows.push(row); break;
+      }
+      await new Promise((r) => setTimeout(r, Math.random() * 5 * (i + 1)));
+      if (i === 11) { row.written = false; row.err = "存檔正忙"; rows.push(row); }
+    }
+  }
+  return rows;
+}
 async function addLog(world, entry) {
   await W.casUpdate(world, LOG_KEY, (cur) => ({ a: [entry, ...((cur && cur.a) || [])].slice(0, LOG_MAX) }));
 }
@@ -79,7 +126,7 @@ async function grant({ saves, world, mail, target, amount, reason, now }) {
 }
 
 // method / secret / expected / body 由函式層傳進來;回傳 { status, body }
-async function handle({ method, secret, expected, body, saves, world, mail, now }) {
+async function handle({ method, secret, expected, body, saves, backup, world, mail, now }) {
   const auth = checkSecret(secret, expected);
   if (auth === "unset") return { status: 503, body: { ok: false, msg: "伺服器還沒設定 ADMIN_SECRET(至少 8 個字元),請先到 Netlify 設定環境變數並重新部署" } };
   if (auth !== "ok") return { status: 401, body: { ok: false, msg: "管理密碼不對" } };
@@ -90,7 +137,24 @@ async function handle({ method, secret, expected, body, saves, world, mail, now 
   }
   if (method !== "POST") return { status: 405, body: { ok: false, msg: "Method Not Allowed" } };
 
+  // 轉蛋內容:讀取 / 儲存(立即對所有玩家生效,不用重新部署)
+  if (body && body.t === "gachaget") {
+    const c = await world.get("cfg_gacha", { type: "json" });
+    return { status: 200, body: { ok: true, cfg: (c && G.normGachaCfg(c.cfg)) || G.normGachaCfg(G.GACHA_DEF), custom: !!(c && c.cfg), t: (c && c.t) || null } };
+  }
+  if (body && body.t === "gachaset") {
+    if (body.reset === true) { await world.delete("cfg_gacha"); await addLog(world, { t: now, uid: "-", n: "系統", x: 0, y: 0, amount: 0, reason: "轉蛋內容恢復預設" }); return { status: 200, body: { ok: true, msg: "已恢復預設內容", cfg: G.normGachaCfg(G.GACHA_DEF), custom: false } }; }
+    const cfg = G.normGachaCfg(body.cfg);
+    if (!cfg) return { status: 422, body: { ok: false, msg: "設定不正確:價格 1~100000、獎品 1~8 項、資源包每種 1~1000000、加速券 1~1000 小時、權重要大於 0" } };
+    await world.setJSON("cfg_gacha", { cfg, t: now });
+    await addLog(world, { t: now, uid: "-", n: "系統", x: 0, y: 0, amount: 0, reason: `修改轉蛋內容(${cfg.cost} 金幣/抽,${cfg.prizes.length} 種獎品)` });
+    return { status: 200, body: { ok: true, msg: "已儲存,所有玩家立即生效", cfg, custom: true } };
+  }
   if (body && body.t === "fblist") return { status: 200, body: { ok: true, list: await FB.list(world) } };
+  if (body && body.t === "fbreply") {
+    const r = await FB.reply({ world, mail, id: String(body.id || ""), text: body.text, now });
+    return { status: r.ok ? 200 : 422, body: { ...r, list: await FB.list(world) } };
+  }
   if (body && body.t === "fbdel") { await FB.remove(world, String(body.id || "")); return { status: 200, body: { ok: true, list: await FB.list(world) } }; }
   // 全服發信:寄一封系統信給每一位玩家(以公告編號去重,重送也不會重複收到)。留一份紀錄在 "bc"
   if (body && body.t === "bclist") { const b = await world.get("bc", { type: "json" }); return { status: 200, body: { ok: true, list: (b && b.a) || [] } }; }
@@ -103,6 +167,33 @@ async function handle({ method, secret, expected, body, saves, world, mail, now 
     for (let i = 0; i < uids.length; i += 20) await Promise.all(uids.slice(i, i + 20).map(async (u) => { try { await M.systemMail(mail, u, subj, m, now, { id, limit: 1000 }); n++; } catch {} }));
     const b = await W.casUpdate(world, "bc", (cur) => ({ a: [{ id, t: now, s: subj, m, n }, ...((cur && cur.a) || [])].slice(0, 30) }));
     return { status: 200, body: { ok: true, msg: `已寄給 ${n} 位玩家(共 ${uids.length} 位)`, list: b.a } };
+  }
+  // 存檔備份:列出某位玩家各座城的備份時間 / 還原(還原前目前的存檔會換成新的備份,可再還原回來)
+  if (body && (body.t === "baklist" || body.t === "bakrestore")) {
+    if (!backup) return { status: 503, body: { ok: false, msg: "沒有備份空間" } };
+    const target = await findTarget(world, body);
+    if (!target) return { status: 422, body: { ok: false, msg: "找不到這位玩家(暱稱只找得到排行榜前 200 名,找不到請改用座標)" } };
+    if (target.ambiguous) return { status: 422, body: { ok: false, msg: "有同名的玩家,請改用座標:" + target.ambiguous.join("、") } };
+    const keys = await A.list(world, target.uid);
+    if (body.t === "baklist") return { status: 200, body: { ok: true, rows: await Promise.all(keys.map((k) => SB.info({ backup, key: k }))) } };
+    const ck = String(body.city || target.uid);
+    if (!keys.includes(ck)) return { status: 422, body: { ok: false, msg: "這座城不屬於這位玩家" } };
+    if (body.confirm !== true) return { status: 200, body: { ok: true, msg: "試算(尚未還原):加上 confirm:true 才會寫入", rows: [await SB.info({ backup, key: ck })] } };
+    const r = await SB.restore({ saves: saves.raw || saves, backup, key: ck, now });
+    if (r.ok) await addLog(world, { t: now, uid: target.uid, n: target.n, x: target.x, y: target.y, amount: 0, reason: `還原存檔備份 ${ck}` });
+    return { status: r.ok ? 200 : 422, body: r };
+  }
+  if (body && (body.t === "herolist" || body.t === "herofix")) {
+    const target = await findTarget(world, body);
+    if (!target) return { status: 422, body: { ok: false, msg: "找不到這位玩家(暱稱只找得到排行榜前 200 名,找不到請改用座標)" } };
+    if (target.ambiguous) return { status: 422, body: { ok: false, msg: "有同名的玩家,請改用座標:" + target.ambiguous.join("、") } };
+    const fix = body.t === "herofix";
+    const level = fix ? Math.floor(Number(body.level)) : null;
+    if (fix && !(level >= 1 && level <= G.HERO_MAXLV)) return { status: 422, body: { ok: false, msg: `目標等級要是 1 到 ${G.HERO_MAXLV}` } };
+    const confirm = fix && body.confirm === true;
+    const rows = await heroFix({ saves, world, mail, target, level, xp: Math.max(0, Math.floor(Number(body.xp) || 0)), confirm, city: body.city ? String(body.city) : null, reason: M.clean(body.reason, 60), now });
+    if (confirm) await addLog(world, { t: now, uid: target.uid, n: target.n, x: target.x, y: target.y, amount: 0, reason: `武將修正→${level} 級 ${rows.filter((r) => r.written).length} 座城` });
+    return { status: 200, body: { ok: true, msg: `${target.n || target.uid}(${target.x}|${target.y}) ${fix ? (confirm ? "已寫入" : "試算(尚未寫入)") : "武將列表"}`, rows } };
   }
   const amount = Math.floor(Number(body && body.amount));
   if (!Number.isFinite(amount) || amount < 1 || amount > MAX_AMOUNT) return { status: 422, body: { ok: false, msg: `金額要是 1 到 ${MAX_AMOUNT} 的整數` } };

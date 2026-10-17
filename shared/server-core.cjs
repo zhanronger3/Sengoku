@@ -52,6 +52,7 @@ function act(stored, body, now, ctx) {
   if (!stored) return { status: 400, body: { ok: false, msg: "尚未開始遊戲" } };
   const st = settle(clone(stored.state), now);
   G.setNow(now);
+  if (a.t === "gacha") a.rnd = Array.from({ length: 10 }, () => require("crypto").randomInt(0, 1e9) / 1e9); // 抽獎亂數一律由伺服器產生,不採用玩家送來的值
   const r = G.perform(a);
   if (!r.ok) return { status: 422, body: { ok: false, msg: r.msg, state: st, rev, now } };
   const next = rev + 1;

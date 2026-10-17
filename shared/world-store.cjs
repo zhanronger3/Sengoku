@@ -88,7 +88,7 @@ async function claimTile(world, x, y, ck) {
   return !!cur && cur.k === ck;
 }
 
-// 把城池資訊公開到地圖區塊與排行榜。rec: { x, y, n, f, p, b(開城時間,毫秒), o(擁有者帳號), m(1=本丸) }
+// 把城池資訊公開到地圖區塊與排行榜。rec: { x, y, n, f, p, b(開城時間,毫秒), o(擁有者帳號), m(1=主城) }
 async function publish(world, uid, rec) {
   const [cx, cy] = chunkOf(rec.x, rec.y);
   await casUpdate(world, ckey(cx, cy), (cur) => {
@@ -233,7 +233,7 @@ async function publishPlayer(world, owner, key, st, tag) {
     for (const k of Object.keys(cs)) if (!mine.has(k)) delete cs[k];
     // 還沒用新格式公開過的城池:先用舊的排行榜資料湊數,這樣城池數不會少算
     for (const k of mine) if (!cs[k]) { const r = old.find((x) => x.id === k); if (r) cs[k] = { p: r.p || 0, at: 0, df: 0, ar: 0, hn: "", hl: 0, hx: 0, x: r.x, y: r.y, m: r.m ? 1 : 0, f: r.f, n: r.n }; }
-    cs[key] = { p: P.p, at: P.at || 0, df: P.df || 0, ar: P.ar || 0, hn: P.hn || "", hl: P.hl || 0, hx: P.hx || 0, x: st.pos.x, y: st.pos.y, m: st.col ? 0 : 1, f: P.f, n: P.n };
+    cs[key] = { p: P.p, at: P.at || 0, df: P.df || 0, ar: P.ar || 0, hn: P.hn || "", hl: P.hl || 0, hx: P.hx || 0, x: st.pos.x, y: st.pos.y, m: st.col ? 0 : 1, f: P.f, n: P.n, cn: st.cname || "" };
     return { cs };
   });
   const cs = Object.values(pl.cs);
@@ -241,7 +241,7 @@ async function publishPlayer(world, owner, key, st, tag) {
   let best = null;
   for (const c of cs) if (c.hl > 0 && (!best || c.hl > best.hl || (c.hl === best.hl && c.hx > best.hx))) best = c;
   const ai = await allyInfo(world, owner);
-  const row = { o: owner, n: cap.n, f: cap.f, a: ai.tag || tag || "", an: ai.name, x: cap.x, y: cap.y, c: cs.length, p: cs.reduce((s, c) => s + c.p, 0), at: cs.reduce((s, c) => s + c.at, 0), df: cs.reduce((s, c) => s + c.df, 0), ar: cs.reduce((s, c) => s + c.ar, 0), hn: best ? best.hn : "", hl: best ? best.hl : 0, hx: best ? best.hx : 0 };
+  const row = { o: owner, n: cap.n, f: cap.f, a: ai.tag || tag || "", an: ai.name, x: cap.x, y: cap.y, c: cs.length, p: cs.reduce((s, c) => s + c.p, 0), at: cs.reduce((s, c) => s + c.at, 0), df: cs.reduce((s, c) => s + c.df, 0), ar: cs.reduce((s, c) => s + c.ar, 0), hn: best ? best.hn : "", hl: best ? best.hl : 0, hx: best ? best.hx : 0, hs: cs.filter((c) => c.hl > 0).map((c) => ({ hn: c.hn, hl: c.hl, hx: c.hx, m: c.m ? 1 : 0, cn: c.cn || "" })) };
   await casUpdate(world, "prank", (cur) => {
     const a = ((cur && cur.a) || []).filter((r) => r.o !== owner);
     a.push(row);
