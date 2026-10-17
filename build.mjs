@@ -5,6 +5,7 @@ await rm("dist", { recursive: true, force: true });
 await mkdir("dist", { recursive: true });
 await cp("index.html", "dist/index.html");
 await cp("admin.html", "dist/admin.html"); // 管理者頁面(發送金幣)
+await cp("guide.html", "dist/guide.html"); // 論壇:討論版、遊戲介紹、新手教學、遊戲說明、FAQ
 // 遊戲規則:瀏覽器直接載入,伺服器函式則是 import 同一份檔案
 await cp("assets", "dist/assets", { recursive: true });
 await cp("shared/game.cjs", "dist/game.js");
