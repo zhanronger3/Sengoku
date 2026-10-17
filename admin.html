@@ -50,6 +50,10 @@ footer{flex-shrink:0;text-align:center;padding:14px 12px;border-top:1px solid rg
 <div id="logbox" style="display:none;margin-top:10px"></div></div>
 <div class="box"><h2>全服發信</h2><input id="bcsub" type="text" maxlength="40" placeholder="主旨(預設:全服公告)" style="width:100%"><br><textarea id="bctext" rows="4" maxlength="1000" style="width:100%" placeholder="信件內容(最多 1000 字)。會以「系統」寄信給所有玩家的收件箱。"></textarea><br>
 <button id="bcsend">寄給所有玩家</button> <button id="bcload" class="alt">看寄過的信</button> <span id="bcmsg"></span><div id="bclist"></div></div>
+<div class="box"><h2>轉蛋設定</h2><p style="color:var(--mut);margin-top:0">改完按「儲存」,所有玩家立即生效,不用重新部署。權重只是比例,系統會自動換算成機率(例如 50、30、13、7 就是 50%、30%、13%、7%)。資源包 = 四種資源各給這個數量;加速券 = 訓練縮短這麼多「遊戲小時」(遊戲時間 1 小時 = 真實 1 分鐘)。</p>
+<label for="gcost">每抽幾金幣</label><input id="gcost" type="number" min="1" max="100000" style="width:120px">
+<div style="overflow-x:auto"><table id="gtab" style="margin-top:10px"><thead><tr><th>名稱</th><th>類型</th><th>數量/小時</th><th>權重</th><th>機率</th><th></th></tr></thead><tbody></tbody></table></div>
+<button id="gadd" class="alt">+ 新增獎品</button> <button id="gload" class="alt">讀取目前設定</button> <button id="gsave">儲存</button> <button id="greset" class="alt">恢復預設</button> <span id="gmsg"></span></div>
 <div class="box"><h2>玩家意見箱</h2><button id="fbload" class="alt" style="margin-top:0">讀取意見</button> <span id="fbmsg"></span><div id="fblist"></div></div>
 <div class="box"><h2>武將修正</h2><p style="color:var(--mut);margin-top:0">玩家用「選擇玩家」卡片裡的欄位。只會降等、不會升等;先按「試算」看結果,確認再按「確認執行」。</p>
 <label for="hlv">降到幾級</label><input id="hlv" type="number" min="1" max="20" value="8" style="width:80px"> <label for="hxp">該級經驗值(預設 0)</label><input id="hxp" type="number" min="0" value="0" style="width:100px"><br>
@@ -96,6 +100,18 @@ async function bak(t,city){const m=$('#bakmsg');m.className='';m.textContent='�
   if(t=='bakrestore'){const msg=r.j.msg+'(備份時間 '+bt(r.j.bakAt)+')';await bak('baklist');m.className='ok';m.textContent=msg;return}
   m.textContent='';$('#bakout').innerHTML=r.j.rows.length?'<table><tr><th>城池</th><th>備份時間</th><th></th></tr>'+r.j.rows.map(x=>`<tr><td>${esc(x.key)}</td><td>${x.none?'沒有備份':bt(x.bakAt)}</td><td>${x.none?'':`<button class="alt bakgo" data-k="${esc(x.key)}" style="margin:0">還原</button>`}</td></tr>`).join('')+'</table>':'<p style="color:var(--mut)">沒有資料</p>'}catch(e){m.className='err';m.textContent='連線失敗'}}
 $('#baklist').onclick=()=>bak('baklist');
+const gRow=o=>`<tr><td><input class="gn" maxlength="16" value="${esc(o.n)}" style="min-width:110px"></td><td><select class="gt"><option value="pack"${o.t=='pack'?' selected':''}>資源包(四種各)</option><option value="ticket"${o.t=='ticket'?' selected':''}>訓練加速券(小時)</option></select></td><td><input class="gv" type="number" min="1" value="${o.v}" style="width:90px"></td><td><input class="gp" type="number" min="0.1" step="any" value="${o.p}" style="width:80px"></td><td class="gpc">—</td><td><button class="alt gdel" style="margin:0;padding:2px 10px">刪</button></td></tr>`;
+function gCalc(){const ps=[...document.querySelectorAll('#gtab .gp')].map(x=>Number(x.value)||0),t=ps.reduce((a,b)=>a+b,0);document.querySelectorAll('#gtab .gpc').forEach((c,i)=>{c.textContent=t>0?Math.round(ps[i]/t*1000)/10+'%':'—'})}
+function gFill(cfg){$('#gcost').value=cfg.cost;$('#gtab tbody').innerHTML=cfg.prizes.map(gRow).join('');gCalc()}
+function gRead(){return{cost:Number($('#gcost').value),prizes:[...document.querySelectorAll('#gtab tbody tr')].map(r=>({n:r.querySelector('.gn').value,t:r.querySelector('.gt').value,v:Number(r.querySelector('.gv').value),p:Number(r.querySelector('.gp').value)}))}}
+async function gDo(b){const m=$('#gmsg');m.className='';m.textContent='處理中…';try{const r=await call('POST',b);if(!r.ok){m.className='bad';m.textContent=(r.j&&r.j.msg)||('失敗('+r.s+')');return}gFill(r.j.cfg);m.className='ok';m.textContent=(r.j.msg||'已讀取')+(r.j.custom===false?'(目前是預設內容)':'')}catch(e){m.className='bad';m.textContent='連線失敗'}}
+$('#gload').onclick=()=>gDo({t:'gachaget'});
+$('#gsave').onclick=()=>{const c=gRead();if(!confirm('確定儲存?所有玩家下一抽就會用新的內容。'))return;gDo({t:'gachaset',cfg:c})};
+$('#greset').onclick=()=>{if(confirm('確定恢復成預設內容?'))gDo({t:'gachaset',reset:true})};
+$('#gadd').onclick=()=>{$('#gtab tbody').insertAdjacentHTML('beforeend',gRow({n:'',t:'pack',v:1000,p:10}));gCalc()};
+$('#gtab').addEventListener('input',gCalc);
+$('#gtab').addEventListener('click',e=>{const d=e.target.closest('.gdel');if(!d)return;d.closest('tr').remove();gCalc()});
+
 $('#bakout').onclick=e=>{const t=e.target.closest('.bakgo');if(!t)return;if(!confirm('確定把 '+t.dataset.k+' 還原成備份嗎?(目前的存檔會換成備份,可以再還原回來)'))return;bak('bakrestore',t.dataset.k)};
 </script>
 </body>
