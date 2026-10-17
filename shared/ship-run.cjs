@@ -42,13 +42,7 @@ async function resolve({ saves, battle, mail, id, now }) {
     got = null;
     await sleep(Math.random() * 6 * (i + 1));
   }
-  const to = (await saves.get(rec.to.k, { type: "json" }));
-  const owner = (to && to.state && (to.state.own || rec.to.k)) || rec.to.o;
-  if (!gone) {
-    await M.systemMail(mail, owner, `【商隊】${rec.from.n}的商隊抵達`,
-      `${rec.from.n}(${rec.from.x}|${rec.from.y})的商隊把 ${RN.map((n, i) => `${n} ${rec.r[i]}`).join("、")} 送到了你的城池(${rec.to.x}|${rec.to.y})。\n超出倉庫容量的部分會損失。`,
-      now, { id: `shp-${id}`, limit: 600 });
-  }
+  // 商隊抵達不再寄飛鴿傳書(資源直接入庫)
   await W.casUpdate(battle, ikey(rec.to.o), (cur) => (!cur || !cur.a.some((x) => x.id === id) ? undefined : { a: cur.a.filter((x) => x.id !== id) }));
   await battle.delete(skey(id));
   return true;
