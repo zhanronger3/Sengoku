@@ -1,6 +1,11 @@
-<title>車肥羊戰國 論壇</title>
+<meta charset="utf-8">
+<title>車肥羊戰國 官網</title>
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="theme-color" content="#3f0a10">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="車肥羊戰國論壇：玩家討論版、遊戲介紹、新手教學、完整遊戲說明與常見問題。">
+<meta name="description" content="車肥羊戰國官方網站：遊戲介紹、新手教學、遊戲說明、玩家討論版、常見問題與加到桌面教學。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
@@ -213,17 +218,79 @@ details .a p{color:var(--muted)}
 .fback{font-size:.92rem;text-decoration:none}
 footer{border-top:1px solid rgba(212,179,112,.35);background:rgba(0,0,0,.3);padding-block:24px;color:var(--muted);font-size:.85rem}
 @media (prefers-reduced-motion:no-preference){section.page{animation:in .35s ease both}@keyframes in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}}
+
+/* 加到桌面教學 */
+#p-install .mshots{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:22px 18px;margin-top:6px}
+#p-install .mshots.w3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+#p-install .mshot{display:flex;flex-direction:column;gap:10px;align-items:center;min-width:0}
+#p-install .msh{display:flex;align-items:center;gap:10px;align-self:stretch}
+#p-install .mn{flex:none;width:30px;height:30px;border-radius:50%;background:linear-gradient(#e2c27d,#b8913f);color:#2a0a0f;display:grid;place-items:center;font-weight:700}
+#p-install .msh h4{font-family:var(--f-body);font-size:1.02rem;font-weight:700;margin:0}
+#p-install .mcap{align-self:stretch;margin:0;color:var(--muted);font-size:.92rem}
+#p-install .mph{width:100%;max-width:230px;height:330px;border:6px solid #1d1d1f;border-radius:32px;overflow:hidden;background:#f2f2f7;display:flex;flex-direction:column;color:#1d1d1f;font-family:var(--f-body);font-size:14px;line-height:1.3}
+#p-install .mph.dark{background:#3a3a3c;justify-content:flex-end}
+#p-install .mph.and{border-radius:24px;background:#f1f3f4}
+#p-install .mph.and.dark{background:#1f1f1f;justify-content:center;align-items:center}
+#p-install .mph.and.dark:has(.mmenu){justify-content:flex-start;align-items:flex-end;padding:28px 8px 0}
+#p-install .mpg{flex:1;background:linear-gradient(#70091d,#2b070c);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#f1e6d3;font-weight:700;font-size:15px;text-align:center;padding:0 8px}
+#p-install .mpg img{width:64px;height:64px;border-radius:15px}
+#p-install .mibar{background:#e9e9ee;padding:8px 10px;display:flex;flex-direction:column;gap:8px}
+#p-install .murl{background:#fff;border-radius:14px;padding:5px 10px;text-align:center;color:#333;flex:1}
+#p-install .mtool{display:flex;justify-content:space-between;align-items:center;padding:0 6px}
+#p-install .mtool i{font-style:normal;color:#3478f6;font-size:22px;line-height:1}
+#p-install .mbox{width:18px;height:18px;border:2px solid #3478f6;border-radius:4px}
+#p-install .mi{display:inline-grid;place-items:center;padding:4px 6px}
+#p-install .mhl{border:3px solid #ff5a4d;border-radius:10px;background:#fff1ef}
+#p-install .mb{font-weight:700}
+#p-install .msheet{background:#f2f2f7;border-radius:18px 18px 0 0;padding:12px 10px 16px;display:flex;flex-direction:column;gap:6px}
+#p-install .msheet b{text-align:center;font-size:13px}
+#p-install .msheet span{background:#fff;border-radius:9px;padding:8px 12px;font-size:14px}
+#p-install .msheet span.mhl{background:#fff1ef}
+#p-install .mdlg{display:flex;justify-content:space-between;align-items:center;padding:12px 10px 8px;background:#fff}
+#p-install .mdlg i{font-style:normal;color:#3478f6}
+#p-install .mdlg span{color:#3478f6;padding:2px 10px}
+#p-install .mrow{display:flex;align-items:center;gap:10px;background:#fff;padding:12px 10px;border-top:2px solid #e5e5ea}
+#p-install .mrow img{width:48px;height:48px;border-radius:11px}
+#p-install .mhint{margin:0;padding:10px;color:#6a7179;font-size:13px}
+#p-install .mabar{background:#fff;padding:10px 8px;display:flex;align-items:center;gap:8px}
+#p-install .mdots{font-size:22px;font-weight:700;width:30px;text-align:center;line-height:30px;color:#202124}
+#p-install .mmenu{width:80%;background:#fff;border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:4px}
+#p-install .mmenu span{padding:8px 10px;border-radius:9px;font-size:14px}
+#p-install .mmenu span.mhl{background:#fff1ef}
+#p-install .mpop{width:80%;background:#fff;border-radius:18px;padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:10px}
+#p-install .mpop img{width:56px;height:56px;border-radius:13px}
+#p-install .mpop div{display:flex;gap:10px;align-items:center}
+#p-install .mpop i{font-style:normal;color:#1a73e8;padding:4px 8px}
+#p-install .mpop .mblue{background:#1a73e8;color:#fff;padding:3px 14px;border-radius:16px}
+#p-install .mwin{width:100%;height:240px;border:5px solid #1d1d1f;border-radius:14px;overflow:hidden;background:#dee1e6;display:flex;flex-direction:column;font-family:var(--f-body);font-size:14px;color:#202124}
+#p-install .mdbar{background:#fff;padding:8px 10px;display:flex;align-items:center;gap:8px}
+#p-install .mdbar .mi{font-size:20px;font-weight:700}
+#p-install .mtitle{background:#4d0c18;color:#f1e6d3;padding:8px 12px;font-weight:700}
+#p-install .mpath{background:#3f0a10;border:2px solid var(--gold);align-items:center;justify-content:center;gap:6px;padding:12px;color:var(--ink)}
+#p-install .mpath span{background:#4d0c18;border-radius:9px;padding:6px 16px;font-weight:700}
+#p-install .mpath em{font-style:normal;color:var(--gold);font-size:18px;line-height:1}
+#p-install .mpath .mgo{background:var(--gold);color:#2a0a0f}
+#p-install .minst{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+#p-install .minst li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+#p-install .minst h3{font-family:var(--f-body);font-size:1.02rem;font-weight:700;margin-bottom:4px}
+#p-install .minst p{margin:0;color:var(--muted);font-size:.95rem}
+#p-install table.mt{width:100%;border-collapse:collapse;font-size:.98rem}
+#p-install table.mt th,#p-install table.mt td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+#p-install table.mt th{color:var(--gold);font-size:.85rem;letter-spacing:.08em}
+#p-install .mwarn{display:flex;gap:12px;align-items:flex-start;background:var(--sunk);border:1px solid var(--gold);border-radius:10px;padding:14px 16px;color:var(--ink)}
+#p-install .mnote{font-size:.85rem;color:var(--muted);margin:0}
 </style>
 
 <header class="bar">
  <div class="wrap">
-  <a class="brand" href="#forum"><img src="assets/logo.png" alt="車肥羊戰國" width="92" height="42"><small style="font-size:.7em;color:var(--leaf);letter-spacing:.2em;margin-left:2px">論壇</small></a>
-  <nav class="tabs" aria-label="論壇分頁">
-   <a href="#forum" data-tab="forum">討論版</a>
+  <a class="brand" href="#intro"><img src="assets/logo.png" alt="車肥羊戰國" width="92" height="42"><small style="font-size:.7em;color:var(--leaf);letter-spacing:.2em;margin-left:2px">官網</small></a>
+  <nav class="tabs" aria-label="官網分頁">
    <a href="#intro" data-tab="intro">遊戲介紹</a>
    <a href="#tutorial" data-tab="tutorial">新手教學</a>
    <a href="#manual" data-tab="manual">遊戲說明</a>
+   <a href="#forum" data-tab="forum">討論版</a>
    <a href="#faq" data-tab="faq">玩家 FAQ</a>
+   <a href="#install" data-tab="install">加到桌面</a>
   </nav>
  </div>
 </header>
@@ -604,6 +671,57 @@ footer{border-top:1px solid rgba(212,179,112,.35);background:rgba(0,0,0,.3);padd
  </div>
 </section>
 
+<section class="page" id="p-install" data-page="install" hidden>
+ <div class="wrap">
+  <div class="sec">
+   <div class="eyebrow">加到桌面</div>
+   <h2>把遊戲放到手機桌面，一鍵開玩</h2>
+   <p class="lead">加到桌面後，點一下圖示就能進遊戲，不用再打網址。約 1 分鐘完成，iPhone、Android、電腦都可以。</p>
+  </div>
+
+  <div class="sec">
+   <div class="eyebrow">第一步</div>
+   <h2>先確認你用的瀏覽器</h2>
+   <table class="mt"><tr><th>裝置</th><th>請使用</th><th>說明</th></tr>
+    <tr><td>iPhone</td><td>Safari</td><td>Chrome 也能加，但全螢幕效果以 Safari 最穩</td></tr>
+    <tr><td>Android</td><td>Chrome（Google 瀏覽器）</td><td>選單會出現「安裝應用程式」</td></tr>
+    <tr><td>電腦</td><td>Chrome</td><td>安裝後是獨立視窗</td></tr></table>
+   <div class="mwarn"><span aria-hidden="true">⚠️</span><p style="margin:0">Line、Facebook、Instagram 這些 App 內建的瀏覽器<b>不能</b>加到桌面。請先改用 Safari 或 Chrome 開啟遊戲網址。</p></div>
+  </div>
+
+  <div class="sec">
+   <div class="eyebrow">iPhone</div>
+   <h2>用 Safari 加到主畫面</h2>
+   <div class="mshots"><div class="mshot"><div class="msh"><b class="mn">1</b><h4>用 Safari 開網址</h4></div><div class="mph " role="img" aria-label="示意畫面"><div class="mpg"><img src="assets/apple-touch-icon.png" alt="" width="64" height="64"><span>車肥羊戰國</span></div><div class="mibar"><div class="murl">遊戲網址</div><div class="mtool"><i>‹</i><i>›</i><span class="mi"><svg width="22" height="26" viewBox="0 0 22 26" aria-hidden="true"><path d="M11 2v13M6 7l5-5 5 5" stroke="#3478f6" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="11" width="16" height="13" rx="3" stroke="#3478f6" stroke-width="2" fill="none"/></svg></span><i class="mbox"></i><i class="mbox"></i></div></div></div><p class="mcap">先用 Safari 打開遊戲網址</p></div><div class="mshot"><div class="msh"><b class="mn">2</b><h4>點下方「分享」</h4></div><div class="mph " role="img" aria-label="示意畫面"><div class="mpg"><img src="assets/apple-touch-icon.png" alt="" width="64" height="64"><span>車肥羊戰國</span></div><div class="mibar"><div class="murl">遊戲網址</div><div class="mtool"><i>‹</i><i>›</i><span class="mhl mi"><svg width="22" height="26" viewBox="0 0 22 26" aria-hidden="true"><path d="M11 2v13M6 7l5-5 5 5" stroke="#3478f6" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="11" width="16" height="13" rx="3" stroke="#3478f6" stroke-width="2" fill="none"/></svg></span><i class="mbox"></i><i class="mbox"></i></div></div></div><p class="mcap">畫面下方中間,方框加向上箭頭的按鈕</p></div><div class="mshot"><div class="msh"><b class="mn">3</b><h4>選「加入主畫面」</h4></div><div class="mph dark" role="img" aria-label="示意畫面"><div class="msheet"><b>車肥羊戰國</b><span>拷貝</span><span>加入書籤</span><span class="mhl mb">加入主畫面</span><span>加入閱讀列表</span></div></div><p class="mcap">往下滑找「加入主畫面」</p></div><div class="mshot"><div class="msh"><b class="mn">4</b><h4>按右上「新增」</h4></div><div class="mph " role="img" aria-label="示意畫面"><div class="mdlg"><i>取消</i><span class="mhl mb">新增</span></div><div class="mrow"><img src="assets/apple-touch-icon.png" alt="" width="64" height="64"><b>車肥羊戰國</b></div><p class="mhint">圖示會出現在手機主畫面。</p></div><p class="mcap">名字可以不改,按「新增」就完成</p></div></div>
+   <p class="mnote">畫面為示意圖，實際選單依系統版本可能略有不同。如果選單裡看不到「加入主畫面」，先往下滑到最底，點「編輯動作」再找。</p>
+  </div>
+
+  <div class="sec">
+   <div class="eyebrow">Android</div>
+   <h2>用 Chrome 加到主畫面</h2>
+   <div class="mshots"><div class="mshot"><div class="msh"><b class="mn">1</b><h4>用 Chrome 開網址</h4></div><div class="mph and" role="img" aria-label="示意畫面"><div class="mabar"><div class="murl">遊戲網址</div><span class="mdots">⋮</span></div><div class="mpg"><img src="assets/apple-touch-icon.png" alt="" width="64" height="64"><span>車肥羊戰國</span></div></div><p class="mcap">先用 Chrome 打開遊戲網址</p></div><div class="mshot"><div class="msh"><b class="mn">2</b><h4>點右上角「⋮」</h4></div><div class="mph and" role="img" aria-label="示意畫面"><div class="mabar"><div class="murl">遊戲網址</div><span class="mdots mhl">⋮</span></div><div class="mpg"><img src="assets/apple-touch-icon.png" alt="" width="64" height="64"><span>車肥羊戰國</span></div></div><p class="mcap">網址列最右邊的三個點</p></div><div class="mshot"><div class="msh"><b class="mn">3</b><h4>選「加到主畫面」</h4></div><div class="mph dark and" role="img" aria-label="示意畫面"><div class="mmenu"><span>新增分頁</span><span>歷史記錄</span><span class="mhl mb">加到主畫面</span><span>分享…</span></div></div><p class="mcap">有些手機寫成「安裝應用程式」</p></div><div class="mshot"><div class="msh"><b class="mn">4</b><h4>按「安裝」</h4></div><div class="mph dark and" role="img" aria-label="示意畫面"><div class="mpop"><img src="assets/apple-touch-icon.png" alt="" width="64" height="64"><b>車肥羊戰國</b><div><i>取消</i><span class="mhl mb mblue">安裝</span></div></div></div><p class="mcap">回到桌面,圖示就在那裡</p></div></div>
+   <p class="mnote">畫面為示意圖，選單文字依手機版本可能是「加到主畫面」或「安裝應用程式」。</p>
+  </div>
+
+  <div class="sec">
+   <div class="eyebrow">電腦</div>
+   <h2>用 Chrome 安裝成獨立視窗</h2>
+   <div class="mshots w3"><div class="mshot"><div class="msh"><b class="mn">1</b><h4>點網址列的安裝圖示</h4></div><div class="mwin" role="img" aria-label="示意畫面"><div class="mdbar"><div class="murl">遊戲網址</div><span class="mhl mi">⊕</span><span class="mdots">⋮</span></div><div class="mpg"><img src="assets/apple-touch-icon.png" alt="" width="64" height="64"><span>車肥羊戰國</span></div></div><p class="mcap">網址列最右邊有這個圖示,點下去按「安裝」</p></div><div class="mshot"><div class="msh"><b class="mn">2</b><h4>沒有圖示?用選單</h4></div><div class="mwin mpath"><span>右上角「⋮」</span><em>↓</em><span>投放、儲存和分享</span><em>↓</em><span class="mgo">安裝車肥羊戰國</span></div><p class="mcap">依序點這三個項目</p></div><div class="mshot"><div class="msh"><b class="mn">3</b><h4>變成獨立視窗</h4></div><div class="mwin" role="img" aria-label="示意畫面"><div class="mtitle">車肥羊戰國</div><div class="mpg"><img src="assets/apple-touch-icon.png" alt="" width="64" height="64"><span>沒有網址列,像一般程式</span></div></div><p class="mcap">桌面與開始選單也會有捷徑</p></div></div>
+   <p class="mnote">畫面為示意圖，實際選單依 Chrome 版本可能略有不同。</p>
+  </div>
+
+  <div class="sec">
+   <div class="eyebrow">常見問題</div>
+   <h2>加到桌面遇到問題？</h2>
+   <ul class="minst">
+    <li><h3>加完要重新登入嗎？</h3><p>從桌面圖示開啟時，有些手機（特別是 iPhone）是獨立的登入狀態，第一次可能要再登入一次。</p></li>
+    <li><h3>圖示還是舊的，或沒有全螢幕？</h3><p>先把舊的捷徑刪掉，用新版網頁重新加一次。</p></li>
+    <li><h3>找不到「加入主畫面」？</h3><p>確認是用 Safari 或 Chrome，不是 App 內建瀏覽器。iPhone 如果還是看不到，先點分享選單最下方的「編輯動作」。</p></li>
+   </ul>
+  </div>
+ </div>
+</section>
+
 <footer><div class="wrap">© 2026 GORDON（曜榮）. All rights reserved.　遊戲數值以遊戲內顯示為準。</div></footer>
 
 <script>
@@ -616,13 +734,13 @@ const BN={infb:'足輕營',cavb:'馬廻組',wsh:'鍛冶場',pal:'本丸御殿'};
 const KN={scout:'偵察',ram:'拆城牆',cat:'轟建築',adm:'佔城',set:'開分城'};
 
 /* tabs */
-const PAGES=['forum','intro','tutorial','manual','faq'];
+const PAGES=['intro','tutorial','manual','forum','faq','install'];
 const MSEC=new Set(['m-time','m-res','m-build','m-units','m-battle','m-camp','m-hero','m-expand','m-trade','m-gold']);
 function show(h){
  let id=(h||'').replace('#','');let sub=null,tid=null;
  if(MSEC.has(id)){sub=id;id='manual'}
  if(/^t-[a-z0-9]{4,20}$/.test(id)){tid=id.slice(2);id='forum'}
- if(!PAGES.includes(id))id='forum';
+ if(!PAGES.includes(id))id='intro';
  if(id==='forum')fenter(tid);
  document.querySelectorAll('section.page').forEach(s=>s.hidden=s.dataset.page!==id);
  document.querySelectorAll('.tabs a').forEach(a=>{if(a.dataset.tab===id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
