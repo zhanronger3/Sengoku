@@ -184,7 +184,7 @@ details .a p{color:var(--muted)}
 .fnotice.err{border-left:3px solid var(--accent)}
 .fnotice.ok{border-left:3px solid var(--ok)}
 .flist{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
-.frow{display:grid;grid-template-columns:minmax(0,1fr) 72px 150px;gap:16px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);cursor:pointer;text-decoration:none;color:inherit}
+.frow{display:grid;grid-template-columns:minmax(0,1fr) 64px 64px 150px;gap:16px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);cursor:pointer;text-decoration:none;color:inherit}
 .frow:last-child{border-bottom:0}
 .frow:hover{background:var(--sunk)}
 .frow.hd{cursor:default;background:var(--sunk);font-size:.8rem;font-weight:700;color:var(--muted);padding-block:8px}
@@ -195,7 +195,7 @@ details .a p{color:var(--muted)}
 .cat{display:inline-block;font-size:.72rem;font-weight:700;padding:0 7px;border-radius:3px;border:1px solid var(--gold);color:var(--gold);margin-right:6px;vertical-align:2px;white-space:nowrap}
 .cat.news{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .badge{font-size:.72rem;font-weight:700;color:var(--accent);margin-right:4px}
-@media (max-width:640px){.frow{grid-template-columns:minmax(0,1fr) 48px}.frow .lr{display:none}.frow.hd span:last-child{display:none}}
+@media (max-width:640px){.frow{grid-template-columns:minmax(0,1fr) 48px 48px;gap:10px}.frow .lr{display:none}.frow.hd span:last-child{display:none}}
 .fpager{display:flex;gap:8px;justify-content:center;align-items:center;font-size:.9rem}
 .fform{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:12px}
 .fform label{display:grid;gap:4px;font-size:.88rem;font-weight:700}
@@ -414,6 +414,13 @@ footer{border-top:1px solid rgba(212,179,112,.35);background:rgba(0,0,0,.3);padd
   </div>
 
   <div class="sec">
+   <div class="eyebrow">野外勢力</div>
+   <h2>地圖上的對手</h2>
+   <p class="prose">營寨與野外由 10 種 NPC 勢力把守：從野盜、南蠻傭兵到一向一揆大將、重裝大筒車，階級越高越難啃，掠奪的收穫也越豐厚。</p>
+   <img src="assets/wild_forces.webp" alt="野外勢力：野盜、南蠻傭兵、一向一揆門徒、竹束防護眾、野盜頭領、一向一揆坊官、山賊總頭目、戰犬眾、重裝大筒車、一向一揆大將" width="1536" height="1024" loading="lazy" style="width:100%;height:auto;border-radius:12px;display:block">
+  </div>
+
+  <div class="sec">
    <div class="note"><b>關於時間：</b>遊戲時間以現實的 60 倍速流動。畫面上顯示 1 小時的施工，現實大約 1 分鐘就完成；新手保護期 2 天和每日任務換日則以現實時間計算。</div>
   </div>
  </div>
@@ -576,6 +583,7 @@ footer{border-top:1px solid rgba(212,179,112,.35);background:rgba(0,0,0,.3);padd
     <section id="m-camp">
      <h2>營寨<span class="kj">CAMPS</span></h2>
      <p class="prose">地圖上散布著 NPC 營寨，每 4×4 格至少有 2 座。營寨的守軍與庫存全服共用；被打過之後，約 12 遊戲小時重新集結。營寨階級與離原點遠近無關。</p>
+     <img src="assets/wild_forces.webp" alt="野外勢力一覽" width="1536" height="1024" loading="lazy" style="width:100%;height:auto;border-radius:12px;display:block;margin:6px 0 14px">
      <div class="tw"><table><thead><tr><th>營寨</th><th>基準守軍</th><th class="n">防禦（基準）</th><th class="n">每種資源庫存</th><th>佔領加成</th></tr></thead><tbody id="t-camp"></tbody></table></div>
      <p class="mut" style="font-size:.88rem">實際守軍會在基準的 80%～130% 之間浮動。比叡山延曆寺非常稀少（約 1/60），守軍防禦加倍，只能掠奪不能佔領。地圖座標 (4|1) 的菩提山城不能攻擊，只能行三顧之禮。</p>
     </section>
@@ -590,7 +598,7 @@ footer{border-top:1px solid rgba(212,179,112,.35);background:rgba(0,0,0,.3);padd
        <tr><td class="nm">攜帶</td><td>200 ＋ 100 × 攜帶點</td></tr>
       </tbody></table></div>
       <ul>
-       <li>每座城最多 1 名武將，在評定眾提拔：消耗 1 名戰鬥兵和該兵種 20 倍的成本。</li>
+       <li>每座城最多 1 名武將，同一帳號各城的武將名字不會重複，在評定眾提拔：消耗 1 名戰鬥兵和該兵種 20 倍的成本。</li>
        <li>升級需要「等級 × 60」經驗，最高 20 級，每升 1 級得 5 點屬性點。</li>
        <li>每場勝利得「守方防禦 ÷ 20」經驗，最少 5、最多 400。</li>
        <li>武將在城裡時會加入守城防禦。</li>
@@ -612,6 +620,7 @@ footer{border-top:1px solid rgba(212,179,112,.35);background:rgba(0,0,0,.3);padd
      <ul>
       <li><b>開分城：</b>派剛好 3 名開墾代官到空地。出發的城威望要達到 14000／28000／42000（第 1／2／3 座分城）。每個空名額最多養 3 名開墾代官。</li>
       <li><b>本丸御殿只能蓋在主城</b>，分城改蓋二之丸御殿。分城的金幣、任務、每日任務都由主城管理。</li>
+      <li><b>城池名稱：</b>主城、分城都能在城池清單自訂名稱（2～8 字，每座城每 24 現實小時一次，不得含不雅字詞、冒用他人暱稱或使用全服用過的名稱）。</li>
       <li><b>分城地形：</b>建城地點的地形決定 18 塊資源田的配置。</li>
       <li><b>佔領城池：</b>只能佔領別人的分城（主城無法被佔領）。派一般軍隊帶上行政官攻打並打贏，每名存活的行政官讓忠誠度下降 20～30，行政官用掉就消失。忠誠度歸零，城池易主，原有兵力清空，忠誠度從 25 開始回升。</li>
       <li>分城忠誠度上限 100，每遊戲小時回復 1 點。</li>
@@ -629,10 +638,10 @@ footer{border-top:1px solid rgba(212,179,112,.35);background:rgba(0,0,0,.3);padd
     <section id="m-trade">
      <h2>商人、聯盟、駐防<span class="kj">ALLIES</span></h2>
      <ul>
-      <li><b>商人：</b>樂市樂座每級 1 名。每名載運量織田 500、德川 1000、豐臣 750，勘定所每級 +10%（20 級時 3 倍）。商人速度 16 格／小時，往返期間不能再用。超出對方倉庫容量的部分會損失。</li>
+      <li><b>商人：</b>樂市樂座每級 1 名。每名載運量織田 500、德川 1000、豐臣 750，勘定所每級 +10%（20 級時 3 倍）。商人速度 16 格／小時，往返期間不能再用；地圖上以黑色虛線與移動的箭頭顯示商隊（全服可見，看不到載運內容）。超出對方倉庫容量的部分會損失。</li>
       <li><b>市場掛單：</b>每次 1～100000，提供與想要的資源比例不能超過 1:3。取消掛單會退回資源。</li>
       <li><b>聯盟：</b>奏者番 1 級可接受邀請，3 級可建立聯盟。人數上限是盟主奏者番等級的 2 倍，最少 6 人。</li>
-      <li><b>增援駐防：</b>軍奉行可派一般戰鬥兵到自己的另一座城或盟友的城。每座城最多 5 支駐防部隊，駐防的兵吃所在城的糧。</li>
+      <li><b>增援駐防：</b>軍奉行可派一般戰鬥兵到自己的另一座城或盟友的城。每座城最多 5 支駐防部隊，駐防的兵吃所在城的糧。同一座城派去的多批駐防會合併成一支顯示；派出者可輸入人數部分召回，或只召回武將，駐防城主人的「請他們回去」則是整支返回。</li>
       <li><b>駐守營寨：</b>佔領營寨後存活的兵留下駐守，糧食由出兵的城負擔；武將可以一起駐守。「召回」只撤回駐軍，「放棄」才讓營寨變回無主。</li>
      </ul>
     </section>
@@ -774,7 +783,7 @@ const FAQ=[
 ['帳號與時間','為什麼來襲警報的倒數跟建造倒數的速度不一樣？','建造、訓練的倒數顯示遊戲時間，來襲警報與盟軍增援的倒數顯示現實時間，所以兩者走的速度不同。'],
 ['帳號與時間','不上線時資源還會生產嗎？','會。離線時資源照常生產，施工、訓練、行軍也照常進行，上線時一次結算。資源超過倉庫容量的部分不會保留。'],
 ['帳號與時間','可以換勢力嗎？','不行。勢力在開局時選定，之後無法更改。'],
-['帳號與時間','可以修改暱稱或密碼嗎？','請到遊戲上方的「客服中心」提出申請。'],
+['帳號與時間','可以修改暱稱或密碼嗎？','請到遊戲上方的「客服中心」提出申請。城池的名稱可以自己在「城池清單」改（見「城池可以改名嗎？」）。'],
 ['資源與建築','為什麼資源不再增加了？','倉庫滿了。木材、泥土、鐵塊存在藏屋敷，糧食存在米藏，未建時容量只有 800，20 級時 10 萬。把藏屋敷或米藏升級，或在已有的升到 20 級後再蓋一座。'],
 ['資源與建築','怎麼加快施工？','升級知行所，每級減少 2.5% 施工時間，20 級減少 50%。也可以用「普請」指令（織田家專屬）讓剩餘時間減半，或花 2 金幣立即完成一個項目。'],
 ['資源與建築','為什麼不能同時蓋兩樣東西？','只有織田家可以城外、城內同時施工。德川家與豐臣家的資源田和建築共用一條施工佇列。'],
@@ -815,6 +824,11 @@ const FAQ=[
 ['金幣與任務','金幣可以做什麼？','在商城用 1 金幣買 200 單位資源；花 1 金幣平倉，把資源依比例重新分配；或花 2 金幣讓一個施工項目立即完成。'],
 ['金幣與任務','任務完成了為什麼沒拿到獎勵？','任務獎勵要到「任務」頁手動領取。主線任務與每日任務的獎勵都存進主城，在分城無法領取。'],
 ['金幣與任務','竹中半兵衛怎麼請？','到地圖座標 (4|1) 的菩提山城拜訪 3 次，依序送上每種資源 300、600、900。第三次他就會出仕，全資源產量永久 +15%。'],
+['擴張','城池可以改名嗎？','可以。到「城池清單」，每座城旁邊有「✎改名」，主城、分城都能改。名稱 2～8 個字（中文、日文、英文、數字），每座城 24 現實小時只能改一次；不能含不雅字詞、不能跟其他玩家的暱稱相同或太像，而且全服用過的名稱不能再用（包含你自己改掉的舊名）。改名需要登入。'],
+['軍事與戰鬥','派出去駐防的部隊怎麼召回？','到軍奉行，「我派去駐防的部隊」是一張卡片：同一座城派出去的幾批兵會合併成一支。按「召回」可以輸入每個兵種要召回的人數，或按「全部」；也可以只勾選「召回武將」讓武將單獨回家，兵留在原地。兵走回來需要時間。「駐防在這座城的友軍」是另一張卡片，按「請他們回去」會讓那支友軍整支返回。'],
+['武將與名物','不同城池的武將會重名嗎？','不會。同一個帳號各城抽到的武將名字不重複。舊存檔如果已經重複，登入時系統會自動幫後來的那座城換成沒用過的名字，等級、經驗、屬性點都不變，並寄一封「武將名單調整」系統信通知。'],
+['交易與聯盟','地圖上的黑色虛線和箭頭是什麼？','那是商隊。虛線連接出發的城和目的地，箭頭沿線移動：去程朝目的地、回程朝家，旁邊的倒數是現實時間。全服玩家的商隊都看得到，但看不到載運的內容。'],
+['資源與建築','城外畫面上的小燈是什麼？','那是建築指示燈，亮燈代表該建築正在忙（訓練中、研究中、商隊在外等）。點燈會直接跳到對應建築；「在城」的兵點文字會到軍奉行，需要先蓋好該建築。'],
 ];
 const CATS=['全部',...new Set(FAQ.map(f=>f[0]))];let cat='全部';
 $('#faq-cats').innerHTML=CATS.map((c,i)=>`<button type="button" id="fc-${i}" data-c="${c}" aria-pressed="${c===cat}">${c}</button>`).join('');
@@ -837,7 +851,7 @@ function ago(t){const d=(Date.now()-t)/1000;if(d<60)return '剛剛';if(d<3600)re
 function stamp(t){const x=new Date(t);return x.getFullYear()+'-'+pad2(x.getMonth()+1)+'-'+pad2(x.getDate())+' '+pad2(x.getHours())+':'+pad2(x.getMinutes())}
 const DEMO_NOW=Date.now();
 const DEMO=[
- {id:'demo1',cat:'news',ti:'【示範】討論版開張囉！發文前請看版規',au:'a',an:'管理員',t:DEMO_NOW-864e5*2,lt:DEMO_NOW-3600e3*5,ln:'阿華',n:2,pin:1,b:'歡迎各位主公！\n1. 請勿人身攻擊、洗版。\n2. 問題求助請附上你的勢力與城池等級。\n3. 聯盟招募請寫清楚聯盟標籤與所在座標。',ps:[{id:'p1',au:'b',an:'小明',b:'推！終於有地方可以問問題了',t:DEMO_NOW-864e5},{id:'p2',au:'c',an:'阿華',b:'先佔個位，晚點分享德川開局心得',t:DEMO_NOW-3600e3*5}]},
+ {id:'demo1',cat:'news',ti:'【示範】討論版開張囉！發文前請看版規',au:'a',an:'管理員',t:DEMO_NOW-864e5*2,lt:DEMO_NOW-3600e3*5,ln:'阿華',n:2,v:128,pin:1,b:'歡迎各位主公！\n1. 請勿人身攻擊、洗版。\n2. 問題求助請附上你的勢力與城池等級。\n3. 聯盟招募請寫清楚聯盟標籤與所在座標。',ps:[{id:'p1',au:'b',an:'小明',b:'推！終於有地方可以問問題了',t:DEMO_NOW-864e5},{id:'p2',au:'c',an:'阿華',b:'先佔個位，晚點分享德川開局心得',t:DEMO_NOW-3600e3*5}]},
  {id:'demo2',cat:'tips',ti:'【示範】織田開局：雙佇列這樣排最快',au:'d',an:'尾張大傻瓜',t:DEMO_NOW-3600e3*9,lt:DEMO_NOW-3600e3*1,ln:'小明',n:4,pin:0,b:'織田最大的優勢是城外城內可以同時施工。我的順序：知行所 → 資源田輪流升 → 藏屋敷、米藏……',ps:[]},
  {id:'demo3',cat:'help',ti:'【示範】野盜砦打不贏，要派多少兵？',au:'e',an:'新手主公',t:DEMO_NOW-3600e3*3,lt:DEMO_NOW-60e3*40,ln:'三河武士',n:3,pin:0,b:'我是豐臣家，派了 20 個國人眾全滅……',ps:[]},
  {id:'demo4',cat:'ally',ti:'【示範】[風林火山] 招募中，座標 (12|-8) 附近',au:'f',an:'甲斐之虎',t:DEMO_NOW-864e5,lt:DEMO_NOW-3600e3*7,ln:'甲斐之虎',n:0,pin:0,b:'歡迎附近的主公加入，盟友互相駐防。',ps:[]}];
@@ -863,7 +877,7 @@ async function floadList(){
 async function fopen(id){
  F.mode='thread';F.th=null;F.confirm=null;frender();
  if(F.demo||id.startsWith('demo')){F.demo=true;F.th=DEMO.find(x=>x.id===id)||null;fwho();frender();return}
- try{const r=await fapi('?t='+encodeURIComponent(id));if(r.j.ok){F.th=r.j.thread;F.me=r.j.me||F.me;fwho()}else{F.th=false;fmsg(r.j.msg,'err')}}
+ try{let seen=[];try{seen=JSON.parse(sessionStorage.getItem('fseen')||'[]')}catch(e){}const nc=seen.includes(id)?'&nc=1':'';const r=await fapi('?t='+encodeURIComponent(id)+nc);try{if(!nc){seen.push(id);sessionStorage.setItem('fseen',JSON.stringify(seen.slice(-200)))}}catch(e){}if(r.j.ok){F.th=r.j.thread;F.me=r.j.me||F.me;fwho()}else{F.th=false;fmsg(r.j.msg,'err')}}
  catch(e){F.th=false;fmsg('連不到討論版伺服器，請稍後再試。','err')}
  frender();
 }
@@ -874,7 +888,7 @@ function vList(){
  const rows=all.slice(F.page*PER,F.page*PER+PER);
  const chips=`<div class="cats" role="group" aria-label="討論版分類">${[['','全部'],...Object.entries(F.cats)].map(([k,n])=>`<button type="button" id="fc-${k||'all'}" data-fcat="${k}" aria-pressed="${F.cat===k}">${fesc(n)}</button>`).join('')}</div>`;
  const comp=F.mode==='new'?vCompose():'';
- const body=rows.length?`<div class="flist"><div class="frow hd"><span>主題</span><span style="text-align:center">回覆</span><span>最後回覆</span></div>${rows.map(x=>`<a class="frow" href="#t-${fesc(x.id)}"><div><div class="ti">${x.pin?'<span class="badge">置頂</span>':''}${catChip(x.cat)}${fesc(x.ti)}</div><div class="meta">${fesc(x.an)}・${ago(x.t)}</div></div><div class="rc">${x.n}</div><div class="lr">${fesc(x.ln)}<br>${ago(x.lt)}</div></a>`).join('')}</div>`
+ const body=rows.length?`<div class="flist"><div class="frow hd"><span>主題</span><span style="text-align:center">回覆</span><span style="text-align:center">瀏覽</span><span>最後回覆</span></div>${rows.map(x=>`<a class="frow" href="#t-${fesc(x.id)}"><div><div class="ti">${x.pin?'<span class="badge">置頂</span>':''}${catChip(x.cat)}${fesc(x.ti)}</div><div class="meta">${fesc(x.an)}・${ago(x.t)}</div></div><div class="rc">${x.n}</div><div class="rc" style="font-weight:400;color:var(--muted)">${x.v||0}</div><div class="lr">${fesc(x.ln)}<br>${ago(x.lt)}</div></a>`).join('')}</div>`
   :`<div class="fnotice">${F.cat?'這個分類還沒有文章。':'討論版還沒有文章。'}${F.me&&!F.demo?'按右上角「發表新主題」寫第一篇吧。':''}</div>`;
  const pager=pages>1?`<div class="fpager"><button type="button" class="fbtn ghost sm" data-fpage="-1" ${F.page?'':'disabled'}>上一頁</button><span class="num">${F.page+1} / ${pages}</span><button type="button" class="fbtn ghost sm" data-fpage="1" ${F.page<pages-1?'':'disabled'}>下一頁</button></div>`:'';
  return comp+chips+body+pager;
@@ -893,7 +907,7 @@ function vThread(){
  const post=(p,floor,op)=>`<article class="post ${op?'op':''}"><div class="au"><b>${fesc(p.an)}</b><small>${op?'樓主':'#'+floor}</small></div><div class="bd"><div class="tx">${fesc(p.b)}</div><div class="ft"><span title="${stamp(p.t)}">${stamp(p.t)}</span><span class="sp">${!F.demo&&canDel(p.au)?delBtn(op?'t':p.id):''}</span></div></div></article>`;
  const adm=me&&me.admin&&!F.demo?`<button type="button" class="fbtn ghost sm" data-fadm="pin">${th.pin?'取消置頂':'置頂'}</button><button type="button" class="fbtn ghost sm" data-fadm="lock">${th.lock?'解除鎖定':'鎖定'}</button>`:'';
  const rep=F.demo?'':th.lock&&!(me&&me.admin)?'<div class="fnotice">這篇文章已經鎖定，不能回覆。</div>':me?`<form class="fform" id="f-rep"><label>回覆 <span class="cnt"><span id="f-rc">${F.reply.length}</span>/1000</span><textarea id="f-r" maxlength="1000" placeholder="寫下你的回覆">${fesc(F.reply)}</textarea></label><div class="row"><button type="submit" class="fbtn" ${F.busy?'disabled':''}>送出回覆</button></div></form>`:'<div class="fnotice">要回覆請先 <a href="/">回到遊戲登入</a>。</div>';
- return `${back}<div style="display:grid;gap:8px"><h3 style="font-size:1.45rem">${th.pin?'<span class="badge">置頂</span>':''}${th.lock?'<span class="badge">鎖定</span>':''}${catChip(th.cat)}${fesc(th.ti)}</h3><div class="row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="mut" style="font-size:.88rem">${(th.ps||[]).length} 則回覆</span>${adm}</div></div><div class="posts">${post(th,0,true)}${(th.ps||[]).map((p,i)=>post(p,i+1,false)).join('')}</div>${rep}`;
+ return `${back}<div style="display:grid;gap:8px"><h3 style="font-size:1.45rem">${th.pin?'<span class="badge">置頂</span>':''}${th.lock?'<span class="badge">鎖定</span>':''}${catChip(th.cat)}${fesc(th.ti)}</h3><div class="row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="mut" style="font-size:.88rem">${(th.ps||[]).length} 則回覆・${th.v||0} 次瀏覽</span>${adm}</div></div><div class="posts">${post(th,0,true)}${(th.ps||[]).map((p,i)=>post(p,i+1,false)).join('')}</div>${rep}`;
 }
 function frender(){
  const v=$('#f-view');if(!v)return;
