@@ -54,7 +54,7 @@ async function cityList(saves, wstore, owner) {
       let uk = -1, tot = 0; sd.forEach((v, i) => { tot += +v || 0; if (v > (sd[uk] || 0)) uk = i; });
       return [m.tx, m.ty, Math.round(at - tNow), m.dur, m.ret ? 1 : 0, m.kind || 0, tot, uk];
     });
-    out.push({ mv, k, x: st.pos.x, y: st.pos.y, f: st.fac, col: st.col ? 1 : 0, loy: Math.floor(st.loy == null ? 100 : st.loy), b: st.born || 0, n: st.col ? st.cname || "分城" : "主城" });
+    out.push({ mv, hn: st.hero && st.hero.n || "", k, x: st.pos.x, y: st.pos.y, f: st.fac, col: st.col ? 1 : 0, loy: Math.floor(st.loy == null ? 100 : st.loy), b: st.born || 0, n: st.cname ? st.cname : st.col ? "分城" : "主城", cs: st.cname ? 1 : 0 });
   }
   return out;
 }
@@ -130,6 +130,13 @@ async function act({ stores, user, body, now }) {
     return attach({ status: r.ok ? 200 : 422, body: { ...core.view(fresh || stored, now), ok: r.ok, msg: r.msg } });
   }
 
+  // 改城名(主城、分城都可以;規則與全服不重複的檢查在 cname-run.cjs)
+  if (body?.action?.t === "cnamep" && stored) {
+    const r = await require("./cname-run.cjs").rename({ saves, world: wstore, owner, ckey: key, name: body.action.name, nick, now });
+    const fresh = await saves.get(key, { type: "json" });
+    return attach({ status: r.ok ? 200 : 422, body: { ...core.view(fresh || stored, now), ok: r.ok, msg: r.msg } });
+  }
+
   // 樂市樂座:運送、掛單、取消掛單、接受掛單
   const MK = { shipp: market.ship, offerp: market.offer, offerx: market.cancel, acceptp: market.accept };
   if (MK[body?.action?.t] && stored) {
@@ -149,7 +156,11 @@ async function act({ stores, user, body, now }) {
   }
   let gcfg = null;
   if (body?.action?.t === "gacha") { gcfg = await loadGcfg(wstore); GAME.setGachaCfg(gcfg); }
-  const res = core.act(useStored, body, now, { pos });
+  let hused = [];
+  if (body?.action?.t === "hero" && stored) {
+    try { for (const k2 of await A.list(wstore, owner)) { if (k2 === key) continue; const g2 = await saves.get(k2, { type: "json" }); const st2 = g2 && g2.state; if (st2 && A.ownedBy(st2, k2, owner) && st2.hero && st2.hero.n) hused.push(st2.hero.n); } } catch {}
+  }
+  const res = core.act(useStored, body, now, { pos, hused });
   if (gcfg && res.body) res.body = { ...res.body, gcfg };
   if (cap && res.store && res.store !== "delete") {
     const spent = cap.st.gold - res.store.state.gold;
@@ -190,10 +201,49 @@ async function act({ stores, user, body, now }) {
   return attach(res);
 }
 
+// 舊存檔整理:同一位玩家各城若抽到重複的名將,保留先拿到的,其餘換成沒用過的名字(等級、經驗、屬性點不變)。
+// 每位玩家只做一次(world 的 hdd_<uid> 做記號),失敗就靜靜略過、下次再試。
+async function dedupHeroes({ saves, world: wstore, mail, owner, now }) {
+  if (await wstore.get("hdd_" + owner, { type: "json" })) return;
+  const keys = await A.list(wstore, owner), cities = [], seen = new Set();
+  for (const key of keys) {
+    const g = await saves.get(key, { type: "json" }), st = g && g.state;
+    if (st && st.pos && A.ownedBy(st, key, owner)) cities.push({ key, st });
+  }
+  let okAll = true;
+  for (const c of cities) {
+    const h = c.st.hero, pool = GAME.HN[c.st.fac] || [];
+    if (!h || !h.n) continue;
+    if (!c.st.col || !pool.includes(h.n) || !seen.has(h.n)) { seen.add(h.n); continue; }
+    const avail = pool.filter((n) => !seen.has(n));
+    if (!avail.length) continue;
+    const from = h.n, to = avail[Math.floor(GAME.hash(c.st.pos.x, c.st.pos.y, 777) * avail.length) % avail.length];
+    seen.add(to);
+    let done = false;
+    for (let i = 0; i < 6 && !done; i++) {
+      const g = await saves.getWithMetadata(c.key, { type: "json" });
+      if (!g || !g.data || !g.data.state || !g.data.state.hero || g.data.state.hero.n !== from) { done = true; break; }
+      const st = clone(g.data.state);
+      st.hero.n = to;
+      const nick = st.pub && st.pub.n;
+      if (nick) world.stampPub(st, nick, now);
+      const w = await saves.setJSON(c.key, { ...g.data, state: st, rev: (g.data.rev || 0) + 1, updatedAt: g.data.updatedAt }, { onlyIfMatch: g.etag });
+      if (!w || w.modified !== false) {
+        done = true;
+        try { await world.publishState(wstore, c.key, st, owner); } catch {}
+        try { await require("./mail-store.cjs").systemMail(mail, owner, "武將名單調整", `為了避免武將重複,${st.cname || "分城"}的武將「${from}」已更換為「${to}」。等級、經驗和屬性點都沒有變。`, now); } catch {}
+      }
+    }
+    if (!done) okAll = false;
+  }
+  if (okAll) await wstore.setJSON("hdd_" + owner, { t: now });
+}
+
 async function save({ stores, user, now, c }) {
   const { saves, world: wstore, mail, battle } = stores;
   const owner = user.id;
   await settleBattles({ saves, world: wstore, battle, mail, uid: owner, now });
+  try { await dedupHeroes({ saves, world: wstore, mail, owner, now }); } catch (e) { console.error("dedupHeroes failed", e); }
   try { await healCamps({ saves, world: wstore, owner, now }); } catch (e) { console.error("healCamps failed", e); } // 營寨狀態自我修復(靜靜修掉)
   let pk = await pickCity(wstore, owner, c);
   let key = pk.err ? owner : pk.key;

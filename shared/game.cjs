@@ -145,7 +145,7 @@ function canBuildNew(b){if(b.id==='pal'&&S.col)return `${BMAP.pal.n}整個帳號
  if(MULTI.includes(b.id))return ex.every(x=>x.l>=b.m)?'':`需要先把現有的${b.n}升到滿級(${b.m} 級),才能再蓋一座`;
  return `${b.n}每個城池只能蓋一座`}
 // ====== 武將、營寨佔領、名物 ======
-const HN={wei:['瀧川一益','前田利家','柴田勝家','佐佐成政','丹羽長秀','森可成','池田恒興'],shu:['服部半藏','酒井忠次','榊原康政','鳥居元忠','大久保忠世','井伊直政','本多忠勝'],wu:['蜂須賀正勝','加藤清正','福島正則','石田三成','黑田官兵衛','仙石秀久','脇坂安治']}; // 順序=肖像檔 hero_<家>_<序號+1>.webp;已有武將靠名字對圖
+const HN={wei:['瀧川一益','前田利家','柴田勝家','佐佐成政','丹羽長秀','森可成','池田恒興','佐久間盛政','河尻秀隆','蒲生氏郷','簗田政綱'],shu:['服部半藏','酒井忠次','榊原康政','鳥居元忠','大久保忠世','井伊直政','本多忠勝','大久保忠佐','石川數正','渡邊守綱','奧平信昌'],wu:['蜂須賀正勝','加藤清正','福島正則','石田三成','黑田官兵衛','仙石秀久','脇坂安治','加藤嘉明','片桐且元','藤堂高虎','大谷吉繼']}; // 順序=肖像檔 hero_<家>_<序號+1>.webp;已有武將靠名字對圖
 const LORD={wei:'織田信長',shu:'德川家康',wu:'豐臣秀吉'}; // 主城的武將是各家的家主;分城的武將從名將名單隨機
 const ART=[{id:'timber',n:'巨木旗',d:'木材產量 +25%',r:0},{id:'clay',n:'黃金茶釜',d:'泥土產量 +25%',r:1},{id:'iron',n:'鐵砲傳來書',d:'鐵塊產量 +25%',r:2},{id:'rice',n:'豐年之鍬',d:'糧食產量 +25%',r:3},
  {id:'seal',n:'天下布武印',d:'全部資源產量 +10%',r:'all'},{id:'lance',n:'千鳥十文字槍',d:'全軍攻擊 +10%',a:.1},{id:'armor',n:'南蠻胴具足',d:'全軍防禦 +10%',df:.1}];
@@ -623,7 +623,7 @@ function perform(a){if(!S||!a||typeof a.t!=='string')return bad('無效的操作
   S.stat.sent++;S.mv.push({tx,ty,name:n.n,def:n.def,sent:send.slice(),send,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0],kind,hero:withHero});logm(`派${kind?'偵察兵':'兵'}前往${n.n}(${tx}|${ty}),速度 ${sp} 格/時`);return ok()}
  if(t=='hero'){if(S.hero)return bad('已經有武將了');if(S.bld.cnl<1)return bad(`需要先建造${BMAP.cnl.n}`);const k=int(a.k,0,NU-1);if(k==null)return bad('請選擇要提拔的兵種');const u=us()[k];
   if(u.k)return bad('這個兵種不能提拔為武將');if((S.u[k]||0)<1)return bad(`城裡沒有${u.n}可以提拔`);const c=u.r.map(x=>x*20);if(!canPay(c))return bad('資源不足(提拔費用是該兵種成本的 20 倍)');
-  pay(c);S.u[k]--;const names=HN[S.fac];S.hero={n:S.col?names[Math.floor(hash(S.pos.x,S.pos.y,k)*names.length)%names.length]:LORD[S.fac],k,lv:1,xp:0,pts:5,a:0,d:0,s:0,c:0,st:'home'};
+  pay(c);S.u[k]--;const names=HN[S.fac],used=Array.isArray(a.hused)?a.hused:[],avail=names.filter(x=>!used.includes(x)),pool=avail.length?avail:names;S.hero={n:S.col?pool[Math.floor(hash(S.pos.x,S.pos.y,k)*pool.length)%pool.length]:LORD[S.fac],k,lv:1,xp:0,pts:5,a:0,d:0,s:0,c:0,st:'home'};
   logm(`${u.n}之中的佼佼者「${S.hero.n}」被提拔為武將!`);return ok()}
  if(t=='heropt'){const h=S.hero;if(!h)return bad('還沒有武將');const d=[0,1,2,3].map(i=>int((a.d||[])[i],0,100));if(d.some(x=>x==null))return bad('參數錯誤');const tot=d.reduce((p,q)=>p+q,0);
   if(!tot)return bad('請分配至少 1 點');if(tot>h.pts)return bad(`屬性點不足(剩 ${h.pts} 點)`);h.a+=d[0];h.d+=d[1];h.s+=d[2];h.c+=d[3];h.pts-=tot;return ok()}

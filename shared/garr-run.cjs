@@ -27,6 +27,18 @@ async function mutate(saves, key, now, fn) {
   throw new Error("garr: write conflict");
 }
 
+// 部分召回:a.take 是每個兵種要召回的人數。回傳 null = 全部召回;{err} = 填錯了;{t, remain} = 只召回 t,留下 remain
+// 返程那一批的編號由「剩下的人數」決定(同樣的請求重送會得到同樣的編號,不會多叫回一批)
+function planTake(a, u, hasHero) {
+  if (!Array.isArray(a.take)) return null;
+  const t = u.map((x, i) => Math.max(0, Math.min(x | 0, Math.floor(+a.take[i]) || 0)));
+  const total = t.reduce((p, q) => p + q, 0), heroGo = !!(a.hero && hasHero);
+  if (total < 1 && !heroGo) return { err: "請填要召回的人數,或勾選召回武將" };
+  const remain = u.map((x, i) => (x | 0) - t[i]);
+  if (!remain.some((x) => x > 0)) return null; // 兵全部召回 = 整支回去(武將也一起)
+  return { t, remain, hero: heroGo, total };
+}
+const partMsg = (part, grp, dur) => `${part.total ? `召回 ${part.total} 人` : ""}${part.total && part.hero ? "與" : ""}${part.hero ? `武將「${grp.h.n}」` : ""},約 ${Math.max(1, Math.round(dur / G.SPEED / 60))} 分鐘後抵達(其餘 ${part.remain.reduce((p, q) => p + q, 0)} 人繼續駐守)`;
 const ckey = (x, y) => `camp_${x}_${y}`;
 const parseCamp = (k) => { const m = /^camp:(-?\d+),(-?\d+)$/.exec(String(k || "")); return m ? { x: +m[1], y: +m[2] } : null; };
 async function homePos(world, hk) { return world.get("owner_" + hk, { type: "json" }); }
@@ -41,7 +53,15 @@ async function releaseCamp({ saves, world, owner, hk, a, now }) {
   G.fix(hst);
   const grp = (hst.out || []).find((o) => o.gid === gid && o.k === a.k);
   if (!grp) return { ok: false, msg: "這支駐軍已經不在營寨了" };
-  const hp = hst.pos, dist = Math.max(1, Math.hypot(hp.x - cp.x, hp.y - cp.y)), dur = G.garrDur(hst.fac, grp.u, dist);
+  const hp = hst.pos, dist = Math.max(1, Math.hypot(hp.x - cp.x, hp.y - cp.y)), part = planTake(a, grp.u, !!grp.h);
+  if (part && part.err) return { ok: false, msg: part.err };
+  if (part) {
+    const dur = G.garrDur(hst.fac, part.t, dist), gid2 = gid + "~" + part.remain.join(".") + (part.hero ? "h" : "");
+    await mutate(saves, hk, now, (st) => { core.settleTo(st, now); const og = (st.out || []).find((o) => o.gid === gid); if (og) { og.u = part.remain.slice(); if (part.hero) delete og.h; } G.garrReturn(st, { gid: gid2, u: part.t, h: part.hero ? grp.h : undefined }, { name: grp.name || "營寨", dur }); });
+    await W.casUpdate(world, ckey(cp.x, cp.y), (cur) => (cur && cur.o === owner && (cur.gs || []).some((g) => g.gid === gid) ? { ...cur, gs: cur.gs.map((g) => { if (g.gid !== gid) return g; const n = { ...g, u: part.remain.slice() }; if (part.hero) delete n.h; return n; }) } : undefined));
+    return { ok: true, msg: partMsg(part, grp, dur) };
+  }
+  const dur = G.garrDur(hst.fac, grp.u, dist);
   await mutate(saves, hk, now, (st) => { core.settleTo(st, now); G.garrReturn(st, { gid, u: grp.u, h: grp.h }, { name: grp.name || "營寨", dur }); });
   await W.casUpdate(world, ckey(cp.x, cp.y), (cur) => (cur && cur.o === owner && (cur.gs || []).some((g) => g.gid === gid) ? { ...cur, gs: cur.gs.filter((g) => g.gid !== gid) } : undefined));
   return { ok: true, msg: `駐軍啟程返回,約 ${Math.max(1, Math.round(dur / G.SPEED / 60))} 分鐘後抵達(營寨仍歸你所有,可以再派兵進駐)` };
@@ -99,8 +119,24 @@ async function release({ saves, world, owner, a, now, hk }) {
     if (!hg || !hg.state || !A.ownedBy(hg.state, hk, grp.o)) hk = grp.o;
     const hpos = await world.get("owner_" + hk, { type: "json" }), tpos = await world.get("owner_" + tk, { type: "json" });
     const dist = hpos && tpos ? Math.max(1, Math.hypot(hpos.x - tpos.x, hpos.y - tpos.y)) : 10;
-    const dur = G.garrDur(grp.fac, grp.u, dist);
     const place = tst.cname || (tpos ? `(${tpos.x}|${tpos.y})` : "駐地");
+    // 只有派兵的人能部分召回;那座城的主人請他們回去一律是全部
+    const homeSt = hg && hg.state ? hg.state : null, homeEnt = homeSt && (homeSt.out || []).find((o) => o.gid === gid), part = owner === grp.o ? planTake(a, grp.u, !!(homeEnt && homeEnt.h)) : null;
+    if (part && part.err) return { ok: false, msg: part.err };
+    if (part) {
+      const dur = G.garrDur(grp.fac, part.t, dist), gid2 = gid + "~" + part.remain.join(".") + (part.hero ? "h" : "");
+      const heroInfo = part.hero && homeEnt ? homeEnt.h : undefined;
+      const home = await mutate(saves, hk, now, (st) => {
+        core.settleTo(st, now);
+        const og = (st.out || []).find((o) => o.gid === gid);
+        if (og) { og.u = part.remain.slice(); if (part.hero) delete og.h; }
+        G.garrReturn(st, { gid: gid2, u: part.t, h: heroInfo }, { name: place, dur });
+      });
+      if (!home) return { ok: false, msg: "出發的城池已經不存在,部隊無法返回" };
+      await mutate(saves, tk, now, (st) => { const g = (st.gar || []).find((x) => x.gid === gid); if (!g || g.u.every((x, i) => x === part.remain[i])) return false; g.u = part.remain.slice(); core.settleTo(st, now); });
+      return { ok: true, msg: partMsg(part, { h: heroInfo || { n: "" } }, dur) };
+    }
+    const dur = G.garrDur(grp.fac, grp.u, dist);
 
     const home = await mutate(saves, hk, now, (st) => {
       core.settleTo(st, now);

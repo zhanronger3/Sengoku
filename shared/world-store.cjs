@@ -88,7 +88,7 @@ async function claimTile(world, x, y, ck) {
   return !!cur && cur.k === ck;
 }
 
-// 把城池資訊公開到地圖區塊與排行榜。rec: { x, y, n, f, p, b(開城時間,毫秒), o(擁有者帳號), m(1=主城) }
+// 把城池資訊公開到地圖區塊與排行榜。rec: { x, y, n, f, p, b(開城時間,毫秒), o(擁有者帳號), m(1=本丸) }
 async function publish(world, uid, rec) {
   const [cx, cy] = chunkOf(rec.x, rec.y);
   await casUpdate(world, ckey(cx, cy), (cur) => {
@@ -122,6 +122,19 @@ async function remove(world, uid) {
 }
 
 // 查詢方框內的城池(不含帳號 id)
+// 商隊:全服進行中的商隊(只留座標與時間,不含資源與玩家資訊)
+const CVK = "cvn";
+async function addCaravan(world, c, now) {
+  await casUpdate(world, CVK, (cur) => ({ a: [...((cur && cur.a) || []).filter((e) => e.t2 > now && e.id !== c.id), c].slice(-300) }));
+}
+async function queryCaravans(world, x0, y0, x1, y1, viewer, now) {
+  [x0, y0, x1, y1] = [x0, y0, x1, y1].map((n) => Math.floor(+n));
+  if (![x0, y0, x1, y1].every(Number.isFinite)) return [];
+  const cur = await world.get(CVK, { type: "json" });
+  return ((cur && cur.a) || []).filter((e) => e.t2 > now && Math.max(e.fx, e.tx) >= x0 && Math.min(e.fx, e.tx) <= x1 && Math.max(e.fy, e.ty) >= y0 && Math.min(e.fy, e.ty) <= y1)
+    .slice(0, 80).map((e) => ({ id: e.id, fx: e.fx, fy: e.fy, tx: e.tx, ty: e.ty, t0: e.t0, t1: e.t1, t2: e.t2, mine: !!viewer && e.o === viewer }));
+}
+
 async function queryWindow(world, x0, y0, x1, y1, viewer) {
   [x0, y0, x1, y1] = [x0, y0, x1, y1].map((n) => Math.floor(+n));
   if (![x0, y0, x1, y1].every(Number.isFinite)) return [];
@@ -204,7 +217,7 @@ async function publishState(world, key, st, owner) {
   const o = st.own || owner || key;
   let a = ""; try { a = await tagOf(world, o); } catch {}
   try { await require("./chat-run.cjs").registerNick(world, st.pub.n, o); } catch {}
-  await publish(world, key, { x: st.pos.x, y: st.pos.y, n: st.pub.n, f: st.pub.f, p: st.pub.p, b: st.born || 0, o, m: st.col ? 0 : 1, a, cn: st.col ? String(st.cname || "").slice(0, 20) : "" });
+  await publish(world, key, { x: st.pos.x, y: st.pos.y, n: st.pub.n, f: st.pub.f, p: st.pub.p, b: st.born || 0, o, m: st.col ? 0 : 1, a, cn: String(st.cname || "").slice(0, 20) });
   try { await publishPlayer(world, o, key, st, a); } catch (e) { console.error("publishPlayer failed", e); }
 }
 // 英雄榜(玩家榜):同一位玩家所有城池合併。pl_<帳號> 記每座城的數字,prank 是全部玩家的合併結果
@@ -233,7 +246,7 @@ async function publishPlayer(world, owner, key, st, tag) {
     for (const k of Object.keys(cs)) if (!mine.has(k)) delete cs[k];
     // 還沒用新格式公開過的城池:先用舊的排行榜資料湊數,這樣城池數不會少算
     for (const k of mine) if (!cs[k]) { const r = old.find((x) => x.id === k); if (r) cs[k] = { p: r.p || 0, at: 0, df: 0, ar: 0, hn: "", hl: 0, hx: 0, x: r.x, y: r.y, m: r.m ? 1 : 0, f: r.f, n: r.n }; }
-    cs[key] = { p: P.p, at: P.at || 0, df: P.df || 0, ar: P.ar || 0, hn: P.hn || "", hl: P.hl || 0, hx: P.hx || 0, x: st.pos.x, y: st.pos.y, m: st.col ? 0 : 1, f: P.f, n: P.n, cn: st.cname || "" };
+    cs[key] = { p: P.p, at: P.at || 0, df: P.df || 0, ar: P.ar || 0, hn: P.hn || "", hl: P.hl || 0, hx: P.hx || 0, x: st.pos.x, y: st.pos.y, m: st.col ? 0 : 1, f: P.f, n: P.n };
     return { cs };
   });
   const cs = Object.values(pl.cs);
@@ -241,7 +254,7 @@ async function publishPlayer(world, owner, key, st, tag) {
   let best = null;
   for (const c of cs) if (c.hl > 0 && (!best || c.hl > best.hl || (c.hl === best.hl && c.hx > best.hx))) best = c;
   const ai = await allyInfo(world, owner);
-  const row = { o: owner, n: cap.n, f: cap.f, a: ai.tag || tag || "", an: ai.name, x: cap.x, y: cap.y, c: cs.length, p: cs.reduce((s, c) => s + c.p, 0), at: cs.reduce((s, c) => s + c.at, 0), df: cs.reduce((s, c) => s + c.df, 0), ar: cs.reduce((s, c) => s + c.ar, 0), hn: best ? best.hn : "", hl: best ? best.hl : 0, hx: best ? best.hx : 0, hs: cs.filter((c) => c.hl > 0).map((c) => ({ hn: c.hn, hl: c.hl, hx: c.hx, m: c.m ? 1 : 0, cn: c.cn || "" })) };
+  const row = { o: owner, n: cap.n, f: cap.f, a: ai.tag || tag || "", an: ai.name, x: cap.x, y: cap.y, c: cs.length, p: cs.reduce((s, c) => s + c.p, 0), at: cs.reduce((s, c) => s + c.at, 0), df: cs.reduce((s, c) => s + c.df, 0), ar: cs.reduce((s, c) => s + c.ar, 0), hn: best ? best.hn : "", hl: best ? best.hl : 0, hx: best ? best.hx : 0 };
   await casUpdate(world, "prank", (cur) => {
     const a = ((cur && cur.a) || []).filter((r) => r.o !== owner);
     a.push(row);
@@ -277,4 +290,4 @@ async function ensureRegistered(saves, world, uid, nick, got, now) {
   return await saves.getWithMetadata(uid, { type: "json" });
 }
 
-module.exports = { markCityTiles, queryCamps, allyInfo, setPlayerAlly, publishPlayer, removePlayer, topPlayers, tagOf, setTag, claimTile, CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };
+module.exports = { addCaravan, queryCaravans, markCityTiles, queryCamps, allyInfo, setPlayerAlly, publishPlayer, removePlayer, topPlayers, tagOf, setTag, claimTile, CH, SPACING, slotLattice, slotPos, ckey, chunkOf, cleanNick, nickOf, casUpdate, allocate, publish, remove, queryWindow, findAt, topRank, stampPub, publishState, ensureRegistered };

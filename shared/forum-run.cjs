@@ -14,7 +14,7 @@ const bad = (msg, status = 400) => ({ status, body: { ok: false, msg } });
 const good = (body) => ({ status: 200, body: { ok: true, ...body } });
 const clean = (s, max) => String(s == null ? "" : s).replace(/\r\n?/g, "\n").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").replace(/\n{4,}/g, "\n\n\n").trim().slice(0, max);
 const newId = (now) => now.toString(36) + Math.random().toString(36).slice(2, 7);
-const summary = (th) => ({ id: th.id, cat: th.cat, ti: th.ti, au: th.au, an: th.an, t: th.t, lt: th.lt, ln: th.ln, n: th.n, pin: th.pin ? 1 : 0 });
+const summary = (th) => ({ id: th.id, cat: th.cat, ti: th.ti, au: th.au, an: th.an, t: th.t, lt: th.lt, ln: th.ln, n: th.n, v: th.v || 0, pin: th.pin ? 1 : 0 });
 
 // 讀-改-寫,etag 不符就重試
 async function cas(store, key, fn) {
@@ -49,6 +49,17 @@ async function forum({ store, user, method, query, body, now }) {
       if (!/^[a-z0-9]{4,20}$/.test(id)) return bad("找不到這篇文章", 404);
       const th = await store.get(tkey(id), { type: "json" });
       if (!th) return bad("這篇文章不存在或已被刪除", 404);
+      // 瀏覽次數:作者自己看不算;同一個瀏覽器本次已看過會帶 nc=1 不重複算。失敗不影響閱讀。
+      if (!(query && query.nc) && !(me && me.id === th.au)) {
+        try {
+          let cur2 = null;
+          await cas(store, tkey(id), (c) => { if (!c) return undefined; cur2 = { ...c, v: (c.v || 0) + 1 }; return cur2; });
+          if (cur2) {
+            th.v = cur2.v;
+            await cas(store, IDX, (c) => { const l = (c && c.th) || []; if (!l.some((x) => x.id === id)) return undefined; return { th: l.map((x) => (x.id === id ? { ...x, v: cur2.v } : x)) }; });
+          }
+        } catch (e) { console.error("forum view count failed", e); }
+      }
       return good({ thread: th, me, cats: CATS });
     }
     const idx = (await store.get(IDX, { type: "json" })) || { th: [] };
