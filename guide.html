@@ -2,6 +2,18 @@
 <title>車肥羊戰國 官網</title>
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="description" content="車肥羊戰國官網:遊戲介紹、新手教學、完整規則手冊、玩家 FAQ 與討論版。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="車肥羊戰國">
+<meta property="og:title" content="車肥羊戰國・官網">
+<meta property="og:description" content="車肥羊戰國官網:遊戲介紹、新手教學、完整規則手冊、玩家 FAQ 與討論版。">
+<meta property="og:image" content="https://sengoku-gordon.netlify.app/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="車肥羊戰國・官網">
+<meta name="twitter:description" content="車肥羊戰國官網:遊戲介紹、新手教學、完整規則手冊、玩家 FAQ 與討論版。">
+<meta name="twitter:image" content="https://sengoku-gordon.netlify.app/assets/og.jpg">
 <meta name="theme-color" content="#3f0a10">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -157,6 +169,7 @@ td small{display:block;color:var(--muted);font-size:.8rem;font-weight:400;line-h
 .faqtools input{flex:1 1 260px;min-width:0;font:inherit;padding:10px 14px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--surface);color:var(--ink)}
 .faqtools input:focus{border-color:var(--accent);outline:none}
 .cats{display:flex;gap:6px;flex-wrap:wrap}
+.fbar{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;justify-content:space-between}.fsort{font-size:.86rem;color:var(--muted);display:inline-flex;align-items:center;gap:6px}.fsort select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
 .cats button{all:unset;cursor:pointer;font-size:.86rem;padding:4px 12px;border-radius:99px;border:1px solid var(--line);color:var(--muted);background:var(--surface)}
 .cats button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .cats button:focus-visible{outline:2px solid var(--gold)}
@@ -279,6 +292,23 @@ footer{border-top:1px solid rgba(212,179,112,.35);background:rgba(0,0,0,.3);padd
 #p-install table.mt th{color:var(--gold);font-size:.85rem;letter-spacing:.08em}
 #p-install .mwarn{display:flex;gap:12px;align-items:flex-start;background:var(--sunk);border:1px solid var(--gold);border-radius:10px;padding:14px 16px;color:var(--ink)}
 #p-install .mnote{font-size:.85rem;color:var(--muted);margin:0}
+.tgal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:8px 0 14px}.tgal figure{margin:0;padding:8px 8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-align:center}.tgal img{width:100%;height:96px;object-fit:contain;display:block}.tgal figcaption{font-size:.84rem;margin-top:6px;line-height:1.5}.tgal figcaption b{display:block;font-size:.92rem}
+.cimg{height:34px;width:auto;vertical-align:middle;margin-right:8px}.timg{height:28px;width:auto;vertical-align:middle;margin-right:8px}
+/* ===== 卡片樣式 ===== */
+.man{gap:18px}
+.man section{background:linear-gradient(180deg,rgba(212,179,112,.07),rgba(255,255,255,0) 90px),var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px 24px 24px;box-shadow:0 8px 22px rgba(0,0,0,.32),inset 0 1px 0 rgba(212,179,112,.18);position:relative;overflow:hidden}
+.man section::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(var(--gold),rgba(212,179,112,.15))}
+.man h2{padding-bottom:10px;border-bottom:1px solid var(--line)}
+@media (max-width:640px){.man section{padding:18px 16px 20px;border-radius:14px}}
+ol.steps{gap:10px}
+ol.steps li{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 4px 14px rgba(0,0,0,.25);border-bottom:1px solid var(--line)}
+ol.steps li:hover{border-color:var(--gold)}
+.faqlist{gap:22px}
+.faqgrp h3{color:var(--gold);margin-bottom:10px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 16px;margin-bottom:8px;box-shadow:0 3px 10px rgba(0,0,0,.2)}
+details[open]{border-color:var(--gold);background:linear-gradient(180deg,rgba(212,179,112,.06),rgba(255,255,255,0) 70px),var(--surface)}
+details summary{padding-right:34px}
+details summary::after{right:2px}
 </style>
 
 <header class="bar">
@@ -584,6 +614,7 @@ footer{border-top:1px solid rgba(212,179,112,.35);background:rgba(0,0,0,.3);padd
      <h2>營寨<span class="kj">CAMPS</span></h2>
      <p class="prose">地圖上散布著 NPC 營寨，每 4×4 格至少有 2 座。營寨的守軍與庫存全服共用；被打過之後，約 12 遊戲小時重新集結。營寨階級與離原點遠近無關。</p>
      <img src="assets/wild_forces.webp" alt="野外勢力一覽" width="1536" height="1024" loading="lazy" style="width:100%;height:auto;border-radius:12px;display:block;margin:6px 0 14px">
+     <div class="tgal" id="g-camp" aria-label="營寨圖鑑"></div>
      <div class="tw"><table><thead><tr><th>營寨</th><th>基準守軍</th><th class="n">防禦（基準）</th><th class="n">每種資源庫存</th><th>佔領加成</th></tr></thead><tbody id="t-camp"></tbody></table></div>
      <p class="mut" style="font-size:.88rem">實際守軍會在基準的 80%～130% 之間浮動。比叡山延曆寺非常稀少（約 1/60），守軍防禦加倍，只能掠奪不能佔領。地圖座標 (4|1) 的菩提山城不能攻擊，只能行三顧之禮。</p>
     </section>
@@ -626,12 +657,18 @@ footer{border-top:1px solid rgba(212,179,112,.35);background:rgba(0,0,0,.3);padd
       <li>分城忠誠度上限 100，每遊戲小時回復 1 點。</li>
       <li><b>威望</b> = 資源田等級總和 × 6 ＋ 建築等級總和 × 12 ＋ 士兵總數 × 2（含出征與駐守在外的兵）。</li>
      </ul>
+     <div class="tgal" aria-label="分城地形">
+      <figure><img src="assets/ter_forest.webp" alt="森林" loading="lazy"><figcaption><b>森林</b>伐木場 6、農田 6</figcaption></figure>
+      <figure><img src="assets/ter_clay.webp" alt="泥坑" loading="lazy"><figcaption><b>泥坑</b>泥坑 6、農田 6</figcaption></figure>
+      <figure><img src="assets/ter_mine.webp" alt="礦坑" loading="lazy"><figcaption><b>礦坑</b>鐵礦場 6、農田 6</figcaption></figure>
+      <figure><img src="assets/ter_field.webp" alt="平原" loading="lazy"><figcaption><b>平原</b>農田 9，其餘各 3</figcaption></figure>
+     </div>
      <div class="tw"><table><thead><tr><th>地形</th><th class="n">伐木場</th><th class="n">泥坑</th><th class="n">鐵礦場</th><th class="n">農田</th></tr></thead><tbody>
       <tr><td class="nm">一般空地</td><td class="n">4</td><td class="n">4</td><td class="n">4</td><td class="n">6</td></tr>
-      <tr><td class="nm">🌲 森林</td><td class="n">6</td><td class="n">3</td><td class="n">3</td><td class="n">6</td></tr>
-      <tr><td class="nm">泥坑</td><td class="n">3</td><td class="n">6</td><td class="n">3</td><td class="n">6</td></tr>
-      <tr><td class="nm">🪨 礦坑</td><td class="n">3</td><td class="n">3</td><td class="n">6</td><td class="n">6</td></tr>
-      <tr><td class="nm">🌾 平原</td><td class="n">3</td><td class="n">3</td><td class="n">3</td><td class="n">9</td></tr>
+      <tr><td class="nm"><img class="timg" src="assets/ter_forest.webp" alt="" loading="lazy">森林</td><td class="n">6</td><td class="n">3</td><td class="n">3</td><td class="n">6</td></tr>
+      <tr><td class="nm"><img class="timg" src="assets/ter_clay.webp" alt="" loading="lazy">泥坑</td><td class="n">3</td><td class="n">6</td><td class="n">3</td><td class="n">6</td></tr>
+      <tr><td class="nm"><img class="timg" src="assets/ter_mine.webp" alt="" loading="lazy">礦坑</td><td class="n">3</td><td class="n">3</td><td class="n">6</td><td class="n">6</td></tr>
+      <tr><td class="nm"><img class="timg" src="assets/ter_field.webp" alt="" loading="lazy">平原</td><td class="n">3</td><td class="n">3</td><td class="n">3</td><td class="n">9</td></tr>
      </tbody></table></div>
     </section>
 
@@ -770,7 +807,9 @@ function units(f){
 document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>units(b.dataset.f)));
 units('wei');
 const occ=['+1%','+2%','+3%','+4%','+5%','+6%','不可佔領'];
-$('#t-camp').innerHTML=D.tiers.map((t,i)=>`<tr><td class="nm">${t.n}</td><td>${Object.entries(t.g).map(([u,c])=>u+'×'+c).join('、')}</td><td class="n">${fmt(t.def)}</td><td class="n">${fmt(t.stash)}</td><td>${occ[i]}</td></tr>`).join('');
+const CK={'野盜砦': 'camp', '一向一揆砦': 'ikko', '南蠻館': 'nanban', '山賊山城': 'sanzoku', '石山本願寺': 'hongan', '大筒陣地': 'otsutsu', '比叡山延曆寺': 'enryaku'};
+$('#g-camp').innerHTML=D.tiers.map((t,i)=>`<figure><img src="assets/camp_${CK[t.n]}.webp" alt="${t.n}" loading="lazy"><figcaption><b>${t.n}</b>${i<6?'佔領加成 '+occ[i]:'只能掠奪，不能佔領'}</figcaption></figure>`).join('');
+$('#t-camp').innerHTML=D.tiers.map((t,i)=>`<tr><td class="nm"><img class="cimg" src="assets/camp_${CK[t.n]}.webp" alt="" loading="lazy">${t.n}</td><td>${Object.entries(t.g).map(([u,c])=>u+'×'+c).join('、')}</td><td class="n">${fmt(t.def)}</td><td class="n">${fmt(t.stash)}</td><td>${occ[i]}</td></tr>`).join('');
 const src={timber:'野盜砦、一向一揆砦',clay:'野盜砦、一向一揆砦',iron:'野盜砦、一向一揆砦',rice:'野盜砦、一向一揆砦',seal:'南蠻館、山賊山城',lance:'石山本願寺、大筒陣地、比叡山延曆寺',armor:'石山本願寺、大筒陣地、比叡山延曆寺'};
 $('#t-art').innerHTML=D.art.map(a=>`<tr><td class="nm"><span class="uic"><img src="assets/art_${a.id}.webp" alt="" width="40" height="40" loading="lazy"><span>${a.n}</span></span></td><td>${a.d}</td><td>${src[a.id]}</td></tr>`).join('');
 $('#t-qs').innerHTML=D.qs.map(q=>`<tr><td>${q.n}</td><td style="white-space:nowrap">${q.g?q.g+' 金幣':'各資源 '+fmt(q.r[0])}</td></tr>`).join('');
@@ -843,7 +882,7 @@ $('#faq-cats').addEventListener('click',e=>{const b=e.target.closest('button');i
 $('#faq-q').addEventListener('input',renderFaq);
 renderFaq();
 /* ====== 討論版 ====== */
-const F={cats:{news:'官方公告',talk:'綜合討論',tips:'攻略心得',help:'問題求助',idea:'建議回報',ally:'聯盟招募'},me:null,list:null,cat:'',page:0,th:null,mode:'list',demo:false,busy:false,confirm:null,draft:{cat:'talk',ti:'',b:''},reply:''};
+const F={cats:{news:'官方公告',talk:'綜合討論',tips:'攻略心得',help:'問題求助',idea:'建議回報',ally:'聯盟招募'},me:null,list:null,cat:'',page:0,th:null,mode:'list',demo:false,busy:false,confirm:null,draft:{cat:'talk',ti:'',b:''},reply:'',sort:(()=>{try{return localStorage.getItem('fsort')||'lt'}catch(e){return 'lt'}})()};
 const PER=20;
 const fesc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad2=n=>String(n).padStart(2,'0');
@@ -884,14 +923,15 @@ async function fopen(id){
 const catChip=c=>`<span class="cat ${c==='news'?'news':''}">${fesc(F.cats[c]||c)}</span>`;
 function vList(){
  if(F.list==null)return '<p class="mut">讀取中…</p>';
- const all=F.list.filter(x=>!F.cat||x.cat===F.cat),pages=Math.max(1,Math.ceil(all.length/PER));F.page=Math.min(F.page,pages-1);
+ const SK=['lt','t','n','v'].includes(F.sort)?F.sort:'lt',all=F.list.filter(x=>!F.cat||x.cat===F.cat).sort((a,b)=>(b.pin||0)-(a.pin||0)||((b[SK]||0)-(a[SK]||0))||(b.lt-a.lt)),pages=Math.max(1,Math.ceil(all.length/PER));F.page=Math.min(F.page,pages-1);
  const rows=all.slice(F.page*PER,F.page*PER+PER);
  const chips=`<div class="cats" role="group" aria-label="討論版分類">${[['','全部'],...Object.entries(F.cats)].map(([k,n])=>`<button type="button" id="fc-${k||'all'}" data-fcat="${k}" aria-pressed="${F.cat===k}">${fesc(n)}</button>`).join('')}</div>`;
  const comp=F.mode==='new'?vCompose():'';
  const body=rows.length?`<div class="flist"><div class="frow hd"><span>主題</span><span style="text-align:center">回覆</span><span style="text-align:center">瀏覽</span><span>最後回覆</span></div>${rows.map(x=>`<a class="frow" href="#t-${fesc(x.id)}"><div><div class="ti">${x.pin?'<span class="badge">置頂</span>':''}${catChip(x.cat)}${fesc(x.ti)}</div><div class="meta">${fesc(x.an)}・${ago(x.t)}</div></div><div class="rc">${x.n}</div><div class="rc" style="font-weight:400;color:var(--muted)">${x.v||0}</div><div class="lr">${fesc(x.ln)}<br>${ago(x.lt)}</div></a>`).join('')}</div>`
   :`<div class="fnotice">${F.cat?'這個分類還沒有文章。':'討論版還沒有文章。'}${F.me&&!F.demo?'按右上角「發表新主題」寫第一篇吧。':''}</div>`;
  const pager=pages>1?`<div class="fpager"><button type="button" class="fbtn ghost sm" data-fpage="-1" ${F.page?'':'disabled'}>上一頁</button><span class="num">${F.page+1} / ${pages}</span><button type="button" class="fbtn ghost sm" data-fpage="1" ${F.page<pages-1?'':'disabled'}>下一頁</button></div>`:'';
- return comp+chips+body+pager;
+ const sortSel=`<label class="fsort">排序 <select id="f-sort" aria-label="文章排序">${[['lt','最新留言'],['t','最新發布'],['n','回覆最多'],['v','瀏覽最多']].map(([k,n])=>`<option value="${k}" ${SK===k?'selected':''}>${n}</option>`).join('')}</select></label>`;
+ return comp+`<div class="fbar">${chips}${sortSel}</div>`+body+pager;
 }
 function vCompose(){
  const d=F.draft,cats=Object.entries(F.cats).filter(([k])=>k!=='news'||(F.me&&F.me.admin));
@@ -954,6 +994,7 @@ document.addEventListener('click',e=>{
  if(t.dataset.fadm)return fadm(t.dataset.fadm);
 });
 document.addEventListener('submit',e=>{if(e.target.id==='f-new'){e.preventDefault();fsubmitNew()}else if(e.target.id==='f-rep'){e.preventDefault();fsubmitReply()}});
+document.addEventListener('change',e=>{if(e.target.id==='f-sort'){F.sort=e.target.value;F.page=0;try{localStorage.setItem('fsort',F.sort)}catch(x){}frender()}});
 document.addEventListener('input',e=>{
  if(e.target.id==='f-b'){F.draft.b=e.target.value;$('#f-bc').textContent=e.target.value.length}
  else if(e.target.id==='f-ti')F.draft.ti=e.target.value;

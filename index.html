@@ -7,6 +7,18 @@
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
+<meta name="description" content="日本戰國背景的多人城池經營遊戲。三大勢力、爭霸天下:經營內政、練兵出征、提拔武將、開分城奪城池。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="車肥羊戰國">
+<meta property="og:title" content="車肥羊戰國">
+<meta property="og:description" content="日本戰國背景的多人城池經營遊戲。三大勢力、爭霸天下:經營內政、練兵出征、提拔武將、開分城奪城池。">
+<meta property="og:image" content="https://sengoku-gordon.netlify.app/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="車肥羊戰國">
+<meta name="twitter:description" content="日本戰國背景的多人城池經營遊戲。三大勢力、爭霸天下:經營內政、練兵出征、提拔武將、開分城奪城池。">
+<meta name="twitter:image" content="https://sengoku-gordon.netlify.app/assets/og.jpg">
 <meta name="theme-color" content="#3f0a10">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -267,11 +279,11 @@ function armyBox(){const U=us(),tag=u=>u.k=='scout'?['偵','scout']:u.k=='ram'||
  return h}
 function vOut(){
  const sc=FP.map(([x,y],i)=>{const t=FTx()[i],L=S.fld[i],at=`class="it" style="left:${x}%;top:${y}%;z-index:${200-Math.round(y)}" title="${FN[t]} 等級${L}" data-a="fld" data-i="${i}"`;
-  return `<div ${at}><div class="fw"><img class="bimg fimg" src="/assets/f_${S.fac}_${t}.webp" style="border-color:${CASTLE_COL[S.fac]}" alt="" onerror="this.outerHTML='<div class=em>'+this.dataset.fb+'</div>'" data-fb="${['🌲🌲','🟫','🪨🪨','🌾'][t]}"><i class="fbadge">${RI[t]}</i></div><b class="lv" style="position:relative;top:-8px">${L}</b></div>`}).join('');
+  return `<div ${at}><div class="fw"><img class="bimg fimg" src="/assets/f_${S.fac}_${t}.webp" style="border-color:${['#4caf50','#b07a4a','#9aa0a8','#e8c030'][t]}" alt="" onerror="this.outerHTML='<div class=em>'+this.dataset.fb+'</div>'" data-fb="${['🌲🌲','🟫','🪨🪨','🌾'][t]}"><i class="fbadge">${RI[t]}</i></div><b class="lv" style="position:relative;top:-8px">${L}</b></div>`}).join('');
  const pr=[0,1,2,3].map(i=>`<div>${RI[i]} ${RN[i]}: <b>${Math.floor(i==3?rate(3)-upkeep():rate(i))}</b></div>`).join('');
  const upg=id=>['f','b'].some(l=>S.q[l]&&S.q[l].id===id&&!S.q[l].dm),lampOn={'兵':S.mv.length>0,'步':!!(S.tr.infb||[]).length,'騎':!!(S.tr.cavb||[]).length,'樂':(S.ships||[]).some(x=>x.ret>S.t),'學':upg('acad'),'攻':upg('smi'),'防':upg('arm')},lampT={'兵':'有部隊在外行軍','步':'足輕營訓練中','騎':'馬廻組訓練中','樂':'商人運送資源中','學':'兵學塾升級中','攻':'刀鍛冶所升級中','防':'具足屋升級中'},lampB={'兵':'war','步':'infb','騎':'cavb','樂':'mkt','學':'acad','攻':'smi','防':'arm'},lamps=Object.keys(lampOn).map(c=>`<a class="lamp ${lampOn[c]?'on':''}" data-a="bgo" data-b="${lampB[c]}" title="${lampT[c]}(點一下前往${(B.find(z=>z.id==lampB[c])||{}).n||''})">${c}</a>`).join('');
  const ar=armyBox();
- return `<div class="cols"><div class="army lcard">${ttl().replace('class="ttl"','class="ttl ttlc"')}<div class="lbody"><div class="fr sc sc-out"><svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%"><path d="M0 46 Q30 52 48 44 T100 40" stroke="#7fd6cf" stroke-width="1.6" fill="none" opacity=".7"/><path d="M52 46 Q54 70 100 80" stroke="#7fd6cf" stroke-width="1.6" fill="none" opacity=".7"/></svg>${sc}<div class="it" style="left:47%;top:30%;font-size:58px" data-a="nav" data-v="in" title="城內(點一下進城)">${fcastle(CASTLE_COL[S.fac])}</div></div></div></div><div class="info"><div class="army"><div class="ah">生產力</div><div class="ao">${pr}</div></div><div class="army"><div class="ah">建築指示燈</div><div class="ao">${lamps}</div></div>${ar}</div></div>${qtab()}${ttab()}${mvt()}`}
+ return `<div class="cols"><div class="army lcard">${ttl().replace('class="ttl"','class="ttl ttlc"')}<div class="lbody"><div class="fr sc sc-out"><svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%"><path d="M0 46 Q30 52 48 44 T100 40" stroke="#7fd6cf" stroke-width="1.6" fill="none" opacity=".7"/><path d="M52 46 Q54 70 100 80" stroke="#7fd6cf" stroke-width="1.6" fill="none" opacity=".7"/></svg>${sc}<div class="it" style="left:47%;top:34%;width:30%;max-width:150px;min-width:84px;font-size:58px" data-a="nav" data-v="in" title="城內(點一下進城)"><img src="/assets/castle_${S.fac}.webp" alt="" style="width:100%;height:auto;display:block;filter:drop-shadow(0 4px 5px rgba(0,0,0,.55))" onerror="this.outerHTML=this.dataset.fb" data-fb="${esc(fcastle(CASTLE_COL[S.fac]))}"></div></div></div></div><div class="info"><div class="army"><div class="ah">生產力</div><div class="ao">${pr}</div></div><div class="army"><div class="ah">建築指示燈</div><div class="ao">${lamps}</div></div>${ar}</div></div>${qtab()}${ttab()}${mvt()}`}
 const SLP=[[10,12],[26,12],[42,12],[58,12],[74,12],[90,12],[18,30],[34,30],[50,30],[66,30],[82,30],[18,48],[34,48],[50,48],[66,48],[82,48],[18,66],[34,66],[50,66],[66,66],[82,66]];
 const BI={gov:['🏯','知'],wh:['🏠','藏'],gr:['🛖','米'],cave:['🕳️','埋'],war:['⛩️','軍'],infb:['⛺','足'],acad:['🏫','學'],smi:['🗡️','刀'],arm:['🥋','具'],cavb:['🐎','馬'],mill:['⚙️','精'],lum:['🪵','材'],kiln:['🏺','瓦'],smel:['🔥','鍊'],cnl:['📜','評'],wsh:['🛠️','工'],acc:['💰','勘'],pal:['🏯','本'],mkt:['🏪','市'],emb:['🚩','奏'],res:['🏯','二'],trs:['💎','寶'],pub:['🏗️','普'],wall:['🚪','牆']};
 
