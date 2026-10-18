@@ -48,6 +48,7 @@ async function ship({ saves, world, battle, mail, uid: key, owner, nick, body, s
     try {
       await S.register({ battle, rec: { id, from: { k: key, o: owner, n: nick, x: r.pos.x, y: r.pos.y }, to: { k: hit.uid, o: hit.rec.o || hit.uid, x: tx, y: ty }, r: r.r, arrAt: now + Math.round((r.dur / G.SPEED) * 1000) } });
     } catch (e) { console.error("ship register failed", e); }
+    try { const d = Math.round((r.dur / G.SPEED) * 1000); await W.addCaravan(world, { id, o: owner, fx: r.pos.x, fy: r.pos.y, tx, ty, t0: now, t1: now + d, t2: now + 2 * d }, now); } catch (e) { console.error("caravan publish failed", e); }
     await pvp.unlock(world, owner).catch(() => {});
     return { status: 200, body: { ok: true, msg: `${r.n} 名商人出發,約 ${Math.max(1, Math.round((r.dur / G.SPEED) / 60))} 分鐘後抵達 ${name}`, state: att, rev: rev + 1, now } };
   } catch (e) { await pvp.unlock(world, owner).catch(() => {}); throw e; }

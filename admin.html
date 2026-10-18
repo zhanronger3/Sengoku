@@ -4,13 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>管理者 · 發送金幣與意見箱</title>
+<title>管理者介面</title>
 <style>
 :root{--bg:#3f0a10;--pn:#120c0d;--ink:#f1e6d3;--bd:#9a7a46;--gold:#d4b370;--tb:#4d0c18;--mut:#c2b09a;--bad:#ff8272;--ok:#9bd596;color-scheme:dark;box-sizing:border-box}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(#4a0c14,#2d070d);color:var(--ink);font:14px/1.6 "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif}
 main{width:100%;max-width:680px;margin:0 auto;padding:16px;flex:1 0 auto}
 h1{font-size:22px;margin:6px 0 4px;color:var(--gold)}
+h2{font-size:17px;margin:0 0 8px;color:var(--gold)}
 .box{background:var(--pn);border:1px solid var(--bd);padding:12px 14px;margin:12px 0;border-radius:4px}
 label{display:block;margin:8px 0 2px;color:var(--mut)}
 input,select,textarea{width:100%;background:#1b1415;color:var(--ink);border:1px solid var(--bd);padding:6px 8px;font:inherit;border-radius:3px}
@@ -20,33 +21,45 @@ button.alt{background:#14161d}
 #msg{margin-top:10px;white-space:pre-wrap}.ok{color:var(--ok)}.bad{color:var(--bad)}
 table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid var(--bd);padding:3px 6px;text-align:center}th{background:var(--tb);color:var(--gold)}
 footer{flex-shrink:0;text-align:center;padding:14px 12px;border-top:1px solid rgba(212,179,112,.35);background:rgba(0,0,0,.3);color:var(--mut);font-size:12px}
+.tag{display:inline-block;padding:1px 8px;border:1px solid var(--mut);border-radius:10px;font-size:12px}
 </style>
 </head>
 <body>
 <main>
-<h1>發送金幣給玩家</h1>
-<p style="color:var(--mut)">只有知道管理密碼(Netlify 環境變數 <code>ADMIN_SECRET</code>)的人才能使用。密碼只會留在這個分頁裡,不會存到任何地方。</p>
-<div class="box">
+<h1>管理者介面</h1>
+<div class="box"><h2>管理者密碼登入</h2>
+<p style="color:var(--mut);margin-top:0">只有知道管理密碼(Netlify 環境變數 <code>ADMIN_SECRET</code>)的人才能使用。密碼只會留在這個分頁裡,不會存到任何地方。</p>
   <label for="secret">管理密碼</label>
   <input id="secret" type="password" autocomplete="off" placeholder="ADMIN_SECRET">
+</div>
+<div class="box"><h2>選擇玩家</h2>
+<p style="color:var(--mut);margin-top:0">發送金幣、武將修正、存檔備份都用這裡指定的玩家。</p>
   <label for="how">用什麼找玩家</label>
   <select id="how"><option value="xy">城池座標(最準確)</option><option value="nick">暱稱(只找得到排行榜前 200 名)</option><option value="uid">帳號 ID</option></select>
   <div id="f-xy" class="row"><div><label for="x">x</label><input id="x" type="number"></div><div><label for="y">y</label><input id="y" type="number"></div></div>
   <div id="f-nick" style="display:none"><label for="nick">玩家暱稱</label><input id="nick" type="text"></div>
   <div id="f-uid" style="display:none"><label for="uid">帳號 ID</label><input id="uid" type="text"></div>
+</div>
+<div class="box"><h2>發送金幣</h2>
   <label for="amount">金幣數量(1 ~ 1000000)</label>
   <input id="amount" type="number" min="1" value="10">
   <label for="reason">原因(玩家會在信件和事件紀錄看到,最多 60 字)</label>
   <input id="reason" type="text" maxlength="60" placeholder="例如:活動獎勵">
   <button id="send">發送</button> <button id="log" class="alt">看最近紀錄</button>
   <div id="msg"></div>
-</div>
-<div id="logbox" class="box" style="display:none"></div>
-<h1 style="margin-top:24px">全服發信</h1>
-<div class="box"><input id="bcsub" type="text" maxlength="40" placeholder="主旨(預設:全服公告)" style="width:100%"><br><textarea id="bctext" rows="4" maxlength="1000" style="width:100%" placeholder="信件內容(最多 1000 字)。會以「系統」寄信給所有玩家的收件箱。"></textarea><br>
+<div id="logbox" style="display:none;margin-top:10px"></div></div>
+<div class="box"><h2>全服發信</h2><input id="bcsub" type="text" maxlength="40" placeholder="主旨(預設:全服公告)" style="width:100%"><br><textarea id="bctext" rows="4" maxlength="1000" style="width:100%" placeholder="信件內容(最多 1000 字)。會以「系統」寄信給所有玩家的收件箱。"></textarea><br>
 <button id="bcsend">寄給所有玩家</button> <button id="bcload" class="alt">看寄過的信</button> <span id="bcmsg"></span><div id="bclist"></div></div>
-<h1 style="margin-top:24px">玩家意見箱</h1>
-<div class="box"><button id="fbload" class="alt" style="margin-top:0">讀取意見</button> <span id="fbmsg"></span><div id="fblist"></div></div>
+<div class="box"><h2>轉蛋設定</h2><p style="color:var(--mut);margin-top:0">改完按「儲存」,所有玩家立即生效,不用重新部署。權重只是比例,系統會自動換算成機率(例如 50、30、13、7 就是 50%、30%、13%、7%)。資源包 = 四種資源各給這個數量;加速券 = 訓練縮短這麼多「遊戲小時」(遊戲時間 1 小時 = 真實 1 分鐘)。</p>
+<label for="gcost">每抽幾金幣</label><input id="gcost" type="number" min="1" max="100000" style="width:120px">
+<div style="overflow-x:auto"><table id="gtab" style="margin-top:10px"><thead><tr><th>名稱</th><th>類型</th><th>數量/小時</th><th>權重</th><th>機率</th><th></th></tr></thead><tbody></tbody></table></div>
+<button id="gadd" class="alt">+ 新增獎品</button> <button id="gload" class="alt">讀取目前設定</button> <button id="gsave">儲存</button> <button id="greset" class="alt">恢復預設</button> <span id="gmsg"></span></div>
+<div class="box"><h2>玩家意見箱</h2><button id="fbload" class="alt" style="margin-top:0">讀取意見</button> <span id="fbmsg"></span><div id="fblist"></div></div>
+<div class="box"><h2>武將修正</h2><p style="color:var(--mut);margin-top:0">玩家用「選擇玩家」卡片裡的欄位。只會降等、不會升等;先按「試算」看結果,確認再按「確認執行」。</p>
+<label for="hlv">降到幾級</label><input id="hlv" type="number" min="1" max="20" value="8" style="width:80px"> <label for="hxp">該級經驗值(預設 0)</label><input id="hxp" type="number" min="0" value="0" style="width:100px"><br>
+<button id="hlist" class="alt">看武將</button> <button id="hdry">試算</button> <button id="hgo">確認執行</button> <span id="hmsg"></span><div id="hout"></div></div>
+<div class="box"><h2>存檔備份</h2><p style="color:var(--mut);margin-top:0">玩家用「選擇玩家」卡片裡的欄位。每座城只留一份備份(約 10 分鐘以前的狀態)。還原後,目前的存檔會換成新的備份,所以可以再還原回來。</p>
+<button id="baklist" class="alt" style="margin-top:0">看備份</button> <span id="bakmsg"></span><div id="bakout"></div></div>
 </main>
 <footer id="copyright">© 2026 GORDON(曜榮).&nbsp; All rights reserved.</footer>
 <script>
@@ -67,12 +80,39 @@ const bcShow=l=>{$('#bclist').innerHTML=l.length?l.map(e=>`<div class="box"><b>$
 async function bcDo(b){const m=$('#bcmsg');m.className='';m.textContent='處理中…';try{const r=await call('POST',b);if(r.ok){m.className='ok';m.textContent=r.j.msg||'完成';bcShow(r.j.list||[]);if(b.t==='bcsend'){$('#bctext').value='';$('#bcsub').value=''}}else{m.className='bad';m.textContent=(r.j&&r.j.msg)||'失敗('+r.s+')'}}catch(e){m.className='bad';m.textContent='連線失敗'}}
 $('#bcsend').onclick=()=>{const v=$('#bctext').value.trim();if(!v){$('#bcmsg').textContent='請輸入內容';return}if(confirm('確定寄給所有玩家?寄出後無法收回。'))bcDo({t:'bcsend',s:$('#bcsub').value,m:v})};
 $('#bcload').onclick=()=>bcDo({t:'bclist'});
-const fbRow=e=>`<div class="box" data-id="${esc(e.id)}"><b>${esc(e.s)}</b><br><small style="color:var(--mut)">${esc(e.n)}${e.x!=null?'('+e.x+'|'+e.y+')':''} · ${new Date(e.t).toLocaleString()}</small><div style="white-space:pre-wrap;margin:6px 0">${esc(e.b)}</div><div class="row" style="align-items:center"><input class="fbamt" type="number" min="1" value="5" style="max-width:90px"><button class="fbgold" data-u="${esc(e.u)}" style="margin:0">送金幣給 ${esc(e.n)}</button><button class="fbdel alt" style="margin:0;max-width:80px">刪除</button></div></div>`;
+const CAT={bug:'遊戲錯誤',account:'帳號問題',suggest:'建議',report:'檢舉玩家',other:'其他'};
+const fbRow=e=>`<div class="box" data-id="${esc(e.id)}"><span class="tag">${esc(CAT[e.c]||'其他')}</span> <b>${esc(e.s)}</b>${e.r?' <span style="color:var(--ok,#4a4)">✅已回覆</span>':''}<br><small style="color:var(--mut)">${esc(e.n)}${e.x!=null?'('+e.x+'|'+e.y+')':''} · ${new Date(e.t).toLocaleString()}</small><div style="white-space:pre-wrap;margin:6px 0">${esc(e.b)}</div>${e.r?`<div style="white-space:pre-wrap;margin:6px 0;padding:6px;border-left:3px solid var(--mut)"><small style="color:var(--mut)">你的回覆 · ${new Date(e.r.t).toLocaleString()}</small><br>${esc(e.r.b)}</div>`:''}<textarea class="fbrt" rows="2" maxlength="500" placeholder="回覆玩家(會用系統信寄到他的飛鴿傳書)" style="width:100%"></textarea><div class="row" style="align-items:center"><button class="fbreply" style="margin:0">${e.r?'再回覆一次':'回覆'}</button><input class="fbamt" type="number" min="1" value="5" style="max-width:90px"><button class="fbgold" data-u="${esc(e.u)}" style="margin:0">送金幣給 ${esc(e.n)}</button><button class="fbdel alt" style="margin:0;max-width:80px">刪除</button></div></div>`;
 function fbShow(list){$('#fblist').innerHTML=list.length?list.map(fbRow).join(''):'<p style="color:var(--mut)">目前沒有意見</p>'}
 $('#fbload').onclick=async()=>{const m=$('#fbmsg');m.className='';m.textContent='讀取中…';try{const r=await call('POST',{t:'fblist'});if(!r.ok){m.className='bad';m.textContent=(r.j&&r.j.msg)||('失敗('+r.s+')');return}m.textContent='';fbShow(r.j.list)}catch(e){m.className='bad';m.textContent='連線失敗'}};
 $('#fblist').addEventListener('click',async ev=>{const t=ev.target,box=t.closest('[data-id]');if(!box)return;const m=$('#fbmsg');
+ if(t.classList.contains('fbreply')){const tx=box.querySelector('.fbrt').value.trim();if(!tx){m.className='bad';m.textContent='請先寫回覆內容';return}t.disabled=true;const r=await call('POST',{t:'fbreply',id:box.dataset.id,text:tx});t.disabled=false;if(r.ok){m.className='';m.textContent=r.j.msg;fbShow(r.j.list)}else{m.className='bad';m.textContent=(r.j&&r.j.msg)||'失敗'}return}
  if(t.classList.contains('fbdel')){if(!confirm('刪除這則意見?'))return;const r=await call('POST',{t:'fbdel',id:box.dataset.id});if(r.ok)fbShow(r.j.list);else{m.className='bad';m.textContent=(r.j&&r.j.msg)||'失敗'}}
  else if(t.classList.contains('fbgold')){const amt=Number(box.querySelector('.fbamt').value);if(!confirm('確定送 '+amt+' 金幣給這位玩家嗎?'))return;const r=await call('POST',{uid:t.dataset.u,amount:amt,reason:'意見回饋'});m.className=r.ok?'ok':'bad';m.textContent=(r.j&&r.j.msg)||('失敗('+r.s+')')}});
+function whoBody(){const how=$('#how').value,b={};if(how=='xy'){b.x=$('#x').value;b.y=$('#y').value}else if(how=='nick')b.nick=$('#nick').value;else b.uid=$('#uid').value;return b}
+const hv=h=>h?`${esc(h.n)} Lv${h.lv} 經驗${h.xp} 剩餘點${h.pts} (攻${h.a}/防${h.d}/速${h.s}/載${h.c})`:'(沒有武將)';
+async function hero(t,confirmIt){const m=$('#hmsg');m.className='';m.textContent='處理中…';const b={...whoBody(),t};if(t=='herofix'){b.level=Number($('#hlv').value);b.xp=Number($('#hxp').value)||0;b.confirm=confirmIt;if(confirmIt&&!confirm('確定把這位玩家的武將降到 '+b.level+' 級嗎?'))return m.textContent='已取消'}
+  try{const r=await call('POST',b);if(!r.ok){m.className='err';m.textContent=(r.j&&r.j.msg)||('失敗('+r.s+')');return}
+  m.textContent=r.j.msg;$('#hout').innerHTML=r.j.rows.map(x=>`<p><b>${esc(x.key)} ${esc(x.cname||'')}</b><br>現在:${hv(x.before)}`+(x.changed?`<br>改成:${hv(x.after)}${x.reset?'(屬性點全部退回)':''}${x.written?' ✅已寫入':x.err?' ⚠'+esc(x.err):''}`:'<br>不用改')+'</p>').join('')}catch(e){m.className='err';m.textContent='連線失敗'}}
+$('#hlist').onclick=()=>hero('herolist');$('#hdry').onclick=()=>hero('herofix',false);$('#hgo').onclick=()=>hero('herofix',true);
+const bt=t=>t?new Date(t).toLocaleString('zh-TW',{hour12:false}):'—';
+async function bak(t,city){const m=$('#bakmsg');m.className='';m.textContent='處理中…';const b={...whoBody(),t};if(city)b.city=city;if(t=='bakrestore')b.confirm=true;
+  try{const r=await call('POST',b);if(!r.ok){m.className='err';m.textContent=(r.j&&r.j.msg)||('失敗('+r.s+')');return}
+  if(t=='bakrestore'){const msg=r.j.msg+'(備份時間 '+bt(r.j.bakAt)+')';await bak('baklist');m.className='ok';m.textContent=msg;return}
+  m.textContent='';$('#bakout').innerHTML=r.j.rows.length?'<table><tr><th>城池</th><th>備份時間</th><th></th></tr>'+r.j.rows.map(x=>`<tr><td>${esc(x.key)}</td><td>${x.none?'沒有備份':bt(x.bakAt)}</td><td>${x.none?'':`<button class="alt bakgo" data-k="${esc(x.key)}" style="margin:0">還原</button>`}</td></tr>`).join('')+'</table>':'<p style="color:var(--mut)">沒有資料</p>'}catch(e){m.className='err';m.textContent='連線失敗'}}
+$('#baklist').onclick=()=>bak('baklist');
+const gRow=o=>`<tr><td><input class="gn" maxlength="16" value="${esc(o.n)}" style="min-width:110px"></td><td><select class="gt"><option value="pack"${o.t=='pack'?' selected':''}>資源包(四種各)</option><option value="ticket"${o.t=='ticket'?' selected':''}>訓練加速券(小時)</option></select></td><td><input class="gv" type="number" min="1" value="${o.v}" style="width:90px"></td><td><input class="gp" type="number" min="0.1" step="any" value="${o.p}" style="width:80px"></td><td class="gpc">—</td><td><button class="alt gdel" style="margin:0;padding:2px 10px">刪</button></td></tr>`;
+function gCalc(){const ps=[...document.querySelectorAll('#gtab .gp')].map(x=>Number(x.value)||0),t=ps.reduce((a,b)=>a+b,0);document.querySelectorAll('#gtab .gpc').forEach((c,i)=>{c.textContent=t>0?Math.round(ps[i]/t*1000)/10+'%':'—'})}
+function gFill(cfg){$('#gcost').value=cfg.cost;$('#gtab tbody').innerHTML=cfg.prizes.map(gRow).join('');gCalc()}
+function gRead(){return{cost:Number($('#gcost').value),prizes:[...document.querySelectorAll('#gtab tbody tr')].map(r=>({n:r.querySelector('.gn').value,t:r.querySelector('.gt').value,v:Number(r.querySelector('.gv').value),p:Number(r.querySelector('.gp').value)}))}}
+async function gDo(b){const m=$('#gmsg');m.className='';m.textContent='處理中…';try{const r=await call('POST',b);if(!r.ok){m.className='bad';m.textContent=(r.j&&r.j.msg)||('失敗('+r.s+')');return}gFill(r.j.cfg);m.className='ok';m.textContent=(r.j.msg||'已讀取')+(r.j.custom===false?'(目前是預設內容)':'')}catch(e){m.className='bad';m.textContent='連線失敗'}}
+$('#gload').onclick=()=>gDo({t:'gachaget'});
+$('#gsave').onclick=()=>{const c=gRead();if(!confirm('確定儲存?所有玩家下一抽就會用新的內容。'))return;gDo({t:'gachaset',cfg:c})};
+$('#greset').onclick=()=>{if(confirm('確定恢復成預設內容?'))gDo({t:'gachaset',reset:true})};
+$('#gadd').onclick=()=>{$('#gtab tbody').insertAdjacentHTML('beforeend',gRow({n:'',t:'pack',v:1000,p:10}));gCalc()};
+$('#gtab').addEventListener('input',gCalc);
+$('#gtab').addEventListener('click',e=>{const d=e.target.closest('.gdel');if(!d)return;d.closest('tr').remove();gCalc()});
+
+$('#bakout').onclick=e=>{const t=e.target.closest('.bakgo');if(!t)return;if(!confirm('確定把 '+t.dataset.k+' 還原成備份嗎?(目前的存檔會換成備份,可以再還原回來)'))return;bak('bakrestore',t.dataset.k)};
 </script>
 </body>
 </html>
