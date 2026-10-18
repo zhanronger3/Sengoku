@@ -504,7 +504,7 @@ function campAbandon(st,key){return withS(st,()=>{const ck='camp:'+key;S.out=S.o
 const GAR_MAX=5;
 // 友軍抵達:放進這座城的駐防名單(同一個 gid 重複呼叫只會放一次)
 function garrApply(def,g){return withS(def,()=>{S.gar=S.gar||[];if(S.gar.some(x=>x.gid===g.gid))return {ok:true,dup:1};
- if(S.gar.length>=GAR_MAX)return {ok:false,why:`這座城的駐防名額已滿(最多 ${GAR_MAX} 支部隊)`};
+ const gk=x=>x.k||x.n,hasK=S.gar.some(x=>gk(x)===gk(g)),nk=new Set(S.gar.map(gk)).size;if(!hasK&&nk>=GAR_MAX)return {ok:false,why:`這座城的駐防名額已滿(最多 ${GAR_MAX} 支部隊)`};
  S.gar.push({gid:g.gid,o:g.o,n:g.n,fac:g.fac,k:g.k,u:g.u.slice(),t:S.t});logm(`${g.n}的增援部隊 ${g.u.reduce((p,q)=>p+q,0)} 人抵達,加入守城`,1);return {ok:true}})}
 // 把一支駐防部隊移出名單(沒有就回 null)
 function garrTake(st,gid){return withS(st,()=>{const i=(S.gar||[]).findIndex(x=>x.gid===gid);if(i<0)return null;return S.gar.splice(i,1)[0]})}

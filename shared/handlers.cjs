@@ -239,11 +239,24 @@ async function dedupHeroes({ saves, world: wstore, mail, owner, now }) {
   if (okAll) await wstore.setJSON("hdd_" + owner, { t: now });
 }
 
+// 排行榜資料升級:舊版只公開「最強武將」,新版要每座城的武將。每位玩家第一次進來時把所有城池重新公開一次(rkv_<uid> 做記號)。
+async function ensureRankHeroes({ saves, world: wstore, owner, now }) {
+  if (await wstore.get("rkv_" + owner, { type: "json" })) return;
+  let okAll = true;
+  for (const key of await A.list(wstore, owner)) {
+    const g = await saves.get(key, { type: "json" }), st = g && g.state;
+    if (!st || !st.pos || !st.pub || !A.ownedBy(st, key, owner)) continue;
+    try { const s2 = clone(st); s2.pub = null; world.stampPub(s2, st.pub.n, now); await world.publishState(wstore, key, s2, owner); } catch { okAll = false; }
+  }
+  if (okAll) await wstore.setJSON("rkv_" + owner, { t: now });
+}
+
 async function save({ stores, user, now, c }) {
   const { saves, world: wstore, mail, battle } = stores;
   const owner = user.id;
   await settleBattles({ saves, world: wstore, battle, mail, uid: owner, now });
   try { await dedupHeroes({ saves, world: wstore, mail, owner, now }); } catch (e) { console.error("dedupHeroes failed", e); }
+  try { await ensureRankHeroes({ saves, world: wstore, owner, now }); } catch (e) { console.error("ensureRankHeroes failed", e); }
   try { await healCamps({ saves, world: wstore, owner, now }); } catch (e) { console.error("healCamps failed", e); } // 營寨狀態自我修復(靜靜修掉)
   let pk = await pickCity(wstore, owner, c);
   let key = pk.err ? owner : pk.key;
