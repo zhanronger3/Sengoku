@@ -47,7 +47,7 @@ input[type=number],input[type=text],input[type=password]{width:70px;background:v
 #tn button{font-size:13px;color:var(--ink);background:var(--bt)}
 #rb{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 6px;padding:8px 12px;font-size:13px;font-variant-numeric:tabular-nums;min-height:52px;background:rgba(0,0,0,.28);border-bottom:1px solid rgba(212,179,112,.35)}
 .ri{white-space:nowrap;min-width:0;overflow:hidden}
-@media(min-width:700px){#rb{grid-template-columns:repeat(6,minmax(0,1fr));min-height:0}}
+@media(min-width:700px){#rb{grid-template-columns:repeat(6,minmax(0,142px));justify-content:start;gap:4px 14px;min-height:0}}
 @media(max-width:380px){#rb{font-size:12px;padding:8px 8px}}
 @media(max-width:340px){#rb{font-size:11px}}
 .bad{color:var(--bad)}.ok{color:var(--ok)}.mut{color:var(--mut)}
@@ -617,13 +617,13 @@ function campFire(X,Y){const ph=(Date.now()/1000)%12.8,d=(k,p)=>`animation-delay
  let sm='';for(let i=0;i<5;i++)sm+=`<circle class="smk" cx="${X+(i%2?3:-3)}" cy="${Y-8}" r="5" fill="${i%2?'#1a1a1a':'#2b2b2b'}" style="${d(i*.64,3.2)}"/>`;
  return `<g pointer-events="none"><ellipse cx="${X}" cy="${Y+5}" rx="20" ry="8" fill="#1a0e08" opacity=".55"/>${fl(-11,.8,0)}${fl(10,.7,.35)}${fl(0,1.05,.15)}${sm}</g>`}
 const CAMP_H={"bodai":177,"camp":229,"ikko":229,"sanzoku":239,"nanban":213,"enryaku":217,"hongan":173,"otsutsu":167};
-function mapCamp(k,X,Y){const w=50,h=w*CAMP_H[k]/228;return `<image href="/assets/camp_${k}.webp" x="${X-w/2}" y="${(Y+13-h).toFixed(1)}" width="${w}" height="${h.toFixed(1)}" pointer-events="none"/>`}
+function mapCamp(k,X,Y){const w=40,h=w*CAMP_H[k]/228;return `<image href="/assets/camp_${k}.webp" x="${X-w/2}" y="${(Y+13-h).toFixed(1)}" width="${w}" height="${h.toFixed(1)}" pointer-events="none"/>`}
 const TERSPR={0:['forest',50,104],1:['clay',56,75],2:['mine',50,86],3:['field',58,81]};
 function terImg(t,X,Y){const d=TERSPR[t];if(!d)return '';const [k,w,H]=d,h=w*H/144,flat=k=='clay'||k=='field';
  return `<image href="/assets/ter_${k}.webp" x="${X-w/2}" y="${(flat?Y+1-h/2:Y+9-h).toFixed(1)}" width="${w}" height="${h.toFixed(1)}" pointer-events="none"/>`}
 const CAST_H={wei:159,shu:165,wu:161};
 function mapCastle(f,X,Y){if(!CAST_H[f])return `<g transform="translate(${X-17},${Y-25}) scale(.53)">${castleSv(CASTLE_COL[f]||'#888')}</g>`;
- const w=85,h=w*CAST_H[f]/216;return `<image href="/assets/castle_${f}.webp" x="${X-w/2}" y="${(Y+21-h).toFixed(1)}" width="${w}" height="${h.toFixed(1)}" pointer-events="none"/>`}
+ const w=75,h=w*CAST_H[f]/216;return `<image href="/assets/castle_${f}.webp" x="${X-w/2}" y="${(Y+21-h).toFixed(1)}" width="${w}" height="${h.toFixed(1)}" pointer-events="none"/>`}
 function vMap(){const [cx,cy]=mc,W2=36,H2=18,ox=300,oy=165,P=(dx,dy)=>[ox+(dx+dy)*W2,oy+(dx-dy)*H2];
  const cells=[];for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++)cells.push([dx,dy]);cells.sort((a,b)=>(a[0]-a[1])-(b[0]-b[1]));
  let g=`<polygon points="${ox},${oy-126} ${ox+252},${oy} ${ox},${oy+126} ${ox-252},${oy}" fill="#2a1208" transform="translate(0,10)"/><polygon points="${ox},${oy-126} ${ox+252},${oy} ${ox},${oy+126} ${ox-252},${oy}" fill="#46663a"/>`;
@@ -764,7 +764,7 @@ async function gachaGo(n){if(gcBusy)return;const cost=G.getGachaCfg().cost;if(S.
 function sidebar(){const det=(id,sm,body)=>`<details data-d="${id}" ${op[id]?'open':''}><summary>${sm}</summary><div class="dbody">${body}</div></details>`;
  const cl=QS.filter(q=>!G.QD().includes(q.id)&&q.ok()).length;
  const msgs=chatHtml();
- return det('acc','賬號狀態: 正常',`玩家:${esc(NICK)}<br>勢力:${fa().n}<br>已加入戰國時代 <b>${cityAge()}</b>`)+det('city',`城池清單${CITIES.length>1?' ('+CITIES.length+')':''}`,CITIES.length>1?CITIES.map(c=>`<div>|- <a data-a="city" data-k="${esc(c.k)}" ${c.k==(CUR||(ME&&ME.id))?'style="font-weight:bold;color:#fff;text-decoration:underline"':''}>${cnOf(c)}(${c.x},${c.y})</a> <a data-a="cnedit" data-k="${esc(c.k)}" class="mut" style="font-size:11px" title="改城名">✎改名</a> <span class="flag s" style="background:${CASTLE_COL[c.f]}">${F[c.f].s}</span>${c.col?` <small class="mut">忠誠${c.loy}</small>`:''}${c.hn?` <small class="mut">${esc(c.hn)}</small>`:''}</div>`).join(''):`|- ${cityName()}(${home().x},${home().y}) <a data-a="cnedit" data-k="${ME?esc(CUR||ME.id):''}" class="mut" style="font-size:11px" title="改城名">✎改名</a> <span class="flag s" style="background:${CASTLE_COL[S.fac]}">${fa().s}</span>`)+det('goods',`商品清單 🎁:${fmt(S.gold)}`,`金幣是你整個帳號共用的(存在主城),每座城都能用:立即完成施工(2 金幣/次)、買資源、平倉。每遊戲小時 +1(主城產出)。<div style="margin-top:8px"><a data-a="bag">🎒 打開金幣背包</a> <small class="mut">(${bagCount()} 件)</small></div>`)+det('guide',`新手引導 ${GUIDE.filter(g=>g.ok()).length}/${GUIDE.length}`,guideList())+det('task',`任務清單${cl?` <b class="bad">(${cl})</b>`:''}`,'<a data-a="nav" data-v="quest">前往任務頁面</a>')+det('faq','常見問題','<a data-a="nav" data-v="faq">前往常見問題頁面</a>')
+ return det('acc','賬號狀態: 正常',`玩家:${esc(NICK)}<br>勢力:${fa().n}<br>已加入戰國時代 <b>${cityAge()}</b>`)+det('city',`城池清單${CITIES.length>1?' ('+CITIES.length+')':''}`,CITIES.length>1?CITIES.map(c=>`<div>|- <a data-a="city" data-k="${esc(c.k)}" ${c.k==(CUR||(ME&&ME.id))?'style="font-weight:bold;color:#fff;text-decoration:underline"':''}>${cnOf(c)}(${c.x},${c.y})</a> <a data-a="cnedit" data-k="${esc(c.k)}" class="mut" style="font-size:11px" title="改城名">✎改名</a> <span class="flag s" style="background:${CASTLE_COL[c.f]}">${F[c.f].s}</span>${c.hn||c.col?`<br><small class="mut" style="margin-left:1.6em">${[c.hn?'武將:'+esc(c.hn):'',c.col?'忠誠度:'+c.loy:''].filter(Boolean).join('　')}</small>`:''}</div>`).join(''):`|- ${cityName()}(${home().x},${home().y}) <a data-a="cnedit" data-k="${ME?esc(CUR||ME.id):''}" class="mut" style="font-size:11px" title="改城名">✎改名</a> <span class="flag s" style="background:${CASTLE_COL[S.fac]}">${fa().s}</span>`)+det('goods',`商品清單 🎁:${fmt(S.gold)}`,`金幣是你整個帳號共用的(存在主城),每座城都能用:立即完成施工(2 金幣/次)、買資源、平倉。每遊戲小時 +1(主城產出)。<div style="margin-top:8px"><a data-a="bag">🎒 打開金幣背包</a> <small class="mut">(${bagCount()} 件)</small></div>`)+det('guide',`新手引導 ${GUIDE.filter(g=>g.ok()).length}/${GUIDE.length}`,guideList())+det('task',`任務清單${cl?` <b class="bad">(${cl})</b>`:''}`,'<a data-a="nav" data-v="quest">前往任務頁面</a>')+det('faq','常見問題','<a data-a="nav" data-v="faq">前往常見問題頁面</a>')
  +`<div class="army chatc"><div class="ct">${['公頻','盟頻','密頻','系統'].map((n,i)=>`<span data-a="ct" data-i="${i}" class="${ct==i?'on':''}">${n}</span>`).join('')}</div><div id="chat">${msgs}</div>${chatBox()}</div>`}
 try{document.getElementById('lgi').innerHTML=ICONS.arm}catch(e){}
 function render(){
