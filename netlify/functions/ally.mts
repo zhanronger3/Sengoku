@@ -1,4 +1,5 @@
 import { getStore } from "@netlify/blobs";
+import saveBackup from "../../shared/save-backup.cjs";
 import * as identity from "@netlify/identity";
 import ally from "../../shared/ally-run.cjs";
 
@@ -12,7 +13,7 @@ export default async (req: Request) => {
   const user = await getUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
   const stores = {
-    saves: getStore({ name: "saves", consistency: "strong" }),
+    saves: saveBackup.withBackup(getStore({ name: "saves", consistency: "strong" }), getStore({ name: "backup", consistency: "strong" })),
     world: getStore({ name: "world", consistency: "strong" }),
     mail: getStore({ name: "mail", consistency: "strong" }),
   };
