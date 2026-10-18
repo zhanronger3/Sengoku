@@ -57,6 +57,7 @@ footer{flex-shrink:0;text-align:center;padding:14px 12px;border-top:1px solid rg
 <div class="box"><h2>玩家意見箱</h2><button id="fbload" class="alt" style="margin-top:0">讀取意見</button> <span id="fbmsg"></span><div id="fblist"></div></div>
 <div class="box"><h2>武將修正</h2><p style="color:var(--mut);margin-top:0">玩家用「選擇玩家」卡片裡的欄位。只會降等、不會升等;先按「試算」看結果,確認再按「確認執行」。</p>
 <label for="hlv">降到幾級</label><input id="hlv" type="number" min="1" max="20" value="8" style="width:80px"> <label for="hxp">該級經驗值(預設 0)</label><input id="hxp" type="number" min="0" value="0" style="width:100px"><br>
+<label for="hcity">要改哪座城</label><select id="hcity"><option value="">全部的城(只改等級較高的)</option></select> <small style="color:var(--mut)">先按「看武將」列出這位玩家的城,再選一座。</small><br>
 <button id="hlist" class="alt">看武將</button> <button id="hdry">試算</button> <button id="hgo">確認執行</button> <span id="hmsg"></span><div id="hout"></div></div>
 <div class="box"><h2>存檔備份</h2><p style="color:var(--mut);margin-top:0">玩家用「選擇玩家」卡片裡的欄位。每座城只留一份備份(約 10 分鐘以前的狀態)。還原後,目前的存檔會換成新的備份,所以可以再還原回來。</p>
 <button id="baklist" class="alt" style="margin-top:0">看備份</button> <span id="bakmsg"></span><div id="bakout"></div></div>
@@ -90,9 +91,11 @@ $('#fblist').addEventListener('click',async ev=>{const t=ev.target,box=t.closest
  else if(t.classList.contains('fbgold')){const amt=Number(box.querySelector('.fbamt').value);if(!confirm('確定送 '+amt+' 金幣給這位玩家嗎?'))return;const r=await call('POST',{uid:t.dataset.u,amount:amt,reason:'意見回饋'});m.className=r.ok?'ok':'bad';m.textContent=(r.j&&r.j.msg)||('失敗('+r.s+')')}});
 function whoBody(){const how=$('#how').value,b={};if(how=='xy'){b.x=$('#x').value;b.y=$('#y').value}else if(how=='nick')b.nick=$('#nick').value;else b.uid=$('#uid').value;return b}
 const hv=h=>h?`${esc(h.n)} Lv${h.lv} 經驗${h.xp} 剩餘點${h.pts} (攻${h.a}/防${h.d}/速${h.s}/載${h.c})`:'(沒有武將)';
-async function hero(t,confirmIt){const m=$('#hmsg');m.className='';m.textContent='處理中…';const b={...whoBody(),t};if(t=='herofix'){b.level=Number($('#hlv').value);b.xp=Number($('#hxp').value)||0;b.confirm=confirmIt;if(confirmIt&&!confirm('確定把這位玩家的武將降到 '+b.level+' 級嗎?'))return m.textContent='已取消'}
+async function hero(t,confirmIt){const m=$('#hmsg');m.className='';m.textContent='處理中…';const b={...whoBody(),t},hc=$('#hcity').value,hcl=hc?$('#hcity').selectedOptions[0].textContent:'全部的城';if(hc)b.city=hc;if(t=='herofix'){b.level=Number($('#hlv').value);b.xp=Number($('#hxp').value)||0;b.confirm=confirmIt;if(confirmIt&&!confirm('確定把這位玩家「'+hcl+'」的武將降到 '+b.level+' 級嗎?'))return m.textContent='已取消'}
   try{const r=await call('POST',b);if(!r.ok){m.className='err';m.textContent=(r.j&&r.j.msg)||('失敗('+r.s+')');return}
-  m.textContent=r.j.msg;$('#hout').innerHTML=r.j.rows.map(x=>`<p><b>${esc(x.key)} ${esc(x.cname||'')}</b><br>現在:${hv(x.before)}`+(x.changed?`<br>改成:${hv(x.after)}${x.reset?'(屬性點全部退回)':''}${x.written?' ✅已寫入':x.err?' ⚠'+esc(x.err):''}`:'<br>不用改')+'</p>').join('')}catch(e){m.className='err';m.textContent='連線失敗'}}
+  m.textContent=r.j.msg;if(hc&&!r.j.rows.length){m.className='err';m.textContent='這位玩家沒有選到的那座城,請先按「看武將」重新選擇';$('#hout').innerHTML='';return}
+  if(t=='herolist'){const sel=$('#hcity'),keep=sel.value;sel.innerHTML='<option value="">全部的城(只改等級較高的)</option>'+r.j.rows.map(x=>`<option value="${esc(x.key)}">${esc(x.cname||'')} (${esc(x.key)}) ${x.before?esc(x.before.n)+' Lv'+x.before.lv:'沒有武將'}</option>`).join('');if(r.j.rows.some(x=>x.key===keep))sel.value=keep}
+  $('#hout').innerHTML=r.j.rows.map(x=>`<p><b>${esc(x.key)} ${esc(x.cname||'')}</b><br>現在:${hv(x.before)}`+(x.changed?`<br>改成:${hv(x.after)}${x.reset?'(屬性點全部退回)':''}${x.written?' ✅已寫入':x.err?' ⚠'+esc(x.err):''}`:'<br>不用改')+'</p>').join('')}catch(e){m.className='err';m.textContent='連線失敗'}}
 $('#hlist').onclick=()=>hero('herolist');$('#hdry').onclick=()=>hero('herofix',false);$('#hgo').onclick=()=>hero('herofix',true);
 const bt=t=>t?new Date(t).toLocaleString('zh-TW',{hour12:false}):'—';
 async function bak(t,city){const m=$('#bakmsg');m.className='';m.textContent='處理中…';const b={...whoBody(),t};if(city)b.city=city;if(t=='bakrestore')b.confirm=true;
