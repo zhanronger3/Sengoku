@@ -20,7 +20,8 @@ export default async (req: Request) => {
   const villages = await world.queryWindow(wstore, q.get("x0"), q.get("y0"), q.get("x1"), q.get("y1"), user.id);
   const now = Date.now();
   const camps = await world.queryCamps(wstore, q.get("x0"), q.get("y0"), q.get("x1"), q.get("y1"), user.id, now);
-  return Response.json({ ok: true, villages, camps, now });
+  const caravans = await world.queryCaravans(wstore, q.get("x0"), q.get("y0"), q.get("x1"), q.get("y1"), user.id, now).catch(() => []);
+  return Response.json({ ok: true, villages, camps, caravans, now });
 };
 
 export const config = { path: "/api/world" };
