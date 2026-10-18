@@ -41,6 +41,7 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
     const tx = Math.floor(+a.tx), ty = Math.floor(+a.ty);
     if (!Number.isFinite(tx) || !Number.isFinite(ty)) return await fail("座標錯誤");
     let hit = null, act = { ...a };
+    let defCity = "";
     if (!found) await W.markCityTiles(world, tx, ty, tx, ty);
     const npc = !found && G.npcAt(tx, ty);
     if (npc) {
@@ -71,6 +72,7 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
       const hitOwner = hit.rec.o || hit.uid;
       const gotD = await saves.getWithMetadata(hit.uid, { type: "json" });
       if (!gotD || !gotD.data || !gotD.data.state) return await fail("對方還沒開始遊戲");
+      { const ds = gotD.data.state; defCity = ds.cname ? ds.cname : ds.col ? "分城" : hit.rec.n + "的主城"; }
       if (reinf) {
         if (hit.uid === uid) return await fail("不能增援這座城自己");
         if (hitOwner !== owner && !(await allied(world, owner, hitOwner))) return await fail("只能增援自己的城池,或同一個聯盟盟友的城池");
@@ -82,7 +84,7 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
     }
 
     const aid = `${now}-${Math.random().toString(36).slice(2, 8)}`;
-    const r = G.pvpLaunch(att, act, { aid, defNick: npc ? npc.n : hit && hit.rec.n, now, camp: npc ? 1 : 0 });
+    const r = G.pvpLaunch(att, act, { aid, defNick: npc ? npc.n : hit && hit.rec.n, defCity, now, camp: npc ? 1 : 0 });
     if (!r.ok) return await fail(r.msg);
     att.saved = now;
     const next = rev + 1;
@@ -96,7 +98,7 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
       await B.registerAttack({
         battle, mail, now,
         rec: {
-          id: aid, att: { uid, o: owner, n: nick, x: r.pos.x, y: r.pos.y, fac: r.fac, ab: r.ab, hero: r.hero || null, ar: r.ar || 0, ah: r.ah || [] },
+          id: aid, att: { uid, o: owner, n: nick, cn: att.cname ? att.cname : att.col ? "分城" : nick + "的主城", x: r.pos.x, y: r.pos.y, fac: r.fac, ab: r.ab, hero: r.hero || null, ar: r.ar || 0, ah: r.ah || [] },
           def: found || npc ? null : { uid: hit.uid, o: hit.rec.o || hit.uid, n: hit.rec.n, x: hit.rec.x, y: hit.rec.y },
           tx, ty, send: r.send, sentAt: now, arrAt, go: r.go, dur: r.dur, dist: r.dist, kind: npc ? (r.kind === "scout" ? "campscout" : r.kind === "reinf" ? "campgar" : "camp") : r.kind || "", tg: r.tg || [],
         },

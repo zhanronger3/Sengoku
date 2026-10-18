@@ -335,7 +335,7 @@ function pvpLaunch(att,a,meta){
   const dist=distTo(tx,ty);if(dist<=0)return bad(kind==='found'?'那裡就是這座城':kind==='reinf'?'不能增援這座城自己':'不能攻擊自己的城池');
   const sp=Math.min(...send.map((x,k)=>x?U[k].s:99),hero?heroSpd(S.hero):99),dur=Math.max(1,Math.round(dist/sp*3600));
   send.forEach((x,k)=>S.u[k]-=x);const hi=hero?{n:S.hero.n,atk:heroAtk(S.hero),carry:heroCarry(S.hero),def:heroDef(S.hero)}:null;if(hero)S.hero.st='away';
-  const name=kind==='found'?`新城預定地(${tx}|${ty})`:`${meta.defNick}(${tx}|${ty})`;
+  const name=kind==='found'?`新城預定地(${tx}|${ty})`:`${(kind==='reinf'&&meta.defCity)||meta.defNick}(${tx}|${ty})`;
   S.stat.sent++;S.mv.push({pv:1,pending:1,aid:meta.aid,tx,ty,name,def:0,sent:send.slice(),send:send.slice(),go:S.t+dur,arr:S.t+dur,dur,ret:0,loot:[0,0,0,0],sentAt:meta.now,kind,tg,sl,hero,hd:hero?heroDef(S.hero):0,camp:meta.camp?1:0});
   logm(kind==='found'?`派 3 名開墾代官前往${name}建立分城,速度 ${sp} 格/時`:kind==='reinf'?`派 ${send.reduce((p,q)=>p+q,0)} 名士兵前往${name}增援駐防,速度 ${sp} 格/時`:`派${kind?'偵察兵':'兵'}前往${name},出兵 ${send.reduce((p,q)=>p+q,0)} 人,速度 ${sp} 格/時;部隊抵達後才會${kind?'展開偵察':'開戰'}`);
   return {ok:true,tx,ty,dur,sp,dist,send,go:S.t+dur,fac:S.fac,ab:ab(),pos:{...home()},kind,tg,hero:hi,ar:Math.max(0,artSlots()-S.art.length),ah:S.art.slice()}})}
@@ -505,7 +505,7 @@ const GAR_MAX=5;
 // 友軍抵達:放進這座城的駐防名單(同一個 gid 重複呼叫只會放一次)
 function garrApply(def,g){return withS(def,()=>{S.gar=S.gar||[];if(S.gar.some(x=>x.gid===g.gid))return {ok:true,dup:1};
  const gk=x=>x.k||x.n,hasK=S.gar.some(x=>gk(x)===gk(g)),nk=new Set(S.gar.map(gk)).size;if(!hasK&&nk>=GAR_MAX)return {ok:false,why:`這座城的駐防名額已滿(最多 ${GAR_MAX} 支部隊)`};
- S.gar.push({gid:g.gid,o:g.o,n:g.n,fac:g.fac,k:g.k,u:g.u.slice(),t:S.t});logm(`${g.n}的增援部隊 ${g.u.reduce((p,q)=>p+q,0)} 人抵達,加入守城`,1);return {ok:true}})}
+ S.gar.push({gid:g.gid,o:g.o,n:g.n,cn:g.cn||'',fac:g.fac,k:g.k,u:g.u.slice(),t:S.t});logm(`${g.n}的增援部隊 ${g.u.reduce((p,q)=>p+q,0)} 人抵達,加入守城`,1);return {ok:true}})}
 // 把一支駐防部隊移出名單(沒有就回 null)
 function garrTake(st,gid){return withS(st,()=>{const i=(S.gar||[]).findIndex(x=>x.gid===gid);if(i<0)return null;return S.gar.splice(i,1)[0]})}
 // 部隊回到出發的城池:加一筆返程中的部隊(gid 重複就不再加),並把「派出去的駐防」紀錄拿掉

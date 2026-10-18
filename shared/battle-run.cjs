@@ -194,7 +194,7 @@ async function resolveReinf({ saves, world, battle, mail, rec, now }) {
       if (!(x && y && x.a && x.a === y.a)) { res = { reinf: 1, ok: false, why: "你們已經不是同一個聯盟" }; break; }
     }
     core.settleTo(st, rec.arrAt);
-    const r = G.garrApply(st, { gid: id, o: owner, n: rec.att.n, fac: rec.att.fac, k: rec.att.uid, u: rec.send });
+    const r = G.garrApply(st, { gid: id, o: owner, n: rec.att.n, cn: rec.att.cn || "", fac: rec.att.fac, k: rec.att.uid, u: rec.send });
     if (!r.ok) { res = { reinf: 1, ok: false, why: r.why }; break; }
     if (r.dup) { res = { reinf: 1, ok: true, tk: rec.def.uid }; break; }
     const w = await saves.setJSON(rec.def.uid, { state: st, rev: g.data.rev + 1, updatedAt: now }, { onlyIfMatch: g.etag });
