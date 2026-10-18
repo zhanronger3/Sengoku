@@ -146,6 +146,7 @@ img.aic.big{width:72px;height:72px;margin:4px 0;border-radius:8px}img.aic{width:
 #modal.au .bl{position:fixed;inset:-30px;background:url(/assets/poster.webp) center/cover;filter:blur(22px) brightness(.55)}
 #modal.au .po{position:fixed;inset:0;background:url(/assets/poster.webp) center/contain no-repeat}
 @media(max-width:700px){#modal.au .po{background-size:cover}}
+@media(max-width:480px){.sc-in .bdimg{zoom:.70}.sc-in .lb{font-size:10px;width:16px;height:16px;line-height:14px;margin-top:-6px}.sc-in .lv.sm{--ls:9px;min-width:15px;line-height:11px;padding:0 2px;border-width:1px;right:-2px;top:-2px}.sc-in .wlab{transform:translate(-50%,0)}}
 #modal.au .box{position:relative;width:min(340px,88vw);margin:0 auto 4vh;background:rgba(20,8,10,.78);color:#f6e7c8;text-align:center;border-color:#c9a24b;border-radius:6px}
 #modal.au .box input{width:200px}
 #c .bm,.bm{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:10px 0}
@@ -278,7 +279,7 @@ function armyBox(){const U=us(),tag=u=>u.k=='scout'?['偵','scout']:u.k=='ram'||
  let h=`<div class="army"><div class="ah"><a data-a="bgo" data-b="war" title="前往軍奉行(出兵、調度)" style="color:inherit;text-decoration:none;cursor:pointer">在城</a>${tot?`<br><span>共計 ${nf(tot)}</span>`:''}</div>`+(S.u.map((n,k)=>n?row(n,uimg(k,'uic uics')+U[k].n):'').join('')||'<div class="mut ae">無</div>')+`</div>`;
  if(at)h+=`<div class="army"><div class="ah">外出中<br><span>共計 ${nf(at)}</span></div><div class="ao">${sum(away)}</div></div>`;
  if((S.out||[]).length)h+=`<div class="army"><div class="ah">駐守在外<br><span>${outG().length} 處 · 共計 ${nf(S.out.reduce((p,o)=>p+(o.u||[]).reduce((x,y)=>x+(+y||0),0),0))}</span></div>`+outG().map(o=>`<div class="ao"><b>${esc(o.name||(String(o.k||'').startsWith('camp:')?'營寨':'城池'))}</b> <span class="mut">(${o.x}|${o.y})</span>${sum(o.u||[])}${o.hs.map(x=>` ⭐${esc(x.n)}`).join('')}</div>`).join('')+`</div>`;
- if((S.gar||[]).length)h+=`<div class="army"><div class="ah">駐防的友軍<br><span>${garG().length} 支 · 共計 ${nf(S.gar.reduce((p,g)=>p+(g.u||[]).reduce((x,y)=>x+(+y||0),0),0))}</span></div>`+garG().map(g=>`<div class="ao"><b>${esc(g.n)}</b>${sum(g.u,UN[g.fac],g.fac)}</div>`).join('')+`</div>`;
+ if((S.gar||[]).length)h+=`<div class="army"><div class="ah">駐防的友軍<br><span>${garG().length} 支 · 共計 ${nf(S.gar.reduce((p,g)=>p+(g.u||[]).reduce((x,y)=>x+(+y||0),0),0))}</span></div>`+garG().map(g=>`<div class="ao"><b>${esc(g.cn||g.n)}</b>${sum(g.u,UN[g.fac],g.fac)}</div>`).join('')+`</div>`;
  return h}
 function vOut(){
  const sc=FP.map(([x,y],i)=>{const t=FTx()[i],L=S.fld[i],at=`class="it" style="left:${x}%;top:${y}%;z-index:${200-Math.round(y)}" title="${FN[t]} 等級${L}" data-a="fld" data-i="${i}"`;
@@ -456,7 +457,7 @@ const mergeG=(list,kf)=>{const m=new Map();for(const e of list){const k=kf(e);if
 outG=()=>mergeG(S.out||[],o=>o.k||o.name),garG=()=>mergeG(S.gar||[],g=>g.k||g.n);
 const garrBox=()=>{let h='';const here=CUR||(ME&&ME.id)||'';
  const ufs=(fac,u)=>u.map((x,k)=>x?`${UN[fac][k].n}×${x}`:'').filter(Boolean).join('、');
- if(S.gar&&S.gar.length){const gg=garG();h+=`<div class="army"><div class="ah">駐防在這座城的友軍<br><span>${gg.length} 支 · 共計 ${S.gar.reduce((p,g)=>p+sumA(g.u),0).toLocaleString('en-US')}</span></div><table class="tb"><tr><th>來自</th><th>兵力</th><th></th></tr>`+gg.map(g=>`<tr><td>${esc(g.n)}</td><td><b>${sumA(g.u)}</b> 人<br><small class="mut">${ufs(g.fac,g.u)}</small></td><td><button data-a="garr" data-k="${esc(here)}" data-gid="${esc(g.gids.join(','))}">請他們回去</button></td></tr>`).join('')+'</table><p class="mut">駐防的友軍會一起守城,吃這座城的糧,戰鬥中也會有損失。「請他們回去」是全部一起回去。</p></div>'}
+ if(S.gar&&S.gar.length){const gg=garG();h+=`<div class="army"><div class="ah">駐防在這座城的友軍<br><span>${gg.length} 支 · 共計 ${S.gar.reduce((p,g)=>p+sumA(g.u),0).toLocaleString('en-US')}</span></div><table class="tb"><tr><th>來自</th><th>兵力</th><th></th></tr>`+gg.map(g=>`<tr><td>${esc(g.cn||g.n)}</td><td><b>${sumA(g.u)}</b> 人<br><small class="mut">${ufs(g.fac,g.u)}</small></td><td><button data-a="garr" data-k="${esc(here)}" data-gid="${esc(g.gids.join(','))}">請他們回去</button></td></tr>`).join('')+'</table><p class="mut">駐防的友軍會一起守城,吃這座城的糧,戰鬥中也會有損失。「請他們回去」是全部一起回去。</p></div>'}
  if(S.out&&S.out.length){const og=outG();h+=`<div class="army"><div class="ah">我派去駐防的部隊<br><span>${og.length} 處 · 共計 ${S.out.reduce((p,o)=>p+sumA(o.u),0).toLocaleString('en-US')}</span></div><table class="tb"><tr><th>駐防在</th><th>兵力</th><th></th></tr>`+og.map((o,i)=>`<tr><td>${esc(o.name)}</td><td><b>${sumA(o.u)}</b> 人<br><small class="mut">${ufs(S.fac,o.u)}</small>${o.hs.map(x=>`<br><small>⭐ 武將「${esc(x.n)}」駐防中(防禦 +${x.d})</small>`).join('')}</td><td><button data-a="garrx" data-i="${i}">召回</button></td></tr>`).join('')+'</table></div>'}
  return h};
 // 召回視窗:可以每個兵種填要召回幾人,也可以全部召回。同一處的好幾批一起算,依序從各批扣
