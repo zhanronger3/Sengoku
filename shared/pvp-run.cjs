@@ -27,7 +27,7 @@ async function allied(world, a, b) {
   return !!(x && y && x.a && x.a === y.a);
 }
 
-// uid = 出兵城池的存檔鍵(本丸就是帳號 id);owner = 帳號 id(多座城池共用同一個鎖、同一個收件匣)
+// uid = 出兵城池的存檔鍵(主城就是帳號 id);owner = 帳號 id(多座城池共用同一個鎖、同一個收件匣)
 async function prepare({ saves, world, battle, mail, uid, owner, nick, body, stored, etag, now }) {
   owner = owner || uid;
   const rev = stored.rev;
@@ -41,6 +41,7 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
     const tx = Math.floor(+a.tx), ty = Math.floor(+a.ty);
     if (!Number.isFinite(tx) || !Number.isFinite(ty)) return await fail("座標錯誤");
     let hit = null, act = { ...a };
+    let defCity = "";
     if (!found) await W.markCityTiles(world, tx, ty, tx, ty);
     const npc = !found && G.npcAt(tx, ty);
     if (npc) {
@@ -48,7 +49,13 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
       if (npc.zg) return await fail("菩提山城不能攻擊,請行三顧之禮");
       const cur = G.campCur(await world.get(B.campKey(tx, ty), { type: "json" }), npc, now);
       if (cur.o === owner) {
-        if (act.kind !== "scout") act.kind = "reinf";
+        // 自己佔領的營寨:這座城自己佔的,或明確按「增援駐防」→ 增援駐軍;另一座城(例如主城)佔的,用「出兵掠奪」就是真的攻打、打贏換成這座城佔領
+        if (act.kind !== "scout" && (act.kind === "reinf" || cur.oc === uid)) act.kind = "reinf";
+        else if (act.kind !== "scout") {
+          if (!act.hero) return await fail("這座營寨是你另一座城佔領的:要攻打它必須由武將領軍(打贏後改由這座城佔領);只想送兵進去請按「增援駐防」");
+          const oc = G.occCheck(clone(att), tx, ty);
+          if (!oc.ok) return await fail(`這座城無法佔領這座營寨(${oc.why || "不在範圍內或名額已滿"}),不能攻打自己的營寨`);
+        }
       } else {
         if (act.kind === "reinf") return await fail("只能增援自己佔領的營寨");
         if (cur.o && (await allied(world, owner, cur.o))) return await fail("盟友佔領的營寨不能攻打");
@@ -65,6 +72,7 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
       const hitOwner = hit.rec.o || hit.uid;
       const gotD = await saves.getWithMetadata(hit.uid, { type: "json" });
       if (!gotD || !gotD.data || !gotD.data.state) return await fail("對方還沒開始遊戲");
+      { const ds = gotD.data.state; defCity = ds.cname ? ds.cname : ds.col ? "分城" : hit.rec.n + "的主城"; }
       if (reinf) {
         if (hit.uid === uid) return await fail("不能增援這座城自己");
         if (hitOwner !== owner && !(await allied(world, owner, hitOwner))) return await fail("只能增援自己的城池,或同一個聯盟盟友的城池");
@@ -76,7 +84,7 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
     }
 
     const aid = `${now}-${Math.random().toString(36).slice(2, 8)}`;
-    const r = G.pvpLaunch(att, act, { aid, defNick: npc ? npc.n : hit && hit.rec.n, now, camp: npc ? 1 : 0 });
+    const r = G.pvpLaunch(att, act, { aid, defNick: npc ? npc.n : hit && hit.rec.n, defCity, now, camp: npc ? 1 : 0 });
     if (!r.ok) return await fail(r.msg);
     att.saved = now;
     const next = rev + 1;
@@ -90,7 +98,7 @@ async function prepare({ saves, world, battle, mail, uid, owner, nick, body, sto
       await B.registerAttack({
         battle, mail, now,
         rec: {
-          id: aid, att: { uid, o: owner, n: nick, x: r.pos.x, y: r.pos.y, fac: r.fac, ab: r.ab, hero: r.hero || null, ar: r.ar || 0, ah: r.ah || [] },
+          id: aid, att: { uid, o: owner, n: nick, cn: att.cname ? att.cname : att.col ? "分城" : nick + "的主城", x: r.pos.x, y: r.pos.y, fac: r.fac, ab: r.ab, hero: r.hero || null, ar: r.ar || 0, ah: r.ah || [] },
           def: found || npc ? null : { uid: hit.uid, o: hit.rec.o || hit.uid, n: hit.rec.n, x: hit.rec.x, y: hit.rec.y },
           tx, ty, send: r.send, sentAt: now, arrAt, go: r.go, dur: r.dur, dist: r.dist, kind: npc ? (r.kind === "scout" ? "campscout" : r.kind === "reinf" ? "campgar" : "camp") : r.kind || "", tg: r.tg || [],
         },
